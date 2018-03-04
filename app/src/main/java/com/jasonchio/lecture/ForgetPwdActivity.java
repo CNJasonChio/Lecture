@@ -41,7 +41,7 @@ public class ForgetPwdActivity extends AppCompatActivity {
 	Button repwdCanSee;             //重复密码是否可见
 
 	TitleLayout titleLayout;        //标题栏
-	EventHandler eventhandler;      //注册事件的handler
+	Handler handler;                //验证码的回调监听
 	int countdown=30;               //获取验证码倒计时30s
 	JudgePhoneNums judgePhoneNums=new JudgePhoneNums();             //自定义判断手机号是否合法类对象
 	InterfaceControl interfaceControl=new InterfaceControl();       //自定义界面控制器类对象
@@ -187,39 +187,42 @@ public class ForgetPwdActivity extends AppCompatActivity {
 				}
 			}
 		});
-	}
 
-	Handler handler = new Handler() {
-		public void handleMessage(Message msg) {
-			if (msg.what == -9) {
-				sendForpwdVercodeButton.setText("重新发送(" + countdown + ")");
-			} else if (msg.what == -8) {
-				sendForpwdVercodeButton.setText("发送验证码");
-				sendForpwdVercodeButton.setClickable(true); // 设置可点击
-				countdown = 30;
-			} else {
-				int event = msg.arg1;
-				int result = msg.arg2;
-				Object data = msg.obj;
-				if (result == SMSSDK.RESULT_COMPLETE) {
-					// 短信注册成功后，返回MainActivity,然后提示
-					if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {// 提交验证码成功
-						Toast.makeText(getApplicationContext(), "注册成功",
-								Toast.LENGTH_SHORT).show();
-						// 验证成功后跳转登录界面
-						Intent intent = new Intent(ForgetPwdActivity.this, LoginActivity.class);
-						startActivity(intent);
-						finish();// 成功跳转之后销毁当前页面
-					} else if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
-						Toast.makeText(getApplicationContext(), "验证码已经发送",
-								Toast.LENGTH_SHORT).show();
-					} else {
-						((Throwable) data).printStackTrace();
+		Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				if (msg.what == -9) {
+					sendForpwdVercodeButton.setText("重新发送(" + countdown + ")");
+				} else if (msg.what == -8) {
+					sendForpwdVercodeButton.setText("发送验证码");
+					sendForpwdVercodeButton.setClickable(true); // 设置可点击
+					countdown = 30;
+				} else {
+					int event = msg.arg1;
+					int result = msg.arg2;
+					Object data = msg.obj;
+					if (result == SMSSDK.RESULT_COMPLETE) {
+						// 短信注册成功后，返回MainActivity,然后提示
+						if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {// 提交验证码成功
+							Toast.makeText(getApplicationContext(), "注册成功",
+									Toast.LENGTH_SHORT).show();
+							// 验证成功后跳转登录界面
+							Intent intent = new Intent(ForgetPwdActivity.this, LoginActivity.class);
+							startActivity(intent);
+							finish();// 成功跳转之后销毁当前页面
+						} else if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
+							Toast.makeText(getApplicationContext(), "验证码已经发送",
+									Toast.LENGTH_SHORT).show();
+						} else {
+							((Throwable) data).printStackTrace();
+						}
+					}
+					else{
+						Toast.makeText(ForgetPwdActivity.this,"注册失败，请稍候再试",Toast.LENGTH_SHORT).show();
 					}
 				}
 			}
-		}
-	};
+		};
+	}
 
 	//判断两次输入的密码是否相同
 	protected boolean isPwdsame(String password,String repassword){

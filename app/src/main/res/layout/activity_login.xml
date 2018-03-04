@@ -48,6 +48,7 @@
             andorid:layout_weight="1"
             andorid:layout_height="30dp"
             andorid:paddingLeft="11dp"
+            andorid:maxLines="1"
             andorid:background="@null"
             andorid:layout_marginEnd="22dp"
             andorid:id="@+id/login_account_edit"/>
@@ -80,6 +81,7 @@
         <EditText
             andorid:layout_width="0dp"
             andorid:layout_weight="1"
+            andorid:maxLines="1"
             andorid:layout_height="wrap_content"
             andorid:background="@null"
             andorid:paddingLeft="11dp"
