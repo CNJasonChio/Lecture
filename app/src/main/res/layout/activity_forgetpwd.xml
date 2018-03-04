@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:orientation="vertical">
+
+    <com.jasonchio.lecture.TitleLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/fgtpwd_title_layout">
+    </com.jasonchio.lecture.TitleLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textSize="16sp"
+            android:text="帐号"
+            android:textColor="#101010"
+            android:gravity="center"
+            android:layout_marginTop="7dp" />
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="5dp"
+            android:layout_marginTop="7dp"
+            android:background="@null"
+            android:id="@+id/fgtpwd_account_edit"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:layout_marginTop="13dp"
+        android:background="#BBBBBB"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="7dp"
+            android:gravity="center"
+            android:text="验证码"
+            android:textColor="#101010"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/fgtpwd_vercode_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="7dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:paddingLeft="5dp" />
+
+        <Button
+            android:id="@+id/fgtpwd_send_vercode"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_gravity="bottom"
+            android:gravity="center"
+            android:text="发送验证码"
+            android:layout_marginEnd="5dp"
+            android:textColor="#101010"
+            android:textSize="14sp"
+            android:background="@drawable/shape"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:layout_marginTop="13dp"
+        android:background="#BBBBBB"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:text="新密码"
+            android:gravity="center"
+            android:layout_gravity="center_vertical"
+            android:textSize="16sp"
+            android:textColor="#101010" />
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="30dp"
+            android:paddingLeft="5dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="5dp"
+            android:background="@null"
+            android:id="@+id/pgtpwd_newpassword_edit"/>
+
+        <Button
+            android:layout_width="28dp"
+            android:layout_height="20dp"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="7dp"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/ic_title_view"
+            android:id="@+id/fgtpwd_pwd_cansee" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:layout_marginTop="13dp"
+        android:background="#BBBBBB"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp">
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="确认密码"
+            android:gravity="center"
+            android:textColor="#101010"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="7dp" />
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="30dp"
+            android:paddingLeft="5dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="5dp"
+            android:background="@null"
+            android:id="@+id/fgtpwd_repassword_edit"/>
+
+        <Button
+            android:layout_width="28dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="7dp"
+            android:layout_gravity="bottom"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/ic_title_view"
+            android:id="@+id/fgtpwd_repwd_cansee"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="13dp"
+        android:background="#BBBBBB"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp">
+    </View>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="修改密码"
+        android:gravity="center"
+        android:layout_marginTop="33dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/shape"
+        android:id="@+id/fgtpwd_change_password"/>
+
+</LinearLayout>

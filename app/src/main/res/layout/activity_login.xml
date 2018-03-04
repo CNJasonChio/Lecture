@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:andorid="http://schemas.android.com/apk/res/android"
+    andorid:layout_width="match_parent"
+    andorid:layout_height="wrap_content"
+    andorid:orientation="vertical">
+
+    <LinearLayout
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:orientation="vertical"
+        andorid:layout_marginTop="50dp"
+        andorid:layout_marginBottom="40dp">
+
+        <ImageView
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="wrap_content"
+            andorid:layout_gravity="center"
+            andorid:src="@mipmap/ic_launcher"/>
+        <TextView
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="wrap_content"
+            andorid:layout_gravity="center"
+            andorid:text="聚讲座"
+            andorid:textSize="36sp"
+            andorid:layout_marginTop="10dp"
+            andorid:textColor="#101010"/>
+    </LinearLayout>
+
+    <LinearLayout
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:orientation="horizontal"
+        andorid:layout_marginTop="10dp">
+
+        <TextView
+            andorid:layout_width="35dp"
+            andorid:layout_height="wrap_content"
+            andorid:layout_marginStart="13dp"
+            andorid:textSize="16sp"
+            andorid:gravity="center"
+            andorid:text="帐号"
+            andorid:textColor="#101010"
+            />
+
+        <EditText
+            andorid:layout_width="0dp"
+            andorid:layout_weight="1"
+            andorid:layout_height="30dp"
+            andorid:paddingLeft="11dp"
+            andorid:background="@null"
+            andorid:layout_marginEnd="22dp"
+            andorid:id="@+id/login_account_edit"/>
+    </LinearLayout>
+
+    <View
+        andorid:layout_width="match_parent"
+        andorid:layout_height="2dip"
+        andorid:layout_marginTop="9dp"
+        andorid:background="#BBBBBB"
+        andorid:layout_marginStart="13dp"
+        andorid:layout_marginEnd="13dp">
+    </View>
+
+    <LinearLayout
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:orientation="horizontal"
+        andorid:layout_marginTop="23dp">
+
+        <TextView
+            andorid:layout_width="35dp"
+            andorid:layout_height="wrap_content"
+            andorid:layout_marginStart="13dp"
+            andorid:textSize="16sp"
+            andorid:text="密码"
+            andorid:textColor="#101010"
+            andorid:gravity="center"/>
+
+        <EditText
+            andorid:layout_width="0dp"
+            andorid:layout_weight="1"
+            andorid:layout_height="wrap_content"
+            andorid:background="@null"
+            andorid:paddingLeft="11dp"
+            andorid:id="@+id/login_password_edit"/>
+
+        <Button
+            andorid:layout_width="28dp"
+            andorid:layout_height="20dp"
+            andorid:id="@+id/login_pwd_cansee"
+            andorid:layout_marginEnd="13dp"
+            andorid:background="@drawable/ic_title_view"/>
+
+    </LinearLayout>
+
+    <View
+        andorid:layout_width="match_parent"
+        andorid:layout_height="2dip"
+        andorid:layout_marginTop="9dp"
+        andorid:background="#BBBBBB"
+        andorid:layout_marginStart="13dp"
+        andorid:layout_marginEnd="13dp">
+    </View>
+
+    <RelativeLayout
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:layout_marginTop="18dp"
+        andorid:orientation="horizontal">
+
+        <TextView
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="wrap_content"
+            andorid:layout_marginStart="30dp"
+            andorid:textColor="#6A6A6A"
+            andorid:textSize="14sp"
+            andorid:text="忘记密码？"
+            andorid:id="@+id/login_fgtpwd_text"
+            andorid:clickable="true"/>
+
+        <TextView
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="wrap_content"
+            andorid:layout_alignParentRight="true"
+            andorid:text="新用户注册"
+            andorid:textColor="#6A6A6A"
+            andorid:textSize="14sp"
+            andorid:layout_marginEnd="30dp"
+            andorid:id="@+id/login_signin_text"
+            andorid:clickable="true"/>
+    </RelativeLayout>
+
+    <Button
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:text="登录"
+        andorid:textColor="#ffffff"
+        andorid:textSize="16sp"
+        andorid:background="@drawable/shape"
+        andorid:gravity="center"
+        andorid:layout_marginTop="30dp"
+        andorid:layout_marginEnd="10dp"
+        andorid:layout_marginStart="10dp"
+        andorid:id="@+id/login_button"
+        andorid:stateListAnimator="@null"/>
+
+    <RelativeLayout
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:layout_marginTop="130dp">
+
+        <View
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="2dp"
+            andorid:layout_toLeftOf="@+id/login_thrid_text"
+            andorid:layout_marginTop="7.5dp"
+            andorid:background="#BBBBBB"/>
+
+        <TextView
+            andorid:id="@+id/login_thrid_text"
+            andorid:layout_width="121dp"
+            andorid:layout_height="wrap_content"
+            andorid:layout_centerInParent="true"
+            andorid:text="第三方登录"
+            andorid:gravity="center"
+            andorid:textColor="#C1C1C1"
+            andorid:textSize="12sp" />
+
+        <View
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="2dp"
+            andorid:layout_toRightOf="@+id/login_thrid_text"
+            andorid:layout_marginTop="7.5dp"
+            andorid:background="#BBBBBB"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        andorid:layout_width="match_parent"
+        andorid:layout_height="wrap_content"
+        andorid:layout_marginTop="15dp"
+        andorid:id="@+id/login_third_layout">
+
+        <ImageView
+            andorid:id="@+id/login_qq_login"
+            andorid:layout_width="50dp"
+            andorid:layout_height="50dp"
+            andorid:layout_marginRight="10dp"
+            andorid:layout_toLeftOf="@+id/login_wechat_login"
+            andorid:src="@drawable/ic_login_qq_normal" />
+
+        <ImageView
+            andorid:id="@+id/login_wechat_login"
+            andorid:layout_width="50dp"
+            andorid:layout_height="50dp"
+            andorid:layout_centerInParent="true"
+            andorid:src="@drawable/ic_login_wechat_normal" />
+
+        <ImageView
+            andorid:id="@+id/login_sina_login"
+            andorid:layout_width="50dp"
+            andorid:layout_height="50dp"
+            andorid:layout_marginLeft="10dp"
+            andorid:layout_toRightOf="@+id/login_wechat_login"
+            andorid:src="@drawable/ic_login_sina_normal" />
+    </RelativeLayout>
+</LinearLayout>
