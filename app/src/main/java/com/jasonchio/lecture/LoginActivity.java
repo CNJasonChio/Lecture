@@ -10,17 +10,13 @@ import android.os.Bundle;
 
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jasonchio.lecture.util.InterfaceControl;
-
-import cn.smssdk.SMSSDK;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -28,14 +24,16 @@ public class LoginActivity extends AppCompatActivity {
 	EditText passwordEdit;      //填写密码的编辑框
 	EditText accountEdit;       //填写帐号的编辑框
 	Button loginButton;         //登录按钮
-	Button isCanSee;            //密码是否可见按钮
+
 	TextView fgtpwdText;        //忘记密码
 	TextView signinText;        //新用户注册
+
+	ImageView isCanSee;         //密码是否可见
 	ImageView wechatLoginImage; //微信登录
 	ImageView qqLoginImage;     //QQ登录
 	ImageView sinaLoginImage;   //新浪微博登录
 
-	boolean cansee=false;        //密码是否可见状态
+	boolean cansee=false;       //密码是否可见状态
 
 	InterfaceControl interfaceControl=new InterfaceControl();
 
@@ -52,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
 		wechatLoginImage=(ImageView)findViewById(R.id.login_wechat_login);
 		qqLoginImage=(ImageView)findViewById(R.id.login_qq_login);
 		sinaLoginImage=(ImageView)findViewById(R.id.login_sina_login);
-		isCanSee=(Button)findViewById(R.id.login_pwd_cansee);
+		isCanSee=(ImageView)findViewById(R.id.login_pwd_cansee);
 
 		//隐藏自带标题栏
 		if(Build.VERSION.SDK_INT>=21){
@@ -95,10 +93,12 @@ public class LoginActivity extends AppCompatActivity {
 				if (cansee==false){
 					//如果是不能看到密码的情况下，
 					passwordEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+					isCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					cansee=true;
 				}else {
 					//如果是能看到密码的状态下
 					passwordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
+					isCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					cansee=false;
 				}
 			}
@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
 		loginButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent=new Intent(LoginActivity.this,FirstpageActivity.class);
+				Intent intent=new Intent(LoginActivity.this,MainPageActivity.class);
 				startActivity(intent);
 			}
 		});

@@ -2,6 +2,7 @@ package com.jasonchio.lecture;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.jasonchio.lecture.util.InterfaceControl;
@@ -30,10 +32,11 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 	EditText passwordEdit;          //填写密码的编辑框
 	EditText confirmPwdEdit;        //填写确认密码的编辑框
 
+	Button titleFirstButton;        //标题返回按钮
 	Button sendCodeButton;          //发送验证码的按钮
 	Button signInButton;            //确认注册的按钮
-	Button pwdCanSee;               //密码是否可见
-	Button repwdCanSee;             //重复密码是否可见
+	ImageView pwdCanSee;               //密码是否可见
+	ImageView repwdCanSee;             //重复密码是否可见
 
 	Handler handler;                //验证码回调监听接口
 
@@ -57,11 +60,12 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 		phoneEdit = (EditText) findViewById(R.id.signin_account_edit);
 		sendCodeButton = (Button) findViewById(R.id.signin_send_vercode);
 		signInButton = (Button) findViewById(R.id.signin);
+		titleFirstButton=titleLayout.getFirstButton();
 		passwordEdit = (EditText) findViewById(R.id.signin_newpassword_edit);
 		confirmPwdEdit = (EditText) findViewById(R.id.signin_repassword_edit);
 		titleLayout = (TitleLayout) findViewById(R.id.signin_title_layout);
-		pwdCanSee = (Button) findViewById(R.id.signin_pwd_cansee);
-		repwdCanSee = (Button) findViewById(R.id.signin_repwd_cansee);
+		pwdCanSee = (ImageView) findViewById(R.id.signin_pwd_cansee);
+		repwdCanSee = (ImageView) findViewById(R.id.signin_repwd_cansee);
 
 		interfaceControl.ChangeHintSize(phoneEdit, "请输入手机号", 14);
 		interfaceControl.ChangeHintSize(passwordEdit, "请输入密码", 14);
@@ -81,7 +85,7 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 
 		titleLayout.setTitle("新用户注册");
 		titleLayout.setSecondButtonVisible(View.GONE);
-		titleLayout.firstButton.setOnClickListener(new View.OnClickListener() {
+		titleFirstButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				finish();
@@ -99,10 +103,12 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 				if (pwdcansee == false) {
 					//如果是不能看到密码的情况下，
 					passwordEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+					pwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					pwdcansee = true;
 				} else {
 					//如果是能看到密码的状态下
 					passwordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
+					pwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					pwdcansee = false;
 				}
 			}
@@ -114,10 +120,12 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 				if (repwdcansee == false) {
 					//如果是不能看到密码的情况下，
 					confirmPwdEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+					repwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					repwdcansee = true;
 				} else {
 					//如果是能看到密码的状态下
 					confirmPwdEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
+					repwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					repwdcansee = false;
 				}
 			}

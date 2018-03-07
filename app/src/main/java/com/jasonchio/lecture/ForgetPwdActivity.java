@@ -15,6 +15,7 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.jasonchio.lecture.util.InterfaceControl;
@@ -37,8 +38,8 @@ public class ForgetPwdActivity extends AppCompatActivity {
 	Button backButton;              //返回按钮
 	Button changepwdButton;         //确定修改密码的按钮
 	Button sendForpwdVercodeButton; //发送验证码的按钮
-	Button pwdCanSee;               //密码是否可见
-	Button repwdCanSee;             //重复密码是否可见
+	ImageView pwdCanSee;               //密码是否可见
+	ImageView repwdCanSee;             //重复密码是否可见
 
 	TitleLayout titleLayout;        //标题栏
 	Handler handler;                //验证码的回调监听
@@ -58,17 +59,17 @@ public class ForgetPwdActivity extends AppCompatActivity {
 		newpasswordEdit=(EditText)findViewById(R.id.pgtpwd_newpassword_edit);
 		fgtpwdaccountEdit=(EditText)findViewById(R.id.fgtpwd_account_edit);
 		confirmEdit=(EditText)findViewById(R.id.fgtpwd_repassword_edit);
-		backButton=(Button)findViewById(R.id.title_first_button);
+		backButton=titleLayout.getFirstButton();
 		changepwdButton=(Button)findViewById(R.id.fgtpwd_change_password);
 		sendForpwdVercodeButton=(Button)findViewById(R.id.fgtpwd_send_vercode);
 		vercodeEdit=(EditText)findViewById(R.id.fgtpwd_vercode_edit);
 		titleLayout=(TitleLayout)findViewById(R.id.fgtpwd_title_layout);
-		pwdCanSee=(Button)findViewById(R.id.fgtpwd_pwd_cansee);
-		repwdCanSee=(Button)findViewById(R.id.fgtpwd_repwd_cansee);
+		pwdCanSee=(ImageView) findViewById(R.id.fgtpwd_pwd_cansee);
+		repwdCanSee=(ImageView) findViewById(R.id.fgtpwd_repwd_cansee);
 
 		titleLayout.setTitle("找回密码");
 		titleLayout.setSecondButtonVisible(View.GONE);
-		titleLayout.firstButton.setOnClickListener(new View.OnClickListener() {
+		backButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				finish();
@@ -102,10 +103,12 @@ public class ForgetPwdActivity extends AppCompatActivity {
 				if (pwdcansee==false){
 					//如果是不能看到密码的情况下，
 					newpasswordEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+					pwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					pwdcansee=true;
 				}else {
 					//如果是能看到密码的状态下
 					newpasswordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
+					pwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					pwdcansee=false;
 				}
 			}
@@ -117,10 +120,12 @@ public class ForgetPwdActivity extends AppCompatActivity {
 				if (repwdcansee==false){
 					//如果是不能看到密码的情况下，
 					confirmEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+					repwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					repwdcansee=true;
 				}else {
 					//如果是能看到密码的状态下
 					confirmEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
+					repwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					repwdcansee=false;
 				}
 			}

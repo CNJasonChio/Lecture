@@ -87,12 +87,14 @@
             andorid:paddingLeft="11dp"
             andorid:id="@+id/login_password_edit"/>
 
-        <Button
-            andorid:layout_width="28dp"
-            andorid:layout_height="20dp"
+        <ImageView
+            andorid:layout_width="25dp"
+            andorid:layout_height="25dp"
             andorid:id="@+id/login_pwd_cansee"
             andorid:layout_marginEnd="13dp"
-            andorid:background="@drawable/ic_title_view"/>
+            andorid:src="@drawable/ic_pwd_cantsee"
+            andorid:layout_gravity="center_vertical"
+            andorid:clickable="true"/>
 
     </LinearLayout>
 

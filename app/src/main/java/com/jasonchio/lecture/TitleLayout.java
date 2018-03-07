@@ -40,11 +40,9 @@ import android.widget.TextView;
 
 public class TitleLayout extends LinearLayout {
 
-	private TextView tv_title;
+	private Button firstButton;
 
-	public Button firstButton;
-
-	public Button secondButton;
+	private Button secondButton;
 
 	public TextView titleText;
 
@@ -71,12 +69,12 @@ public class TitleLayout extends LinearLayout {
 		}
 	}
 
-	public void setFirstButtonBackground(Drawable drawable){
-		firstButton.setBackground(drawable);
+	public void setFirstButtonBackground(int firstButtonBackgroundResource){
+		firstButton.setBackgroundResource(firstButtonBackgroundResource);
 	}
 
-	public void setSecondButtonBackground(Drawable drawable){
-		secondButton.setBackground(drawable);
+	public void setSecondButtonBackground(int secondButtonBackgroundResource){
+		secondButton.setBackgroundResource(secondButtonBackgroundResource);
 	}
 
 	public void setFirstButtonVisible(int visible){
@@ -87,4 +85,27 @@ public class TitleLayout extends LinearLayout {
 		secondButton.setVisibility(visible);
 	}
 
+	public Button getFirstButton() {
+		return firstButton;
+	}
+
+	public void setFirstButton(Button firstButton) {
+		this.firstButton = firstButton;
+	}
+
+	public Button getSecondButton() {
+		return secondButton;
+	}
+
+	public void setSecondButton(Button secondButton) {
+		this.secondButton = secondButton;
+	}
+
+	public TextView getTitleText() {
+		return titleText;
+	}
+
+	public void setTitleText(TextView titleText) {
+		this.titleText = titleText;
+	}
 }
