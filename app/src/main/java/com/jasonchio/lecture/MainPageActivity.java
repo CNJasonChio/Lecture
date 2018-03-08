@@ -1,61 +1,90 @@
 package com.jasonchio.lecture;
 
-import android.graphics.Color;
-import android.os.Build;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
+		import android.graphics.Color;
+		import android.os.Build;
+		import android.os.Bundle;
+		import android.support.v4.app.Fragment;
+		import android.support.v4.app.FragmentActivity;
+		import android.support.v4.app.FragmentTabHost;
+		import android.support.v7.app.ActionBar;
+		import android.support.v7.app.AppCompatActivity;
+		import android.view.View;
+		import android.view.Window;
+		import android.widget.LinearLayout;
 
-
-import com.hjm.bottomtabbar.BottomTabBar;
+		import com.mob.MobSDK;
 
 public class MainPageActivity extends AppCompatActivity {
 
-	BottomTabBar mBottomTabBar;
+	private String TAG=MainPageActivity.class.getName();
+
+	public FragmentTabHost fragmentTabHost;
+
+	private String[] TabTags={"首页","发现","我的"};
+
+	private Integer[] ImgTab={R.layout.tab_main_home,R.layout.tab_main_discovery,R.layout.tab_main_me};
+
+	private Class[] ClassTab={HomeFragment.class,DiscoveryFragment.class,MeFragment.class};
+
+	private Integer[] StyleTab={R.color.white,R.color.white,R.color.white,R.color.white};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_mainpage);
+		setContentView(R.layout.tabmaintabs);
 
 		//隐藏自带标题栏
-		if(Build.VERSION.SDK_INT>=21){
-			View decorView=getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+		if (Build.VERSION.SDK_INT >= 21) {
+			View decorView = getWindow().getDecorView();
+			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 			getWindow().setStatusBarColor(Color.TRANSPARENT);
 		}
-		ActionBar actionBar=getSupportActionBar();
-		if(actionBar!=null){
+		ActionBar actionBar = getSupportActionBar();
+		if (actionBar != null) {
 			actionBar.hide();
 		}
 
+		setupView();
+		initValue();
+		setLinstener();
+		fillDate();
+	}
 
-		mBottomTabBar = (BottomTabBar) findViewById(R.id.mainpage_bottom_tab_bar);
-		mBottomTabBar.init(getSupportFragmentManager())
-				.setImgSize(54,54)
-				.setFontSize(10)
-				.setTabPadding(5,0,5)
-				.isShowDivider(true)
-				.setDividerHeight(5)
-				.setTabBarBackgroundColor(Color.argb(255,229,229,229))
-				.setCurrentTab(0)
-				.setChangeColor(Color.argb(255,250,157,37),Color.BLACK)
-				.addTabItem("首页", R.drawable.ic_bottom_home_selected,R.drawable.ic_bottom_home, HomeFragment.class)
-				.addTabItem("发现", R.drawable.ic_bottom_discover_selected,R.drawable.ic_bottom_discover, DiscoverFragment.class)
-				.addTabItem("我的", R.drawable.ic_bottom_me_selected,R.drawable.ic_bottom_me, MeFragment.class);
+	private void setupView() {
+		fragmentTabHost=(FragmentTabHost)findViewById(android.R.id.tabhost);
+		fragmentTabHost.setup(this,getSupportFragmentManager(),android.R.id.tabcontent);
+	}
+
+	private void initValue() {
+		InitTanView();
+	}
+
+	private void setLinstener() {
+		// imv_back.setOnClickListener(this);
 
 	}
 
-	private void replaceFragment(Fragment fragment) {
-		android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-		FragmentTransaction transaction = fragmentManager.beginTransaction();
-		transaction.replace(R.id.fragment_container, fragment);
-		transaction.commit();
+	private void fillDate() {
 
+	}
+
+
+	private void InitTanView() {
+		Bundle bundle=new Bundle();
+
+		for(int i=0;i<TabTags.length;i++){
+			View indicator=getIndicatorView(i);
+			fragmentTabHost.addTab(fragmentTabHost.newTabSpec(TabTags[i]).setIndicator(indicator),ClassTab[i],bundle);
+		}
+		fragmentTabHost.getTabWidget().setDividerDrawable(R.color.white);
+	}
+
+	private View getIndicatorView(int i) {
+		View view=getLayoutInflater().inflate(ImgTab[i],null);
+		LinearLayout linearLayout=(LinearLayout)view.findViewById(R.id.layout_back);
+		linearLayout.setBackgroundResource(StyleTab[i]);
+		return view;
 	}
 }
-

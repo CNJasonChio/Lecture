@@ -56,6 +56,7 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signin_with_phone);
 
+		titleLayout = (TitleLayout) findViewById(R.id.signin_title_layout);
 		verCodeEdit = (EditText) findViewById(R.id.signin_vercode_edit);
 		phoneEdit = (EditText) findViewById(R.id.signin_account_edit);
 		sendCodeButton = (Button) findViewById(R.id.signin_send_vercode);
@@ -63,7 +64,6 @@ public class SigninWithPhoneActivity extends AppCompatActivity {
 		titleFirstButton=titleLayout.getFirstButton();
 		passwordEdit = (EditText) findViewById(R.id.signin_newpassword_edit);
 		confirmPwdEdit = (EditText) findViewById(R.id.signin_repassword_edit);
-		titleLayout = (TitleLayout) findViewById(R.id.signin_title_layout);
 		pwdCanSee = (ImageView) findViewById(R.id.signin_pwd_cansee);
 		repwdCanSee = (ImageView) findViewById(R.id.signin_repwd_cansee);
 

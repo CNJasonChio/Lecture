@@ -56,6 +56,7 @@ public class ForgetPwdActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_forgetpwd);
 
+		titleLayout=(TitleLayout)findViewById(R.id.fgtpwd_title_layout);
 		newpasswordEdit=(EditText)findViewById(R.id.pgtpwd_newpassword_edit);
 		fgtpwdaccountEdit=(EditText)findViewById(R.id.fgtpwd_account_edit);
 		confirmEdit=(EditText)findViewById(R.id.fgtpwd_repassword_edit);
@@ -63,7 +64,6 @@ public class ForgetPwdActivity extends AppCompatActivity {
 		changepwdButton=(Button)findViewById(R.id.fgtpwd_change_password);
 		sendForpwdVercodeButton=(Button)findViewById(R.id.fgtpwd_send_vercode);
 		vercodeEdit=(EditText)findViewById(R.id.fgtpwd_vercode_edit);
-		titleLayout=(TitleLayout)findViewById(R.id.fgtpwd_title_layout);
 		pwdCanSee=(ImageView) findViewById(R.id.fgtpwd_pwd_cansee);
 		repwdCanSee=(ImageView) findViewById(R.id.fgtpwd_repwd_cansee);
 

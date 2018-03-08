@@ -6,4 +6,6 @@
     <color name="bottomColor">#E5E5E5</color>
     <color name="selectColor">#FA9D25</color>
     <color name="unselectColor">#101010</color>
+    <color name="colorAAA">#101010</color>
+    <color name="white">#ffffff</color>
 </resources>
