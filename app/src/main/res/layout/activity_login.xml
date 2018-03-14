@@ -141,7 +141,7 @@
         andorid:text="登录"
         andorid:textColor="#ffffff"
         andorid:textSize="16sp"
-        andorid:background="@drawable/shape"
+        andorid:background="@drawable/button_shape_grey"
         andorid:gravity="center"
         andorid:layout_marginTop="30dp"
         andorid:layout_marginEnd="10dp"

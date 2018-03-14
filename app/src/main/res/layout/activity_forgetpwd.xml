@@ -96,7 +96,7 @@
             android:layout_marginEnd="5dp"
             android:textColor="#101010"
             android:textSize="14sp"
-            android:background="@drawable/shape"/>
+            android:background="@drawable/button_shape_grey"/>
     </LinearLayout>
 
     <View
@@ -212,7 +212,7 @@
         android:layout_marginTop="33dp"
         android:layout_marginEnd="10dp"
         android:layout_marginStart="10dp"
-        android:background="@drawable/shape"
+        android:background="@drawable/button_shape_grey"
         android:id="@+id/fgtpwd_change_password"/>
 
 </LinearLayout>

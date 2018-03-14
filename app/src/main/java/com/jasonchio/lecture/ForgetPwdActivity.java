@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,7 +53,7 @@ public class ForgetPwdActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		//MobSDK.init(this);
+		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_forgetpwd);
 
@@ -77,39 +78,44 @@ public class ForgetPwdActivity extends AppCompatActivity {
 		});
 
 		//隐藏自带标题栏
-		if(Build.VERSION.SDK_INT>=21){
-			View decorView=getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-					| View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		if (Build.VERSION.SDK_INT >= 21) {
+			View decorView = getWindow().getDecorView();
+			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 			getWindow().setStatusBarColor(Color.TRANSPARENT);
 		}
-		ActionBar actionBar=getSupportActionBar();
-		if(actionBar!=null){
+		ActionBar actionBar = getSupportActionBar();
+		if (actionBar != null) {
 			actionBar.hide();
 		}
 
-		interfaceControl.ChangeHintSize(fgtpwdaccountEdit,"请输入手机号",14);
-		interfaceControl.ChangeHintSize(newpasswordEdit,"请输入新密码",14);
-		interfaceControl.ChangeHintSize(confirmEdit,"请再次输入新密码",14);
+		titleLayout.setTitle("新用户注册");
+		titleLayout.setSecondButtonVisible(View.GONE);
+		backButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
 
-		//默认密码不可见
+		//设置密码默认不可见
 		confirmEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
 		newpasswordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
 
-		//设置密码是否可见按钮点击事件
+		//设置密码是否可见按钮的点击监听
 		pwdCanSee.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (pwdcansee==false){
+				if (pwdcansee == false) {
 					//如果是不能看到密码的情况下，
 					newpasswordEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
 					pwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
-					pwdcansee=true;
-				}else {
+					pwdcansee = true;
+				} else {
 					//如果是能看到密码的状态下
 					newpasswordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
 					pwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
-					pwdcansee=false;
+					pwdcansee = false;
 				}
 			}
 		});
@@ -117,19 +123,21 @@ public class ForgetPwdActivity extends AppCompatActivity {
 		repwdCanSee.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (repwdcansee==false){
+				if (repwdcansee == false) {
 					//如果是不能看到密码的情况下，
 					confirmEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
 					repwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
-					repwdcansee=true;
-				}else {
+					repwdcansee = true;
+				} else {
 					//如果是能看到密码的状态下
 					confirmEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
 					repwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
-					repwdcansee=false;
+					repwdcansee = false;
 				}
 			}
 		});
+
+		Log.e("ms", "1");
 
 		EventHandler eventHandler = new EventHandler() {
 			@Override
@@ -193,7 +201,7 @@ public class ForgetPwdActivity extends AppCompatActivity {
 			}
 		});
 
-		Handler handler = new Handler() {
+		handler = new Handler() {
 			public void handleMessage(Message msg) {
 				if (msg.what == -9) {
 					sendForpwdVercodeButton.setText("重新发送(" + countdown + ")");
@@ -206,7 +214,7 @@ public class ForgetPwdActivity extends AppCompatActivity {
 					int result = msg.arg2;
 					Object data = msg.obj;
 					if (result == SMSSDK.RESULT_COMPLETE) {
-						// 短信注册成功后，返回MainActivity,然后提示
+						// 短信注册成功后，返回LoginActivity,然后提示
 						if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {// 提交验证码成功
 							Toast.makeText(getApplicationContext(), "注册成功",
 									Toast.LENGTH_SHORT).show();
@@ -218,7 +226,7 @@ public class ForgetPwdActivity extends AppCompatActivity {
 							Toast.makeText(getApplicationContext(), "验证码已经发送",
 									Toast.LENGTH_SHORT).show();
 						} else {
-							((Throwable) data).printStackTrace();
+							//else((Throwable) data).printStackTrace();
 						}
 					}
 					else{
@@ -230,8 +238,8 @@ public class ForgetPwdActivity extends AppCompatActivity {
 	}
 
 	//判断两次输入的密码是否相同
-	protected boolean isPwdsame(String password,String repassword){
-		if(password.equals(repassword))
+	protected boolean isPwdsame(String password, String repassword) {
+		if (password.equals(repassword))
 			return true;
 		else
 			return false;
@@ -242,5 +250,4 @@ public class ForgetPwdActivity extends AppCompatActivity {
 		super.onDestroy();
 		SMSSDK.unregisterAllEventHandler();
 	}
-
 }

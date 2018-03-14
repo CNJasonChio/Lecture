@@ -11,6 +11,8 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
 import com.astuetz.PagerSlidingTabStrip;
 
 /**
@@ -45,7 +47,7 @@ public class HomeFragment extends Fragment{
 	private RecommentFragment fragmentRecommend;
 	private FocuseFragment fragmentFoucse;
 	private NearFragment fragmentNear;
-
+	private Button searchButton;
 	private PagerSlidingTabStrip tabStrip;
 
 	private DisplayMetrics displayMetrics;
@@ -71,12 +73,24 @@ public class HomeFragment extends Fragment{
 	}
 
 	private void initView(View view){
+
 		titleLayout=(TitleLayout)view.findViewById(R.id.home_title_layout);
+		titleLayout.setFirstButtonVisible(View.GONE);
+		titleLayout.setTitle("首页");
+		titleLayout.setSecondButtonBackground(R.drawable.ic_title_search);
+		searchButton=titleLayout.getSecondButton();
+
+		searchButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+			}
+		});
 		displayMetrics=getResources().getDisplayMetrics();
 		ViewPager pager=(ViewPager)view.findViewById(R.id.pager);
+		pager.setOffscreenPageLimit(2);// 设置缓存页面，当前页面的相邻两个页面都会被缓存
 		tabStrip=(PagerSlidingTabStrip)view.findViewById(R.id.tabs);
 		pager.setAdapter(new MyPagerAdapter(getChildFragmentManager()));
-
 		setTabValue();
 		tabStrip.setViewPager(pager);
 	}
@@ -89,6 +103,7 @@ public class HomeFragment extends Fragment{
 		// 设置Tab底部线的高度
 		tabStrip.setUnderlineHeight((int) TypedValue.applyDimension(
 				TypedValue.COMPLEX_UNIT_DIP, 1, displayMetrics));
+		tabStrip.setUnderlineColor(Color.argb(255,254,205,127));
 		// 设置Tab Indicator的高度
 		tabStrip.setIndicatorHeight((int) TypedValue.applyDimension(
 				TypedValue.COMPLEX_UNIT_DIP, 4, displayMetrics));// 4

@@ -90,7 +90,7 @@
             android:id="@+id/signin_send_vercode"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:background="@drawable/shape"
+            android:background="@drawable/button_shape_grey"
             android:layout_gravity="bottom"
             android:gravity="center"
             android:text="发送验证码"
@@ -214,6 +214,6 @@
         android:layout_marginTop="33dp"
         android:layout_marginEnd="10dp"
         android:layout_marginStart="10dp"
-        android:background="@drawable/shape"
+        android:background="@drawable/button_shape_grey"
         android:id="@+id/signin"/>
 </LinearLayout>

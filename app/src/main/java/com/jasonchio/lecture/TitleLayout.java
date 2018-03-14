@@ -101,11 +101,5 @@ public class TitleLayout extends LinearLayout {
 		this.secondButton = secondButton;
 	}
 
-	public TextView getTitleText() {
-		return titleText;
-	}
 
-	public void setTitleText(TextView titleText) {
-		this.titleText = titleText;
-	}
 }

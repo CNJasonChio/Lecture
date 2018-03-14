@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -7,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 /**
@@ -38,7 +41,10 @@ import android.widget.Toast;
 public class MeFragment extends Fragment{
 
 	TitleLayout titleLayout;
-
+	LinearLayout meLayout;
+	RelativeLayout mywantedLayout;
+	RelativeLayout myfocuseLayout;
+	RelativeLayout mycommentLayout;
 	Button titleFirstButton;
 	Button titleSecondButton;
 
@@ -57,6 +63,10 @@ public class MeFragment extends Fragment{
 		}
 
 		titleLayout= (TitleLayout)rootview.findViewById(R.id.me_title_layout);
+		meLayout=(LinearLayout)rootview.findViewById(R.id.me_myinfo_layout);
+		mywantedLayout=(RelativeLayout)rootview.findViewById(R.id.me_mywanted_layout);
+		myfocuseLayout=(RelativeLayout)rootview.findViewById(R.id.me_myfocuse_layout);
+		mycommentLayout=(RelativeLayout)rootview.findViewById(R.id.me_mycomment_layout);
 		titleFirstButton=titleLayout.getFirstButton();
 		titleSecondButton=titleLayout.getSecondButton();
 
@@ -64,6 +74,37 @@ public class MeFragment extends Fragment{
 		titleLayout.setFirstButtonBackground(R.drawable.ic_title_home);
 		titleLayout.setSecondButtonBackground(R.drawable.ic_title_message);
 
+		meLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(getActivity(),MyInfoActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		mywantedLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(getActivity(),MywantedActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		myfocuseLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(getActivity(),MyFocuseActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		mycommentLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(getActivity(),MycommentActivity.class);
+				startActivity(intent);
+			}
+		});
 		return rootview;
 	}
 

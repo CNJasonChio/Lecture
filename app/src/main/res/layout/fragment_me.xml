@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -15,18 +14,22 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="2dip"
-        android:background="#BBBBBB">
+        android:background="#BBBBBB"
+        android:layout_marginTop="10dp">
     </View>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:layout_marginTop="10dp"
+        android:id="@+id/me_myinfo_layout">
 
         <com.jasonchio.lecture.util.CircleImageView
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:id="@+id/myinfo_userhead"
+            android:id="@+id/me_userhead"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
@@ -45,6 +48,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="2dip"
+        android:layout_marginTop="10dp"
         android:background="#BBBBBB">
     </View>
 
@@ -52,24 +56,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/myinfo_mywanted_layout"
+        android:id="@+id/me_mywanted_layout"
+        android:layout_marginTop="10dp"
         android:clickable="true">
 
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginLeft="17dp"
-            android:layout_marginTop="15dp"
             android:layout_centerVertical="true"
-            android:layout_marginBottom="15dp"
             android:src="@drawable/ic_myinfo_mywanted"
-            android:id="@+id/myinfo_ic_mywanted"/>
+            android:id="@+id/me_mywanted_ic_mywanted"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/myinfo_ic_mywanted"
+            android:layout_toRightOf="@id/me_mywanted_ic_mywanted"
             android:layout_marginLeft="17dp"
             android:textColor="#101010"
             android:textSize="16sp"
@@ -87,6 +90,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="2dip"
+        android:layout_marginTop="10dp"
         android:background="#BBBBBB">
     </View>
 
@@ -94,24 +98,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/myinfo_myfocuse_layout"
+        android:id="@+id/me_myfocuse_layout"
+        android:layout_marginTop="10dp"
         android:clickable="true">
 
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginLeft="17dp"
-            android:layout_marginTop="15dp"
             android:layout_centerVertical="true"
-            android:layout_marginBottom="15dp"
             android:src="@drawable/ic_myinfo_myfocuse"
-            android:id="@+id/myinfo_ic_myfocuse"/>
+            android:id="@+id/me_myfocuse_ic_myfocuse"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/myinfo_ic_myfocuse"
+            android:layout_toRightOf="@id/me_myfocuse_ic_myfocuse"
             android:layout_marginLeft="17dp"
             android:textColor="#101010"
             android:textSize="16sp"
@@ -129,6 +132,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="2dip"
+        android:layout_marginTop="10dp"
         android:background="#BBBBBB">
     </View>
 
@@ -136,24 +140,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/myinfo_mycomment_layout"
+        android:layout_marginTop="10dp"
+        android:id="@+id/me_mycomment_layout"
         android:clickable="true">
 
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginLeft="17dp"
-            android:layout_marginTop="15dp"
             android:layout_centerVertical="true"
-            android:layout_marginBottom="15dp"
             android:src="@drawable/ic_myinfo_mycomment"
-            android:id="@+id/myinfo_ic_mycomment"/>
+            android:id="@+id/me_mycomment_ic_mycomment"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/myinfo_ic_mycomment"
+            android:layout_toRightOf="@id/me_mycomment_ic_mycomment"
             android:layout_marginLeft="17dp"
             android:textColor="#101010"
             android:textSize="16sp"
@@ -171,9 +174,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="2dip"
+        android:layout_marginTop="10dp"
         android:background="#BBBBBB">
     </View>
-
-
 
 </LinearLayout>
