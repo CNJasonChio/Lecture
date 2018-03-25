@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<litepal>
+
+    <dbname
+        value="Lecture">
+    </dbname>
+
+    <version
+        value="1">
+    </version>
+
+    <list>
+        <mapping class="com.jasonchio.lecture.database.CommentDB"></mapping>
+        <mapping class="com.jasonchio.lecture.database.LectureDB"></mapping>
+        <mapping class="com.jasonchio.lecture.database.LibraryDB"></mapping>
+        <mapping class="com.jasonchio.lecture.database.UserDB"></mapping>
+    </list>
+</litepal>

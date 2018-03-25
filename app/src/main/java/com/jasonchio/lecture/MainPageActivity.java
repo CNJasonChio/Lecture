@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 
 import com.mob.MobSDK;
 
-public class MainPageActivity extends AppCompatActivity {
+public class MainPageActivity extends BaseActivity {
 
 	private String TAG = MainPageActivity.class.getName();
 
@@ -28,34 +28,22 @@ public class MainPageActivity extends AppCompatActivity {
 
 	private Integer[] StyleTab = {R.color.white, R.color.white, R.color.white, R.color.white};
 
-	@Override
+
 	protected void onCreate(Bundle savedInstanceState) {
 		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.tabmaintabs);
 
-		//隐藏自带标题栏
-		if (Build.VERSION.SDK_INT >= 21) {
-			View decorView = getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-			getWindow().setStatusBarColor(Color.TRANSPARENT);
-		}
-		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.hide();
-		}
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
 
-		setupView();
 		initValue();
 		setLinstener();
 		fillDate();
 	}
 
-	private void setupView() {
-		fragmentTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
-		fragmentTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
-	}
 
 	private void initValue() {
 		InitTanView();
@@ -86,5 +74,22 @@ public class MainPageActivity extends AppCompatActivity {
 		LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.layout_back);
 		linearLayout.setBackgroundResource(StyleTab[i]);
 		return view;
+	}
+
+	@Override
+	void initView() {
+		//BaseActivity方法，隐藏系统标题栏
+		HideSysTitle();
+		fragmentTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
+	}
+
+	@Override
+	void initWidget() {
+		fragmentTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+	}
+
+	@Override
+	public void onClick(View v) {
+
 	}
 }

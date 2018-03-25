@@ -1,7 +1,5 @@
-package com.jasonchio.lecture.util;
+package com.jasonchio.lecture;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.ActionBar;
@@ -36,10 +34,24 @@ import android.widget.EditText;
  * 　　　　　┗┻┛　┗┻┛
  * ━━━━━━神兽出没━━━━━━by:zhaoyaobang
  * <p>
- * Created by zhaoyaobang on 2018/2/22.
+ * Created by zhaoyaobang on 2018/3/17.
  */
 
-public class InterfaceControl extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
+
+	public void HideSysTitle(){
+		//隐藏自带标题栏
+		if(Build.VERSION.SDK_INT>=21){
+			View decorView=getWindow().getDecorView();
+			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+			getWindow().setStatusBarColor(Color.TRANSPARENT);
+		}
+		ActionBar actionBar=getSupportActionBar();
+		if(actionBar!=null){
+			actionBar.hide();
+		}
+	}
 
 	public void ChangeHintSize(EditText edit, String hint, int size){
 		SpannableString ss = new SpannableString(hint);//定义hint的值
@@ -47,4 +59,8 @@ public class InterfaceControl extends AppCompatActivity {
 		ss.setSpan(ass, 0, ss.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 		edit.setHint(new SpannedString(ss));
 	}
+
+	abstract void initView();
+
+	abstract void initWidget();
 }

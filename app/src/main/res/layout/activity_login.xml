@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:andorid="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:andorid="http://schemas.android.com/apk/res/android"
     andorid:layout_width="match_parent"
     andorid:layout_height="wrap_content"
     andorid:orientation="vertical">
@@ -10,7 +10,8 @@
         andorid:layout_height="wrap_content"
         andorid:orientation="vertical"
         andorid:layout_marginTop="50dp"
-        andorid:layout_marginBottom="40dp">
+        andorid:layout_marginBottom="40dp"
+        andorid:id="@+id/login_logo_layout">
 
         <ImageView
             andorid:layout_width="wrap_content"
@@ -31,7 +32,9 @@
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:orientation="horizontal"
-        andorid:layout_marginTop="10dp">
+        andorid:layout_marginTop="10dp"
+        andorid:id="@+id/login_account_layout"
+        andorid:layout_below="@id/login_logo_layout">
 
         <TextView
             andorid:layout_width="35dp"
@@ -40,8 +43,7 @@
             andorid:textSize="16sp"
             andorid:gravity="center"
             andorid:text="帐号"
-            andorid:textColor="#101010"
-            />
+            andorid:textColor="#101010" />
 
         <EditText
             andorid:layout_width="0dp"
@@ -60,14 +62,18 @@
         andorid:layout_marginTop="9dp"
         andorid:background="#BBBBBB"
         andorid:layout_marginStart="13dp"
-        andorid:layout_marginEnd="13dp">
+        andorid:layout_marginEnd="13dp"
+        andorid:id="@+id/login_view1"
+        andorid:layout_below="@id/login_account_layout">
     </View>
 
     <LinearLayout
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:orientation="horizontal"
-        andorid:layout_marginTop="23dp">
+        andorid:layout_marginTop="23dp"
+        andorid:id="@+id/login_password_layout"
+        andorid:layout_below="@id/login_view1">
 
         <TextView
             andorid:layout_width="35dp"
@@ -104,14 +110,18 @@
         andorid:layout_marginTop="9dp"
         andorid:background="#BBBBBB"
         andorid:layout_marginStart="13dp"
-        andorid:layout_marginEnd="13dp">
+        andorid:layout_marginEnd="13dp"
+        andorid:id="@+id/login_view2"
+        andorid:layout_below="@id/login_password_layout">
     </View>
 
     <RelativeLayout
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:layout_marginTop="18dp"
-        andorid:orientation="horizontal">
+        andorid:orientation="horizontal"
+        andorid:id="@+id/login_findpwd_sigin_layout"
+        andorid:layout_below="@id/login_view2">
 
         <TextView
             andorid:layout_width="wrap_content"
@@ -139,7 +149,7 @@
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:text="登录"
-        andorid:textColor="#ffffff"
+        andorid:textColor="#696969"
         andorid:textSize="16sp"
         andorid:background="@drawable/button_shape_grey"
         andorid:gravity="center"
@@ -147,12 +157,14 @@
         andorid:layout_marginEnd="10dp"
         andorid:layout_marginStart="10dp"
         andorid:id="@+id/login_button"
-        andorid:stateListAnimator="@null"/>
+        andorid:stateListAnimator="@null"
+        andorid:layout_below="@id/login_findpwd_sigin_layout"/>
 
     <RelativeLayout
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
-        andorid:layout_marginTop="130dp">
+        andorid:id="@+id/login_third_view_layout"
+        andorid:layout_above="@id/login_third_layout">
 
         <View
             andorid:layout_width="wrap_content"
@@ -183,8 +195,9 @@
     <RelativeLayout
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
+        andorid:id="@+id/login_third_layout"
         andorid:layout_marginTop="15dp"
-        andorid:id="@+id/login_third_layout">
+        andorid:layout_above="@id/login_view3">
 
         <ImageView
             andorid:id="@+id/login_qq_login"
@@ -209,4 +222,11 @@
             andorid:layout_toRightOf="@+id/login_wechat_login"
             andorid:src="@drawable/ic_login_sina_normal" />
     </RelativeLayout>
-</LinearLayout>
+
+    <View
+        andorid:layout_width="match_parent"
+        andorid:layout_height="40dp"
+        andorid:id="@+id/login_view3"
+        andorid:layout_alignParentBottom="true">
+    </View>
+</RelativeLayout>

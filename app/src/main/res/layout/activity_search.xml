@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <com.jasonchio.lecture.util.searchview.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:textSizeSearch="5dp"
+        app:textColorSearch="#101010"
+        app:textHintSearch="查询"
+        app:searchBlockHeight="100"
+        app:searchBlockColor="#FFFFFF" />
+
+
+</LinearLayout>

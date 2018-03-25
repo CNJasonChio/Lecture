@@ -66,4 +66,5 @@ public class LectureAdapter extends ArrayAdapter<Lecture> {
 
 		return view;
 	}
+
 }

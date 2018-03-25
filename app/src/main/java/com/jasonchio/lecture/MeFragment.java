@@ -68,12 +68,18 @@ public class MeFragment extends Fragment{
 		myfocuseLayout=(RelativeLayout)rootview.findViewById(R.id.me_myfocuse_layout);
 		mycommentLayout=(RelativeLayout)rootview.findViewById(R.id.me_mycomment_layout);
 		titleFirstButton=titleLayout.getFirstButton();
-		titleSecondButton=titleLayout.getSecondButton();
 
 		titleLayout.setTitle("我的资料");
-		titleLayout.setFirstButtonBackground(R.drawable.ic_title_home);
-		titleLayout.setSecondButtonBackground(R.drawable.ic_title_message);
+		titleLayout.setFirstButtonBackground(R.drawable.ic_title_settings);
+		titleLayout.setSecondButtonVisible(View.GONE);
 
+		titleFirstButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(getActivity(),SettingActivity.class);
+				startActivity(intent);
+			}
+		});
 		meLayout.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

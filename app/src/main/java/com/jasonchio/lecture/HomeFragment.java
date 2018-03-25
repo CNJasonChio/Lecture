@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -47,7 +48,7 @@ public class HomeFragment extends Fragment{
 	private RecommentFragment fragmentRecommend;
 	private FocuseFragment fragmentFoucse;
 	private NearFragment fragmentNear;
-	private Button searchButton;
+	private Button titleSecondButton;
 	private PagerSlidingTabStrip tabStrip;
 
 	private DisplayMetrics displayMetrics;
@@ -78,12 +79,13 @@ public class HomeFragment extends Fragment{
 		titleLayout.setFirstButtonVisible(View.GONE);
 		titleLayout.setTitle("首页");
 		titleLayout.setSecondButtonBackground(R.drawable.ic_title_search);
-		searchButton=titleLayout.getSecondButton();
+		titleSecondButton=titleLayout.getSecondButton();
 
-		searchButton.setOnClickListener(new View.OnClickListener() {
+		titleSecondButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-
+				Intent intent=new Intent(getContext(),SearchActivity.class);
+				startActivity(intent);
 			}
 		});
 		displayMetrics=getResources().getDisplayMetrics();

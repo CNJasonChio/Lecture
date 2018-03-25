@@ -12,8 +12,8 @@
         android:layout_marginTop="15dp">
 
         <Button
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="23dp"
+            android:layout_height="23dp"
             android:layout_alignParentLeft="true"
             android:layout_marginStart="10dp"
             android:layout_alignParentBottom="true"
@@ -33,12 +33,11 @@
 
         <Button
             android:id="@+id/title_second_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="23dp"
+            android:layout_height="23dp"
             android:layout_marginEnd="10dp"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/ic_title_return"/>
+            android:layout_alignParentRight="true" />
     </RelativeLayout>
 
 

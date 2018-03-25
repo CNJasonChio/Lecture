@@ -22,7 +22,7 @@ import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MywantedActivity extends AppCompatActivity {
+public class MywantedActivity extends BaseActivity {
 
 	SwipeToLoadLayout swipeToLoadLayout;
 	TitleLayout titleLayout;
@@ -30,7 +30,7 @@ public class MywantedActivity extends AppCompatActivity {
 	LectureAdapter mAdapter;
 
 	String contents = "十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
-
+	ListView listView;
 	int consts = 0;
 
 	Lecture lecture = new Lecture("NoteExpress文献管理与论文写作讲座", "2017年12月7日(周三)14：30", "武汉大学图书馆", consts, contents, R.drawable.test_image);
@@ -42,33 +42,13 @@ public class MywantedActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_mywanted);
 
-		//隐藏自带标题栏
-		if (Build.VERSION.SDK_INT >= 21) {
-			View decorView = getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-			getWindow().setStatusBarColor(Color.TRANSPARENT);
-		}
-		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.hide();
-		}
-		swipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipeToLoadLayout);
-		titleLayout=(TitleLayout)findViewById(R.id.mywanted_title_layout);
-		titleFirstButton=titleLayout.getFirstButton();
-		ListView listView = (ListView) findViewById(R.id.swipe_target);
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
 
-		mAdapter = new LectureAdapter(MywantedActivity.this, R.layout.lecure_listitem, lecturelist);
-		titleLayout.setSecondButtonVisible(View.GONE);
-		titleLayout.setTitle("我的想看");
-		listView.setAdapter(mAdapter);
+		titleFirstButton.setOnClickListener(this);
 
-		titleFirstButton.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				finish();
-			}
-		});
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -111,5 +91,35 @@ public class MywantedActivity extends AppCompatActivity {
 				swipeToLoadLayout.setRefreshing(true);
 			}
 		});
+	}
+
+	@Override
+	void initView() {
+		//BaseActivity方法，隐藏系统标题栏
+		HideSysTitle();
+		titleLayout.setSecondButtonVisible(View.GONE);
+		titleLayout.setTitle("我的想看");
+		listView.setAdapter(mAdapter);
+	}
+
+	@Override
+	void initWidget() {
+		swipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipeToLoadLayout);
+		titleLayout=(TitleLayout)findViewById(R.id.mywanted_title_layout);
+		titleFirstButton=titleLayout.getFirstButton();
+		listView = (ListView) findViewById(R.id.swipe_target);
+
+		mAdapter = new LectureAdapter(MywantedActivity.this, R.layout.lecure_listitem, lecturelist);
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()){
+			case R.id.title_first_button:{
+				finish();
+				break;
+			}
+			default:
+		}
 	}
 }

@@ -5,35 +5,42 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:id="@+id/comment_user_layout"
+        android:layout_marginTop="10dp">
 
         <com.jasonchio.lecture.util.CircleImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="3dp"
-            android:id="@+id/discovery_photo_image"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="13dp"
+            android:id="@+id/comment_photo_image"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#101010"
             android:textSize="16sp"
-            android:layout_marginLeft="3dp"
-            android:layout_centerVertical="true" />
+            android:layout_marginLeft="8dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/comment_photo_image"
+            android:id="@+id/comment_user_name_text"/>
     </RelativeLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/discovery_comment_text"
+        android:id="@+id/comment_text"
         android:textSize="13sp"
-        android:paddingLeft="10dp"/>
+        android:paddingLeft="10dp"
+        android:layout_marginStart="13dp"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/comment_user_layout"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/discovery_lecture_details_layout"
-        android:layout_below="@id/discovery_comment_text">
+        android:id="@+id/comment_lecture_layout"
+        android:layout_below="@id/comment_text">
         <include layout="@layout/lecure_listitem" />
     </RelativeLayout>
 
@@ -41,13 +48,14 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/discovery_lecture_details_layout"
-        android:layout_marginTop="5dp">
+        android:layout_below="@id/comment_lecture_layout"
+        android:layout_marginTop="5dp"
+        android:layout_marginStart="13dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/discovery_comment_time_text"
+            android:id="@+id/comment_time_text"
             android:textSize="11sp"
             android:textColor="#101010"/>
 
@@ -56,8 +64,8 @@
             android:layout_height="wrap_content"
             android:textColor="#BBBBBB"
             android:textSize="11sp"
-            android:id="@+id/discovery_likers_text"
-            android:layout_toLeftOf="@id/discovery_comment_like_image"/>
+            android:id="@+id/comment_likers_text"
+            android:layout_toLeftOf="@id/comment_like_image"/>
 
         <ImageView
             android:layout_width="12dp"
@@ -65,7 +73,7 @@
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"
             android:src="@drawable/ic_discovery_comment_like"
-            android:id="@+id/discovery_comment_like_image"/>
+            android:id="@+id/comment_like_image"/>
     </RelativeLayout>
 
     <View

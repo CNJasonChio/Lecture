@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class LectureDetailActivity extends AppCompatActivity {
+public class LectureDetailActivity extends BaseActivity {
 
 	TitleLayout titleLayout;
 
@@ -52,18 +52,22 @@ public class LectureDetailActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_lecture_detail);
 
-		//隐藏自带标题栏
-		if(Build.VERSION.SDK_INT>=21){
-			View decorView=getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-			getWindow().setStatusBarColor(Color.TRANSPARENT);
-		}
-		ActionBar actionBar=getSupportActionBar();
-		if(actionBar!=null){
-			actionBar.hide();
-		}
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
 
+		//设置标题栏返回按钮点击监听事件
+		titleFirstButton.setOnClickListener(this);
+		//设置标题栏添加我想看按钮点击监听事件
+		titleSecondButton.setOnClickListener(this);
+		//设置讲座详情页查看原文按钮点击监听事件
+		lectureOriginal.setOnClickListener(this);
+		//设置讲座详情页的发布图书馆按钮点击监听事件
+		lectureSource.setOnClickListener(this);
+	}
+
+	protected void initWidget(){
 		titleLayout=(TitleLayout)findViewById(R.id.lecture_detail_title_layout);
 		titleFirstButton=titleLayout.getFirstButton();
 		titleSecondButton=titleLayout.getSecondButton();
@@ -73,6 +77,11 @@ public class LectureDetailActivity extends AppCompatActivity {
 		lecturePlace=(TextView)findViewById(R.id.lecture_detail_place_text) ;
 		lectureContent=(TextView)findViewById(R.id.lecture_detail_content_text) ;
 		lectureOriginal=(TextView)findViewById(R.id.lecture_detail_original_text) ;
+	}
+	protected void initView(){
+
+		//隐藏系统标题栏
+		HideSysTitle();
 
 		lectureTitle.setText(title);
 		lectureSource.setText(source);
@@ -81,21 +90,23 @@ public class LectureDetailActivity extends AppCompatActivity {
 		lectureContent.setText(contents);
 		titleLayout.setTitle("讲座详情");
 
+		//判断是否已经添加想看
 		if(ifLike){
 			titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes_selected);
 		}else{
 			titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
 		}
+	}
 
-		titleFirstButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()){
+			case R.id.title_first_button:{
 				finish();
+				break;
 			}
-		});
-		titleSecondButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
+			case R.id.title_second_button:{
 				if(ifLike){
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
 					ifLike=false;
@@ -103,24 +114,20 @@ public class LectureDetailActivity extends AppCompatActivity {
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes_selected);
 					ifLike=true;
 				}
+				break;
 			}
-		});
-
-		lectureOriginal.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
+			case R.id.lecture_detail_original_text:{
 				Intent intent=new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse(original));
 				startActivity(intent);
+				break;
 			}
-		});
-
-		lectureSource.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
+			case R.id.lecture_detail_source_text:{
 				Intent intent=new Intent(LectureDetailActivity.this,LibraryDetailActivity.class);
 				startActivity(intent);
+				break;
 			}
-		});
+			default:
+		}
 	}
 }

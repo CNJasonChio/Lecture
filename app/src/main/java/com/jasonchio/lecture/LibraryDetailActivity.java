@@ -12,10 +12,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class LibraryDetailActivity extends AppCompatActivity {
+public class LibraryDetailActivity extends BaseActivity {
 
 	ImageView libraryImage;
-
 	TextView titleLayoutTitleText;
 	TextView libraryName;
 	TextView libraryContent;
@@ -36,19 +35,50 @@ public class LibraryDetailActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library_detail);
 
-		//隐藏自带标题栏
-		if (Build.VERSION.SDK_INT >= 21) {
-			View decorView = getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-			getWindow().setStatusBarColor(Color.TRANSPARENT);
-		}
-		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.hide();
-		}
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
 
+		titleFirstButton.setOnClickListener(this);
 
+		titleSecondButton.setOnClickListener(this);
+
+		libraryOriginal.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()){
+			case R.id.library_title_first_button:{
+				finish();
+				break;
+			}
+			case R.id.library_title_second_button:{
+				if(ifFocused){
+					titleSecondButton.setText("点击关注");
+					titleSecondButton.setTextColor(Color.argb(255,16,16,16));
+					titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
+					ifFocused=false;
+				}else {
+					titleSecondButton.setText("已关注");
+					titleSecondButton.setTextColor(Color.argb(255,255,157,0));
+					titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
+					ifFocused=true;
+				}
+				break;
+			}
+			case R.id.library_original_text:{
+				Intent intent=new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse(original));
+				startActivity(intent);
+				break;
+			}
+			default:
+		}
+	}
+
+	protected void initWidget(){
 		libraryImage=(ImageView)findViewById(R.id.library_photo_image);
 		libraryName=(TextView)findViewById(R.id.library_name_text);
 		libraryContent=(TextView)findViewById(R.id.library_content_text);
@@ -56,7 +86,10 @@ public class LibraryDetailActivity extends AppCompatActivity {
 		titleFirstButton=(Button)findViewById(R.id.library_title_first_button);
 		titleSecondButton=(Button)findViewById(R.id.library_title_second_button);
 		titleLayoutTitleText=(TextView)findViewById(R.id.library_titlelayout_title_text);
+	}
+	protected void initView(){
 
+		HideSysTitle();
 		titleLayoutTitleText.setText("图书馆详情");
 
 		libraryContent.setText(contents);
@@ -73,38 +106,5 @@ public class LibraryDetailActivity extends AppCompatActivity {
 			titleSecondButton.setTextColor(Color.argb(255,16,16,16));
 			titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
 		}
-
-		titleFirstButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				finish();
-			}
-		});
-
-		titleSecondButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if(ifFocused){
-					titleSecondButton.setText("点击关注");
-					titleSecondButton.setTextColor(Color.argb(255,16,16,16));
-					titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
-					ifFocused=false;
-				}else {
-					titleSecondButton.setText("已关注");
-					titleSecondButton.setTextColor(Color.argb(255,255,157,0));
-					titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
-					ifFocused=true;
-				}
-			}
-		});
-
-		libraryOriginal.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent=new Intent(Intent.ACTION_VIEW);
-				intent.setData(Uri.parse(original));
-				startActivity(intent);
-			}
-		});
 	}
 }

@@ -22,7 +22,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class WelcomeActivity extends AppCompatActivity {
+public class WelcomeActivity extends BaseActivity {
 
 	ImageView welcomeImage;
 	@Override
@@ -31,33 +31,14 @@ public class WelcomeActivity extends AppCompatActivity {
 		final View view = View.inflate(this, R.layout.activity_welcome, null);
 		setContentView(view);
 
-		welcomeImage=(ImageView) findViewById(R.id.welcome_image);
-
-
-		//隐藏自带标题栏
-		if (Build.VERSION.SDK_INT >= 21) {
-			View decorView = getWindow().getDecorView();
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-					| View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-			getWindow().setStatusBarColor(Color.TRANSPARENT);
-		}
-		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.hide();
-		}
-
-		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
-
-		String bingPic=preferences.getString("bing_pic",null);
-		if(bingPic!=null){
-			Glide.with(this).load(bingPic).into(welcomeImage);
-		}else{
-			loadBingPic();
-		}
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
 
 		//渐变背景图片
 		AlphaAnimation aa = new AlphaAnimation(0.3f, 1.0f);
-		aa.setDuration(2000);//设置动画持续时间
+		aa.setDuration(3000);//设置动画持续时间
 		view.startAnimation(aa);
 		aa.setAnimationListener(new Animation.AnimationListener() {
 			@Override
@@ -106,5 +87,30 @@ public class WelcomeActivity extends AppCompatActivity {
 		Intent intent = new Intent(this, LoginActivity.class);
 		startActivity(intent);
 		finish();
+	}
+
+	@Override
+	void initView() {
+		//BaseActivity方法，隐藏系统标题栏
+		HideSysTitle();
+
+		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
+
+		String bingPic=preferences.getString("bing_pic",null);
+		if(bingPic!=null){
+			Glide.with(this).load(bingPic).into(welcomeImage);
+		}else{
+			loadBingPic();
+		}
+	}
+
+	@Override
+	void initWidget() {
+		welcomeImage=(ImageView) findViewById(R.id.welcome_image);
+	}
+
+	@Override
+	public void onClick(View v) {
+
 	}
 }

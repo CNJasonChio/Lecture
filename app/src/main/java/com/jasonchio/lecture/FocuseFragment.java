@@ -61,9 +61,7 @@ public class FocuseFragment extends Fragment  {
 	List<Lecture> lecturelist = new ArrayList<>();
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-
-	                         Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
