@@ -29,7 +29,7 @@ package com.jasonchio.lecture.database;
 public class CommentDB {
 
 	String commentId;       //评论的ID
-	
+
 	String commentuserId;   //该评论的用户ID
 
 	String commentlecureId; //该评论的讲座ID

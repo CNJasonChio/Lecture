@@ -25,6 +25,7 @@ public class AddCommentActivity extends BaseActivity {
 
 	Lecture lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",consts,contents,R.drawable.test_image);
 
+	ListView listView;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -34,11 +35,6 @@ public class AddCommentActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
-		lectureAdapter=new LectureAdapter(AddCommentActivity.this,R.layout.lecure_listitem,lectureList);
-		ListView listView=(ListView)findViewById(R.id.comment_lecture_selected_list);
-
-		listView.setAdapter(lectureAdapter);
 
 		lectureList.add(lecture);
 
@@ -61,6 +57,9 @@ public class AddCommentActivity extends BaseActivity {
 		titleFirstButton=titleLayout.getFirstButton();
 		titleSecondButton=titleLayout.getSecondButton();
 		comment_text=(TextView)findViewById(R.id.comment_edit) ;
+		listView=(ListView)findViewById(R.id.comment_lecture_selected_list);
+		lectureAdapter=new LectureAdapter(AddCommentActivity.this,R.layout.lecure_listitem,lectureList);
+		listView.setAdapter(lectureAdapter);
 	}
 
 	@Override

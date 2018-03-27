@@ -58,7 +58,6 @@ public class MainPageActivity extends BaseActivity {
 
 	}
 
-
 	private void InitTanView() {
 		Bundle bundle = new Bundle();
 

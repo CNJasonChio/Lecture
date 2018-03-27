@@ -32,6 +32,8 @@ public class Comment {
 	private Lecture lecture;
 	private String commentTime;
 	private int commentLikers;
+
+	private int commentLikersImage=R.drawable.ic_discovery_comment_like;
 	private String commentText;
 
 	public Comment(int userPhotoId, String userName, Lecture lecture, String commentTime, int commentLikers, String commentText) {
@@ -89,5 +91,13 @@ public class Comment {
 
 	public void setCommentLikers(int commentLikers) {
 		this.commentLikers = commentLikers;
+	}
+
+	public int getCommentLikersImage() {
+		return commentLikersImage;
+	}
+
+	public void setCommentLikersImage(int commentLikersImage) {
+		this.commentLikersImage = commentLikersImage;
 	}
 }

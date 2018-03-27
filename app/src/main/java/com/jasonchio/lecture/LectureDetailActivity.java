@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class LectureDetailActivity extends BaseActivity {
 
@@ -109,9 +110,11 @@ public class LectureDetailActivity extends BaseActivity {
 			case R.id.title_second_button:{
 				if(ifLike){
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
+					Toast.makeText(LectureDetailActivity.this,"已从“我的想看”移除",Toast.LENGTH_SHORT).show();
 					ifLike=false;
 				}else{
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes_selected);
+					Toast.makeText(LectureDetailActivity.this,"已加入“我的想看”",Toast.LENGTH_SHORT).show();
 					ifLike=true;
 				}
 				break;

@@ -38,7 +38,7 @@ public class WelcomeActivity extends BaseActivity {
 
 		//渐变背景图片
 		AlphaAnimation aa = new AlphaAnimation(0.3f, 1.0f);
-		aa.setDuration(3000);//设置动画持续时间
+		aa.setDuration(2000);//设置动画持续时间
 		view.startAnimation(aa);
 		aa.setAnimationListener(new Animation.AnimationListener() {
 			@Override
