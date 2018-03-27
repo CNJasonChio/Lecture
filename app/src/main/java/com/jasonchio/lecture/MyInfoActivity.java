@@ -275,15 +275,23 @@ public class MyInfoActivity extends BaseActivity {
 
 					break;
 				case PHOTO_ALREADY:
-
-					if (data != null) {
-						Bundle extras = data.getExtras();
-						if (extras != null) {
-							Bitmap bitmap = extras.getParcelable("data");
-							photoImage.setImageBitmap(bitmap);
-						}
-					} else {
-						Toast.makeText(MyInfoActivity.this, "获取裁剪后的文件失败", Toast.LENGTH_SHORT).show();
+//
+//					if (data != null) {
+//						Bundle extras = data.getExtras();
+//						if (extras != null) {
+//							Bitmap bitmap = extras.getParcelable("data");
+//							photoImage.setImageBitmap(bitmap);
+//						}
+//					} else {
+//						Toast.makeText(MyInfoActivity.this, "获取裁剪后的文件失败", Toast.LENGTH_SHORT).show();
+//					}
+					try {
+						//获取裁剪后的图片，并显示出来
+						Bitmap bitmap = BitmapFactory.decodeStream(
+								getContentResolver().openInputStream(finalUri));
+						photoImage.setImageBitmap(bitmap);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
 					}
 					break;
 				default:
