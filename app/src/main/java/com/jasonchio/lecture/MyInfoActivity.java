@@ -3,6 +3,7 @@ package com.jasonchio.lecture;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -38,6 +39,8 @@ import java.io.IOException;
 
 import java.util.Calendar;
 
+import static android.content.ContentValues.TAG;
+
 public class MyInfoActivity extends BaseActivity {
 
 	String[] sexArray = new String[]{"蓝孩纸", "吕孩纸", "不告诉他们"};
@@ -70,12 +73,15 @@ public class MyInfoActivity extends BaseActivity {
 
 	Uri finalUri;
 
+
 	PopupWindow pop;
+
 	private View popupWindowView;
 
 	public static final int TAKE_PHOTO = 1;
 	public static final int OPEN_ALBUM = 2;
 	public static final int PHOTO_ALREADY = 3;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -246,59 +252,6 @@ public class MyInfoActivity extends BaseActivity {
 		builder3.show();// 让弹出框显示
 	}
 
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == RESULT_OK) {
-			switch (requestCode) {
-				case OPEN_ALBUM: //从相册图片后返回的uri
-					//启动裁剪
-					Intent cutphotointent = CutForPhoto(data.getData());
-					if (cutphotointent != null) {
-						startActivityForResult(cutphotointent, PHOTO_ALREADY);
-					} else {
-						Toast.makeText(MyInfoActivity.this, "cut for photo intent is null", Toast.LENGTH_SHORT).show();
-					}
-
-					break;
-				case TAKE_PHOTO: //相机返回的 uri
-					//启动裁剪
-					String path = getExternalCacheDir().getPath();
-					String name = "output.png";
-					Intent cutcamreaintent = CutForCamera(path, name);
-					if (cutcamreaintent != null) {
-						startActivityForResult(cutcamreaintent, PHOTO_ALREADY);
-					} else {
-						Toast.makeText(MyInfoActivity.this, "cut for camrea intent is null", Toast.LENGTH_SHORT).show();
-					}
-
-					break;
-				case PHOTO_ALREADY:
-//
-//					if (data != null) {
-//						Bundle extras = data.getExtras();
-//						if (extras != null) {
-//							Bitmap bitmap = extras.getParcelable("data");
-//							photoImage.setImageBitmap(bitmap);
-//						}
-//					} else {
-//						Toast.makeText(MyInfoActivity.this, "获取裁剪后的文件失败", Toast.LENGTH_SHORT).show();
-//					}
-					try {
-						//获取裁剪后的图片，并显示出来
-						Bitmap bitmap = BitmapFactory.decodeStream(
-								getContentResolver().openInputStream(finalUri));
-						photoImage.setImageBitmap(bitmap);
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-					}
-					break;
-				default:
-			}
-		}
-	}
-
 	/****
 	 * 头像提示框
 	 */
@@ -310,7 +263,7 @@ public class MyInfoActivity extends BaseActivity {
 		ll_popup = (LinearLayout) popupWindowView.findViewById(R.id.ll_popup);
 		pop.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
 		pop.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-		pop.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#F8F8F8")));
+		pop.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00000000")));
 		pop.setFocusable(true);
 		pop.setOutsideTouchable(true);
 		pop.setContentView(popupWindowView);
@@ -350,6 +303,51 @@ public class MyInfoActivity extends BaseActivity {
 		});
 	}
 
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (resultCode == RESULT_OK) {
+			switch (requestCode) {
+				case OPEN_ALBUM: //从相册图片后返回的uri
+					//启动裁剪
+					Intent cutphotointent = CutForPhoto(data.getData());
+					if (cutphotointent != null) {
+						startActivityForResult(cutphotointent, PHOTO_ALREADY);
+					} else {
+						Toast.makeText(MyInfoActivity.this, "cut for photo intent is null", Toast.LENGTH_SHORT).show();
+					}
+
+					break;
+				case TAKE_PHOTO: //相机返回的 uri
+					//启动裁剪
+					String path = getExternalCacheDir().getPath();
+					String name = "output.png";
+					Intent cutcamreaintent = CutForCamera(path, name);
+					if (cutcamreaintent != null) {
+						startActivityForResult(cutcamreaintent, PHOTO_ALREADY);
+					} else {
+						Toast.makeText(MyInfoActivity.this, "cut for camrea intent is null", Toast.LENGTH_SHORT).show();
+					}
+
+					break;
+				case PHOTO_ALREADY:
+					try {
+						//获取裁剪后的图片，并显示出来
+						Bitmap bitmap = BitmapFactory.decodeStream(
+								getContentResolver().openInputStream(finalUri));
+						photoImage.setImageBitmap(bitmap);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					}
+					break;
+				default:
+			}
+		}
+	}
+
+
+
 	private void openCamera() {
 		File outputfile = new File(getExternalCacheDir(), "output.png");
 		try {
@@ -376,7 +374,6 @@ public class MyInfoActivity extends BaseActivity {
 
 	/**
 	 * 图片裁剪
-	 *
 	 * @param uri
 	 * @return
 	 */
@@ -386,29 +383,29 @@ public class MyInfoActivity extends BaseActivity {
 			//直接裁剪
 			Intent intent = new Intent("com.android.camera.action.CROP");
 			//设置裁剪之后的图片路径文件
-			File cutfile = new File(Environment.getExternalStorageDirectory().getPath(), "cutphoto.png"); //随便命名一个
-			if (cutfile.exists()) { //如果已经存在，则先删除,这里应该是上传到服务器，然后再删除本地的，没服务器，只能这样了
+			File cutfile = new File(getExternalCacheDir(), "cutcamera.png"); //随便命名一个
+			if (cutfile.exists()){ //如果已经存在，则先删除,这里应该是上传到服务器，然后再删除本地的，没服务器，只能这样了
 				cutfile.delete();
 			}
 			cutfile.createNewFile();
 			//初始化 uri
 			Uri imageUri = uri; //返回来的 uri
 			Uri outputUri = null; //真实的 uri
-			Log.d("cut for photo", "CutForPhoto: " + cutfile);
+			Log.d(TAG, "CutForPhoto: "+cutfile);
 			outputUri = Uri.fromFile(cutfile);
 			finalUri = outputUri;
-			Log.d("cut for photo", "mCameraUri: " + finalUri);
+			Log.d(TAG, "mCameraUri: "+finalUri);
 			// crop为true是设置在开启的intent中设置显示的view可以剪裁
-			intent.putExtra("crop", true);
+			intent.putExtra("crop",true);
 			// aspectX,aspectY 是宽高的比例，这里设置正方形
-			intent.putExtra("aspectX", 1);
-			intent.putExtra("aspectY", 1);
+			intent.putExtra("aspectX",1);
+			intent.putExtra("aspectY",1);
 			//设置要裁剪的宽高
-			intent.putExtra("outputX", 200); //200dp
-			intent.putExtra("outputY", 200);
-			intent.putExtra("scale", true);
+			intent.putExtra("outputX",200); //200dp
+			intent.putExtra("outputY",200);
+			intent.putExtra("scale",true);
 			//如果图片过大，会导致oom，这里设置为false
-			intent.putExtra("return-data", false);
+			intent.putExtra("return-data",false);
 			if (imageUri != null) {
 				intent.setDataAndType(imageUri, "image/*");
 			}
@@ -418,6 +415,7 @@ public class MyInfoActivity extends BaseActivity {
 			intent.putExtra("noFaceDetection", true);
 			//压缩图片
 			intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+
 			return intent;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -427,18 +425,17 @@ public class MyInfoActivity extends BaseActivity {
 
 	/**
 	 * 拍照之后，启动裁剪
-	 *
 	 * @param camerapath 路径
-	 * @param imgname    img 的名字
+	 * @param imgname img 的名字
 	 * @return
 	 */
 	@NonNull
-	private Intent CutForCamera(String camerapath, String imgname) {
+	private Intent CutForCamera(String camerapath,String imgname) {
 		try {
 
 			//设置裁剪之后的图片路径文件
-			File cutfile = new File(Environment.getExternalStorageDirectory().getPath(), "cutcamera.png"); //随便命名一个
-			if (cutfile.exists()) { //如果已经存在，则先删除,这里应该是上传到服务器，然后再删除本地的，没服务器，只能这样了
+			File cutfile = new File(getExternalCacheDir(), "cutcamera.png"); //随便命名一个
+			if (cutfile.exists()){ //如果已经存在，则先删除,这里应该是上传到服务器，然后再删除本地的，没服务器，只能这样了
 				cutfile.delete();
 			}
 			cutfile.createNewFile();
@@ -447,29 +444,29 @@ public class MyInfoActivity extends BaseActivity {
 			Uri outputUri = null; //真实的 uri
 			Intent intent = new Intent("com.android.camera.action.CROP");
 			//拍照留下的图片
-			File camerafile = new File(camerapath, imgname);
+			File camerafile = new File(camerapath,imgname);
 			if (Build.VERSION.SDK_INT >= 24) {
 				intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-				imageUri = FileProvider.getUriForFile(MyInfoActivity.this, "com.jasonchio.lecture.fileprovider", camerafile);
+				imageUri = FileProvider.getUriForFile(MyInfoActivity.this,
+						"com.jasonchio.lecture.fileprovider",
+						camerafile);
 			} else {
 				imageUri = Uri.fromFile(camerafile);
 			}
 			outputUri = Uri.fromFile(cutfile);
 			//把这个 uri 提供出去，就可以解析成 bitmap了
 			finalUri = outputUri;
-			Log.d("cut for camrea", "mCameraUri: " + finalUri);
-
 			// crop为true是设置在开启的intent中设置显示的view可以剪裁
-			intent.putExtra("crop", true);
+			intent.putExtra("crop",true);
 			// aspectX,aspectY 是宽高的比例，这里设置正方形
-			intent.putExtra("aspectX", 1);
-			intent.putExtra("aspectY", 1);
+			intent.putExtra("aspectX",1);
+			intent.putExtra("aspectY",1);
 			//设置要裁剪的宽高
 			intent.putExtra("outputX", 200);
-			intent.putExtra("outputY", 200);
-			intent.putExtra("scale", true);
+			intent.putExtra("outputY",200);
+			intent.putExtra("scale",true);
 			//如果图片过大，会导致oom，这里设置为false
-			intent.putExtra("return-data", false);
+			intent.putExtra("return-data",false);
 			if (imageUri != null) {
 				intent.setDataAndType(imageUri, "image/*");
 			}
@@ -480,9 +477,11 @@ public class MyInfoActivity extends BaseActivity {
 			//压缩图片
 			intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
 			return intent;
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+
 }
