@@ -1,5 +1,7 @@
 package com.jasonchio.lecture.database;
 
+import org.litepal.crud.DataSupport;
+
 /**
  * /**
  * <p>
@@ -26,9 +28,9 @@ package com.jasonchio.lecture.database;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class LibraryDB {
+public class LibraryDB extends DataSupport {
 
-	String libraryID;           //图书馆id
+	int libraryID;           //图书馆id
 
 	String libraryName;         //图书馆名字
 
@@ -42,11 +44,11 @@ public class LibraryDB {
 
 	double libraryLongitude;    //图书馆经度
 
-	public String getLibraryID() {
+	public int getLibraryID() {
 		return libraryID;
 	}
 
-	public void setLibraryID(String libraryID) {
+	public void setLibraryID(int libraryID) {
 		this.libraryID = libraryID;
 	}
 

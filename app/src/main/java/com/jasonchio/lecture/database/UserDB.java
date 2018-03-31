@@ -32,7 +32,7 @@ import org.litepal.crud.DataSupport;
 
 public class UserDB extends DataSupport {
 
-	String userId;          //用户ID
+	int userId;          //用户ID
 
 	String userName;        //用户名
 
@@ -48,11 +48,11 @@ public class UserDB extends DataSupport {
 
 	double userLongitude;   //用户经度
 
-	public String getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 
-	public void setUserId(String userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
 

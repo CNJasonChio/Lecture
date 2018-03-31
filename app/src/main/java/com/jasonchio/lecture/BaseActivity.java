@@ -39,6 +39,8 @@ import android.widget.EditText;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
 
+
+
 	public void HideSysTitle(){
 		//隐藏自带标题栏
 		if(Build.VERSION.SDK_INT>=21){

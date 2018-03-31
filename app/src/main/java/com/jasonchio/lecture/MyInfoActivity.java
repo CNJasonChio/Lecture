@@ -3,15 +3,12 @@ package com.jasonchio.lecture;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
@@ -31,12 +28,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.jasonchio.lecture.gson.UserTest;
 import com.jasonchio.lecture.util.CircleImageView;
+import com.jasonchio.lecture.util.HttpUtil;
+
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.Calendar;
 
 import static android.content.ContentValues.TAG;
@@ -73,6 +74,7 @@ public class MyInfoActivity extends BaseActivity {
 
 	Uri finalUri;
 
+	String userInfoResult;
 
 	PopupWindow pop;
 
@@ -99,6 +101,7 @@ public class MyInfoActivity extends BaseActivity {
 		schoolLayout.setOnClickListener(this);
 		birthdayLayout.setOnClickListener(this);
 		titleFirstButton.setOnClickListener(this);
+
 	}
 
 	@Override
@@ -136,6 +139,7 @@ public class MyInfoActivity extends BaseActivity {
 			}
 			case R.id.myinfo_profilephoto_layout: {
 				showPopupWindow();
+				//getUserInfo(1);
 				break;
 			}
 			case R.id.myinfo_name_layout: {
@@ -484,4 +488,37 @@ public class MyInfoActivity extends BaseActivity {
 		return null;
 	}
 
+
+//	private void getUserInfo(final int userID){
+//		Log.d("UserTest","点击开始通讯");
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					Log.d("UserTest","尝试与服务器连接");
+//					userInfoResult=HttpUtil.UserInfoRequest(ADDRESS,PORT,userID);
+//					Log.d("UserTest","通讯结束");
+//				} catch (IOException e) {
+//					Log.d("UserTest","连接失败，IO");
+//					e.printStackTrace();
+//				} catch (JSONException e) {
+//					Log.d("UserTest","连接失败JSON");
+//					e.printStackTrace();
+//				}
+//				runOnUiThread(new Runnable() {
+//					@Override
+//					public void run() {
+//						Log.d("UserTest","在主线程中更改UI");
+//						Gson gson=new Gson();
+//						UserTest userTest =gson.fromJson(userInfoResult, UserTest.class);
+//						Log.d("UserTest",userInfoResult);
+//						Log.d("UserTest",userTest.getUser_name());
+//						Log.d("UserTest",userTest.getUser_password());
+//
+//					}
+//				});
+//			}
+//		}).start();
+//
+//	}
 }

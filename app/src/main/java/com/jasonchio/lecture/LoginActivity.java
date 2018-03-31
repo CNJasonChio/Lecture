@@ -10,12 +10,20 @@ import android.os.Bundle;
 
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.ServerInfo;
+import com.jasonchio.lecture.util.Utility;
+
+import org.json.JSONException;
+
+import java.io.IOException;
 
 
 public class LoginActivity extends BaseActivity {
@@ -33,6 +41,10 @@ public class LoginActivity extends BaseActivity {
 	ImageView sinaLoginImage;   //新浪微博登录
 
 	boolean cansee=false;       //密码是否可见状态
+
+	String response;
+
+	boolean loginResult=false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -107,11 +119,36 @@ public class LoginActivity extends BaseActivity {
 				break;
 			}
 			case R.id.login_button:{
+
 				Intent intent=new Intent(LoginActivity.this,MainPageActivity.class);
 				startActivity(intent);
 				break;
 			}
 			default:
 		}
+	}
+	private void LoginRequest(final String userPhone,final String userPwd){
+		Log.d("UserTest", "点击开始通讯");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Log.d("LoginRequest", "尝试与服务器连接");
+					response = HttpUtil.LoginRequest(ServerInfo.ADDRESS, ServerInfo.SIGNIN_PORT, userPhone,userPwd);
+					Log.d("LoginRequest", "通讯结束");
+					Log.d("LoginRequest", response);
+
+					loginResult= Utility.handleSigninRespose(response);
+
+				} catch (IOException e) {
+					Log.d("LoginRequest", "连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Log.d("LoginRequest", "连接失败,JSON error");
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
 	}
 }

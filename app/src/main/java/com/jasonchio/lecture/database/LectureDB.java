@@ -2,6 +2,8 @@ package com.jasonchio.lecture.database;
 
 import android.net.Uri;
 
+import org.litepal.crud.DataSupport;
+
 /**
  * /**
  * <p>
@@ -28,9 +30,9 @@ import android.net.Uri;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class LectureDB {
+public class LectureDB extends DataSupport {
 
-	String lectureId;       //讲座ID
+	int lectureId;       //讲座ID
 
 	String lectureTitle;    //讲座标题
 
@@ -46,11 +48,11 @@ public class LectureDB {
 
 	int lecutreLikers;      //讲座收藏数
 
-	public String getLectureId() {
+	public int getLectureId() {
 		return lectureId;
 	}
 
-	public void setLectureId(String lectureId) {
+	public void setLectureId(int lectureId) {
 		this.lectureId = lectureId;
 	}
 

@@ -1,5 +1,7 @@
 package com.jasonchio.lecture.database;
 
+import org.litepal.crud.DataSupport;
+
 /**
  * /**
  * <p>
@@ -26,9 +28,9 @@ package com.jasonchio.lecture.database;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class CommentDB {
+public class CommentDB extends DataSupport{
 
-	String commentId;       //评论的ID
+	int commentId;       //评论的ID
 
 	String commentuserId;   //该评论的用户ID
 
@@ -40,11 +42,11 @@ public class CommentDB {
 
 	String commentLikers;   //评论的点赞数
 
-	public String getCommentId() {
+	public int getCommentId() {
 		return commentId;
 	}
 
-	public void setCommentId(String commentId) {
+	public void setCommentId(int commentId) {
 		this.commentId = commentId;
 	}
 

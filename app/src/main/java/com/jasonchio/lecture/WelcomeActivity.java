@@ -58,28 +58,28 @@ public class WelcomeActivity extends BaseActivity {
 
 	}
 
-	private void loadBingPic() {
-		String requestBingPic="http://guolin.tech/api/bing_pic";
-		HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-
-			@Override
-			public void onResponse(Call call, Response response) throws IOException {
-				final String bingPic=response.body().string();
-				SharedPreferences.Editor editor=PreferenceManager.getDefaultSharedPreferences(WelcomeActivity.this).edit();
-				editor.apply();
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Glide.with(WelcomeActivity.this).load(bingPic).into(welcomeImage);
-					}
-				});
-			}
-		});
-	}
+//	private void loadBingPic() {
+//		String requestBingPic="http://guolin.tech/api/bing_pic";
+//		HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
+//			@Override
+//			public void onFailure(Call call, IOException e) {
+//				e.printStackTrace();
+//			}
+//
+//			@Override
+//			public void onResponse(Call call, Response response) throws IOException {
+//				final String bingPic=response.body().string();
+//				SharedPreferences.Editor editor=PreferenceManager.getDefaultSharedPreferences(WelcomeActivity.this).edit();
+//				editor.apply();
+//				runOnUiThread(new Runnable() {
+//					@Override
+//					public void run() {
+//						Glide.with(WelcomeActivity.this).load(bingPic).into(welcomeImage);
+//					}
+//				});
+//			}
+//		});
+//	}
 
 	//从登陆界面跳转到主界面LoginActivity
 
@@ -94,14 +94,14 @@ public class WelcomeActivity extends BaseActivity {
 		//BaseActivity方法，隐藏系统标题栏
 		HideSysTitle();
 
-		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
-
-		String bingPic=preferences.getString("bing_pic",null);
-		if(bingPic!=null){
-			Glide.with(this).load(bingPic).into(welcomeImage);
-		}else{
-			loadBingPic();
-		}
+//		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
+//
+//		String bingPic=preferences.getString("bing_pic",null);
+//		if(bingPic!=null){
+//			Glide.with(this).load(bingPic).into(welcomeImage);
+//		}else{
+//			loadBingPic();
+//		}
 	}
 
 	@Override

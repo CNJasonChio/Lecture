@@ -8,13 +8,23 @@ import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.JudgePhoneNums;
+import com.jasonchio.lecture.util.ServerInfo;
+import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
+
+import org.json.JSONException;
+
+import java.io.IOException;
+
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
 
@@ -42,6 +52,14 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 	boolean pwdcansee = false;        //密码是否可见状态
 	boolean repwdcansee = false;      //重复密码是否可见状态
 
+	String response;
+	String password;
+	String repassword;
+	String vercode;
+	String phoneNum;
+
+	boolean SigninrResult;
+
 	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +75,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 		titleFirstButton.setOnClickListener(this);
 		//设置密码是否可见按钮的点击监听
 		pwdCanSee.setOnClickListener(this);
-
+		//设置重复密码是否可见按钮的点击监听
 		repwdCanSee.setOnClickListener(this);
 
 		EventHandler eventHandler = new EventHandler() {
@@ -94,21 +112,26 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 					if (result == SMSSDK.RESULT_COMPLETE) {
 						// 短信注册成功后，返回LoginActivity,然后提示
 						if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {// 提交验证码成功
-							Toast.makeText(getApplicationContext(), "注册成功",
-									Toast.LENGTH_SHORT).show();
-							// 验证成功后跳转登录界面
-							Intent intent = new Intent(SigninWithPhoneActivity.this, LoginActivity.class);
-							startActivity(intent);
-							finish();// 成功跳转之后销毁当前页面
+							SigninRequest(phoneNum,password);
+							if(SigninrResult==true){
+								// 验证成功后跳转登录界面
+								Intent intent = new Intent(SigninWithPhoneActivity.this, LoginActivity.class);
+								startActivity(intent);
+								finish();// 成功跳转之后销毁当前页面
+								Toast.makeText(SigninWithPhoneActivity.this,"注册成功",Toast.LENGTH_SHORT).show();
+							}else{
+								Toast.makeText(SigninWithPhoneActivity.this,"注册失败，请稍候再试",Toast.LENGTH_SHORT).show();
+							}
+
 						} else if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
 							Toast.makeText(getApplicationContext(), "验证码已经发送",
 									Toast.LENGTH_SHORT).show();
 						} else {
-							//else((Throwable) data).printStackTrace();
+
 						}
 					}
 					else{
-						Toast.makeText(SigninWithPhoneActivity.this,"注册失败，请稍候再试",Toast.LENGTH_SHORT).show();
+						Toast.makeText(SigninWithPhoneActivity.this,"验证码系统异常，请稍候再试",Toast.LENGTH_SHORT).show();
 					}
 				}
 			}
@@ -207,10 +230,10 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 				break;
 			}
 			case R.id.signin:{
-				String password=passwordEdit.getText().toString();
-				String repassword=confirmPwdEdit.getText().toString();
-				String vercode=verCodeEdit.getText().toString();
-				String phoneNum=phoneEdit.getText().toString();
+				password=passwordEdit.getText().toString();
+				repassword=confirmPwdEdit.getText().toString();
+				vercode=verCodeEdit.getText().toString();
+				phoneNum=phoneEdit.getText().toString();
 				if(!isPwdsame(password,repassword)){
 					Toast.makeText(SigninWithPhoneActivity.this,"两次密码不一致",Toast.LENGTH_SHORT).show();
 					return;
@@ -235,6 +258,31 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 	protected void onDestroy() {
 		super.onDestroy();
 		SMSSDK.unregisterAllEventHandler();
+	}
+
+	private void SigninRequest(final String userPhone,final String userPwd){
+		Log.d("UserTest", "点击开始通讯");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Log.d("SigninRequest", "尝试与服务器连接");
+					response = HttpUtil.SigninRequest(ServerInfo.ADDRESS, ServerInfo.SIGNIN_PORT, userPhone,userPwd);
+					Log.d("SigninRequest", "通讯结束");
+					Log.d("SigninRequest", response);
+
+					SigninrResult=Utility.handleSigninRespose(response);
+
+				} catch (IOException e) {
+					Log.d("SigninRequest", "连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Log.d("SigninRequest", "连接失败,JSON error");
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
 	}
 }
 
