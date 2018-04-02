@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jasonchio.lecture.database.LectureDB;
+
 public class LectureDetailActivity extends BaseActivity {
 
 	TitleLayout titleLayout;
@@ -26,7 +28,7 @@ public class LectureDetailActivity extends BaseActivity {
 	TextView lectureContent;
 	TextView lectureOriginal;
 
-	Lecture lecture;
+	LectureDB lecture;
 
 	boolean ifLike=false;
 

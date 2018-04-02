@@ -42,6 +42,10 @@ public class CommentDB extends DataSupport{
 
 	String commentLikers;   //评论的点赞数
 
+	LectureDB lectureDB;    //评论对应的讲座
+
+
+
 	public int getCommentId() {
 		return commentId;
 	}
@@ -88,5 +92,13 @@ public class CommentDB extends DataSupport{
 
 	public void setCommentLikers(String commentLikers) {
 		this.commentLikers = commentLikers;
+	}
+
+	public LectureDB getLectureDB() {
+		return lectureDB;
+	}
+
+	public void setLectureDB(LectureDB lectureDB) {
+		this.lectureDB = lectureDB;
 	}
 }

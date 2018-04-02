@@ -5,28 +5,27 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
-
 import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.JudgePhoneNums;
-import com.jasonchio.lecture.util.ServerInfo;
+import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
-
 import org.json.JSONException;
-
+import org.json.JSONObject;
 import java.io.IOException;
 
+import com.orhanobut.logger.Logger;
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
+import es.dmoral.toasty.Toasty;
+
+import static com.jasonchio.lecture.util.JudgePhoneNums.judgePhoneNums;
 
 public class SigninWithPhoneActivity extends BaseActivity implements View.OnClickListener {
 
@@ -38,8 +37,8 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 	Button titleFirstButton;        //标题返回按钮
 	Button sendCodeButton;          //发送验证码的按钮
 	Button signInButton;            //确认注册的按钮
-	ImageView pwdCanSee;               //密码是否可见
-	ImageView repwdCanSee;             //重复密码是否可见
+	ImageView pwdCanSee;            //密码是否可见
+	ImageView repwdCanSee;          //重复密码是否可见
 
 	Handler handler;                //验证码回调监听接口
 
@@ -47,18 +46,16 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 
 	int countdown = 30;             //获取验证码倒计时30s
 
-	JudgePhoneNums judgePhoneNums = new JudgePhoneNums();             //自定义判断手机号是否合法类对象
+	boolean pwdcansee = false;      //密码是否可见状态
+	boolean repwdcansee = false;    //重复密码是否可见状态
 
-	boolean pwdcansee = false;        //密码是否可见状态
-	boolean repwdcansee = false;      //重复密码是否可见状态
+	String response;                //服务器返回数据
+	String password;                //密码
+	String repassword;              //确认密码
+	String vercode;                 //验证码
+	String phoneNum;                //手机号
 
-	String response;
-	String password;
-	String repassword;
-	String vercode;
-	String phoneNum;
-
-	boolean SigninrResult;
+	int signinResult=-1;	        //注册结果
 
 	@SuppressLint("HandlerLeak")
 	@Override
@@ -66,6 +63,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signin_with_phone);
+
 		//初始化控件
 		initWidget();
 		//初始化视图
@@ -112,45 +110,55 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 					if (result == SMSSDK.RESULT_COMPLETE) {
 						// 短信注册成功后，返回LoginActivity,然后提示
 						if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {// 提交验证码成功
-							SigninRequest(phoneNum,password);
-							if(SigninrResult==true){
+							//发送注册请求
+							SigninRequest(phoneNum, password);
+							//结果为1：注册成功
+							if (signinResult == 1) {
 								// 验证成功后跳转登录界面
 								Intent intent = new Intent(SigninWithPhoneActivity.this, LoginActivity.class);
 								startActivity(intent);
 								finish();// 成功跳转之后销毁当前页面
-								Toast.makeText(SigninWithPhoneActivity.this,"注册成功",Toast.LENGTH_SHORT).show();
-							}else{
-								Toast.makeText(SigninWithPhoneActivity.this,"注册失败，请稍候再试",Toast.LENGTH_SHORT).show();
+								Toasty.success(SigninWithPhoneActivity.this, "注册成功").show();
 							}
-
 						} else if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
-							Toast.makeText(getApplicationContext(), "验证码已经发送",
-									Toast.LENGTH_SHORT).show();
+							Toasty.success(SigninWithPhoneActivity.this, "验证码发送成功").show();
 						} else {
 
 						}
+					} else {
+						((Throwable) data).printStackTrace();
+						Throwable throwable = (Throwable) data;
+						try {
+							JSONObject obj = new JSONObject(throwable.getMessage());
+							final String des = obj.optString("detail");
+							if (!TextUtils.isEmpty(des)) {
+								Logger.d(des);
+							}
+							Toasty.error(SigninWithPhoneActivity.this, "验证码错误").show();
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
 					}
-					else{
-						Toast.makeText(SigninWithPhoneActivity.this,"验证码系统异常，请稍候再试",Toast.LENGTH_SHORT).show();
-					}
+
 				}
 			}
 		};
 	}
 
-	protected void initWidget(){
+	protected void initWidget() {
 		titleLayout = (TitleLayout) findViewById(R.id.signin_title_layout);
 		verCodeEdit = (EditText) findViewById(R.id.signin_vercode_edit);
 		phoneEdit = (EditText) findViewById(R.id.signin_account_edit);
 		sendCodeButton = (Button) findViewById(R.id.signin_send_vercode);
 		signInButton = (Button) findViewById(R.id.signin);
-		titleFirstButton=titleLayout.getFirstButton();
+		titleFirstButton = titleLayout.getFirstButton();
 		passwordEdit = (EditText) findViewById(R.id.signin_newpassword_edit);
 		confirmPwdEdit = (EditText) findViewById(R.id.signin_repassword_edit);
 		pwdCanSee = (ImageView) findViewById(R.id.signin_pwd_cansee);
 		repwdCanSee = (ImageView) findViewById(R.id.signin_repwd_cansee);
 	}
-	protected void initView(){
+
+	protected void initView() {
 		ChangeHintSize(phoneEdit, "请输入手机号", 14);
 		ChangeHintSize(passwordEdit, "请输入密码", 14);
 		ChangeHintSize(confirmPwdEdit, "请重新输入密码", 14);
@@ -168,12 +176,12 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()){
-			case R.id.title_first_button:{
+		switch (v.getId()) {
+			case R.id.title_first_button: {
 				finish();
 				break;
 			}
-			case R.id.signin_pwd_cansee:{
+			case R.id.signin_pwd_cansee: {
 				if (pwdcansee == false) {
 					//如果是不能看到密码的情况下，
 					passwordEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
@@ -187,7 +195,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 				}
 				break;
 			}
-			case R.id.signin_repwd_cansee:{
+			case R.id.signin_repwd_cansee: {
 				if (repwdcansee == false) {
 					//如果是不能看到密码的情况下，
 					confirmPwdEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
@@ -201,10 +209,11 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 				}
 				break;
 			}
-			case R.id.signin_send_vercode:{
-				String phone=phoneEdit.getText().toString();
-				if (!judgePhoneNums.judgePhoneNums(phone)) {// 判断输入号码是否正确
-					Toast.makeText(SigninWithPhoneActivity.this,"手机号码不正确",Toast.LENGTH_SHORT).show();
+			case R.id.signin_send_vercode: {
+				String phone = phoneEdit.getText().toString();
+				if (!judgePhoneNums(phone)) {
+					// 判断输入号码是否正确
+					Toasty.error(SigninWithPhoneActivity.this, "手机号码不正确").show();
 					return;
 				}
 				SMSSDK.getVerificationCode("86", phone); // 调用sdk发送短信验证
@@ -229,21 +238,27 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 				}).start();
 				break;
 			}
-			case R.id.signin:{
-				password=passwordEdit.getText().toString();
-				repassword=confirmPwdEdit.getText().toString();
-				vercode=verCodeEdit.getText().toString();
-				phoneNum=phoneEdit.getText().toString();
-				if(!isPwdsame(password,repassword)){
-					Toast.makeText(SigninWithPhoneActivity.this,"两次密码不一致",Toast.LENGTH_SHORT).show();
+			case R.id.signin: {
+				password = passwordEdit.getText().toString();
+				repassword = confirmPwdEdit.getText().toString();
+				vercode = verCodeEdit.getText().toString();
+				phoneNum = phoneEdit.getText().toString();
+				repassword = confirmPwdEdit.getText().toString();
+				if (!isPwdsame(password, repassword)) {
+					Toasty.error(SigninWithPhoneActivity.this, "两次密码不一致").show();
 					return;
-				}else{
+				} else if (password.isEmpty() | phoneNum.isEmpty() | repassword.isEmpty() | vercode.isEmpty()) {
+					Toasty.error(SigninWithPhoneActivity.this, "手机号、密码、确认密码、验证码为必填项").show();
+				} else {
+					//验证验证码是否正确
 					SMSSDK.submitVerificationCode("86", phoneNum, vercode);
 				}
 				break;
 			}
 			default:
+				break;
 		}
+
 	}
 
 	//判断两次输入的密码是否相同
@@ -260,29 +275,23 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 		SMSSDK.unregisterAllEventHandler();
 	}
 
-	private void SigninRequest(final String userPhone,final String userPwd){
-		Log.d("UserTest", "点击开始通讯");
+	private void SigninRequest(final String userPhone, final String userPwd) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					Log.d("SigninRequest", "尝试与服务器连接");
-					response = HttpUtil.SigninRequest(ServerInfo.ADDRESS, ServerInfo.SIGNIN_PORT, userPhone,userPwd);
-					Log.d("SigninRequest", "通讯结束");
-					Log.d("SigninRequest", response);
-
-					SigninrResult=Utility.handleSigninRespose(response);
-
+					//获取服务器返回数据
+					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_PORT, userPhone, userPwd);
+					//解析和处理服务器返回的数据
+					signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
 				} catch (IOException e) {
-					Log.d("SigninRequest", "连接失败，IO error");
+					Logger.d("连接失败，IO error");
 					e.printStackTrace();
 				} catch (JSONException e) {
-					Log.d("SigninRequest", "连接失败,JSON error");
+					Logger.d("连接失败，JSON error");
 					e.printStackTrace();
 				}
-
 			}
 		}).start();
 	}
 }
-

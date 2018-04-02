@@ -1,9 +1,7 @@
 package com.jasonchio.lecture;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +12,14 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.util.SelfRefreshHeaderView;
+import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,9 +61,13 @@ public class RecommentFragment extends Fragment  {
 
 	int consts=0;
 
-	Lecture lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",consts,contents,R.drawable.test_image);
 
-	List<Lecture> lecturelist=new ArrayList<>();
+	List<LectureDB> lecturelist=new ArrayList<>();
+
+	String response;
+
+	int lectureRequestResult;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -86,19 +94,24 @@ public class RecommentFragment extends Fragment  {
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Lecture lecture=lecturelist.get(position);
+				/*点击进入讲座详情页，待修复
+				LectureDB lecture=lecturelist.get(position);
+
 				Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
-				startActivity(intent);
-				Toast.makeText(getActivity(),"lecture"+lecture.getLectureLikers(),Toast.LENGTH_SHORT).show();
+				startActivity(intent);*/
+
 			}
 		});
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				consts++;
-				lecture.setLectureLikers(consts);
+
+				LectureRequest();
+
+				/*添加讲座到显示列表待修复
 				lecturelist.add(lecture);
+				* */
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -107,9 +120,14 @@ public class RecommentFragment extends Fragment  {
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				consts++;
-				lecture.setLectureLikers(consts);
+
+				/*
+				* 从数据库中加载十条
+				* */
+
+				/*添加讲座到显示列表待修复
 				lecturelist.add(lecture);
+				* */
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}
@@ -127,5 +145,38 @@ public class RecommentFragment extends Fragment  {
 				swipeToLoadLayout.setRefreshing(true);
 			}
 		});
+	}
+
+	private void LectureRequest(){
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		* 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT,35);
+
+					Logger.json(response);
+
+					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+	private void showLectureInfo(List<LectureDB> list){
+
 	}
 }

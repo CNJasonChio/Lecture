@@ -13,6 +13,8 @@ import android.view.Window;
 import android.widget.LinearLayout;
 
 import com.mob.MobSDK;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
 
 public class MainPageActivity extends BaseActivity {
 
@@ -33,6 +35,7 @@ public class MainPageActivity extends BaseActivity {
 		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.tabmaintabs);
+
 
 		//初始化控件
 		initWidget();

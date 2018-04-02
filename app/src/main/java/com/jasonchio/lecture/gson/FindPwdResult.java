@@ -25,7 +25,8 @@ package com.jasonchio.lecture.gson;
  * <p>
  * Created by zhaoyaobang on 2018/3/31.
  */
-public class LoginResult {
+public class FindPwdResult {
+
 
 	/**
 	 * user_id :

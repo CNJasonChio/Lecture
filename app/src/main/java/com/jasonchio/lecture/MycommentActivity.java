@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.jasonchio.lecture.database.CommentDB;
+import com.jasonchio.lecture.database.LectureDB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	boolean islike=false;
 
-	Lecture lecture;
+	LectureDB lecture;
 
 	String time="2017年12月7日(周三)14：30";
 
@@ -44,9 +46,9 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	String commentText="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EX";
 
-	Comment comment;
+	CommentDB comment;
 
-	List<Comment> commentList =new ArrayList<>();
+	List<CommentDB> commentList =new ArrayList<>();
 
 	ListView listView;
 
@@ -123,8 +125,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		Comment comment= commentList.get(position);
-		Lecture lecture1=comment.getLecture();
+		CommentDB comment= commentList.get(position);
+	//	LectureDB lecture1=comment.getLecture();
 		Intent intent=new Intent(MycommentActivity.this,LectureDetailActivity.class);
 		startActivity(intent);
 	}
@@ -134,7 +136,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		int position;
 		position = (Integer) v.getTag();
 
-		Comment comment= commentList.get(position);
+		//CommentDB comment= commentList.get(position);
 
 		switch (v.getId()){
 			case R.id.comment_user_layout:
@@ -146,7 +148,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				startActivity(intent);
 				break;
 			case R.id.comment_like_layout:
-
+/*
 				if(islike){
 					Toast.makeText(MycommentActivity.this,"取消点赞",Toast.LENGTH_SHORT).show();
 					comment.setCommentLikers(comment.getCommentLikers()-1);
@@ -159,7 +161,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like_selected);
 					mAdapter.notifyDataSetChanged();
 					islike=true;
-				}
+				}*/
 				break;
 			default:
 		}
@@ -167,6 +169,6 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	private void initComment(){
 		lecturelikes++;
-		lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆", lecturelikes,contents,R.drawable.test_image);
-		comment=new Comment(R.drawable.test_oliver,userName,lecture,time, likers,contents );
+		/*lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆", lecturelikes,contents,R.drawable.test_image);
+		comment=new Comment(R.drawable.test_oliver,userName,lecture,time, likers,contents );*/
 	}}

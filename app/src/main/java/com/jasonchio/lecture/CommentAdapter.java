@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.jasonchio.lecture.database.CommentDB;
+import com.jasonchio.lecture.database.LectureDB;
 import com.jasonchio.lecture.util.CircleImageView;
 
 import java.util.List;
@@ -43,60 +45,14 @@ import java.util.List;
  * Created by zhaoyaobang on 2018/3/10.
  */
 
-//public class CommentAdapter extends ArrayAdapter<Comment> {
-//
-//	private int commentItemId;
-//
-//	public CommentAdapter(Context context, int commentItemId, List<Comment> objects){
-//		super(context,commentItemId,objects);
-//		this.commentItemId= commentItemId;
-//	}
-//	@Override
-//	public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-//		Comment comment=getItem(position);
-//		View view= LayoutInflater.from(getContext()).inflate(commentItemId,parent,false);
-//
-//		Lecture lecture=comment.getLecture();
-//
-//		CircleImageView userPhoto=(CircleImageView)view.findViewById(R.id.comment_photo_image);
-//		TextView commentText=(TextView)view.findViewById(R.id.comment_text);
-//		TextView userName=(TextView)view.findViewById(R.id.comment_user_name_text);
-//		TextView commentTime=(TextView)view.findViewById(R.id.comment_time_text);
-//		TextView commentLikers=(TextView)view.findViewById(R.id.comment_likers_text);
-//
-//		TextView lectureTitle=(TextView)view.findViewById(R.id.lecture_title_text);
-//		ImageView lectureImage=(ImageView)view.findViewById(R.id.lecture_source_image);
-//		TextView lectureContent=(TextView)view.findViewById(R.id.lecture_content_text);
-//		TextView lectureTime=(TextView)view.findViewById(R.id.lecture_time_text);
-//		TextView lectureSource=(TextView)view.findViewById(R.id.lecture_source_text);
-//		TextView lectureLikers=(TextView)view.findViewById(R.id.lecture_likers_text);
-//
-//
-//		lectureTitle.setText(lecture.getLectureTitle());
-//		lectureImage.setImageResource(lecture.getLectureImageId());
-//		lectureContent.setText(lecture.getLectureContent());
-//		lectureTime.setText(lecture.getLectureTime());
-//		lectureSource.setText(lecture.getLectureSource());
-//		lectureLikers.setText(String.valueOf(lecture.getLectureLikers()));
-//
-//		userPhoto.setImageResource(comment.getUserPhotoId());
-//		commentText.setText(comment.getCommentText());
-//		userName.setText(comment.getUserName());
-//		commentTime.setText(comment.getCommentTime());
-//		commentLikers.setText(String.valueOf(comment.getCommentLikers()));
-//
-//		return view;
-//	}
-//
-//}
 
 public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 
-	private List<Comment> commentList;
+	private List<CommentDB> commentList;
 	private Context context;
 	private InnerItemOnclickListener listener;
 
-	public CommentAdapter(List<Comment> list,Context context){
+	public CommentAdapter(List<CommentDB> list,Context context){
 		this.commentList=list;
 		this.context=context;
 	}
@@ -120,8 +76,8 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 	@Override
 	public View getView(int position, View view, ViewGroup parent) {
 		final ViewHolder viewHolder;
-		final Comment comment=commentList.get(position);
-		Lecture lecture=comment.getLecture();
+		final CommentDB comment=commentList.get(position);
+		LectureDB lecture=comment.getLectureDB();
 
 		if (view == null) {
 			viewHolder = new ViewHolder();
@@ -160,18 +116,21 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		viewHolder.commentText.setTag(position);
 
 		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
-		viewHolder.lectureImage.setImageResource(lecture.getLectureImageId());
+		/*
+		评论对应的讲座的效果图，待修复
+		viewHolder.lectureImage.setImageResource(lecture.getLectureImage());*/
 		viewHolder.lectureContent.setText(lecture.getLectureContent());
 		viewHolder.lectureTime.setText(lecture.getLectureTime());
-		viewHolder.lectureSource.setText(lecture.getLectureSource());
-		viewHolder.lectureLikers.setText(String.valueOf(lecture.getLectureLikers()));
+		viewHolder.lectureSource.setText(lecture.getLecutreSource());
+		viewHolder.lectureLikers.setText(String.valueOf(lecture.getLecutreLikers()));
 
+		/*评论对应的用户信息，待修复
 		viewHolder.userPhoto.setImageResource(comment.getUserPhotoId());
-		viewHolder.commentText.setText(comment.getCommentText());
-		viewHolder.	userName.setText(comment.getUserName());
-		viewHolder.	commentTime.setText(comment.getCommentTime());
+		viewHolder.commentText.setText(comment.getCommentContent());
+		viewHolder.userName.setText(comment.getUserName());
+		viewHolder.commentTime.setText(comment.getCommentTime());
 		viewHolder.commentLikers.setText(String.valueOf(comment.getCommentLikers()));
-		viewHolder.commentLikersImage.setImageResource(comment.getCommentLikersImage());
+		viewHolder.commentLikersImage.setImageResource(comment.getCommentLikersImage());*/
 		return view;
 	}
 

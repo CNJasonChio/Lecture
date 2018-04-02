@@ -46,7 +46,7 @@ public class MeFragment extends Fragment{
 	RelativeLayout myfocuseLayout;
 	RelativeLayout mycommentLayout;
 	Button titleFirstButton;
-	Button titleSecondButton;
+
 
 	private View rootview;
 	@Override

@@ -1,30 +1,24 @@
 package com.jasonchio.lecture;
 
-
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.ServerInfo;
-import com.jasonchio.lecture.util.Utility;
-
+import com.jasonchio.lecture.util.ConstantClass;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
 import org.json.JSONException;
-
 import java.io.IOException;
 
+import es.dmoral.toasty.Toasty;
+
+import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public class LoginActivity extends BaseActivity {
 
@@ -43,13 +37,17 @@ public class LoginActivity extends BaseActivity {
 	boolean cansee=false;       //密码是否可见状态
 
 	String response;
+	String userPhone;
+	String userPWd;
 
-	boolean loginResult=false;
+	int loginResult=-1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+
+		addLogAdapter(new AndroidLogAdapter());
 
 		//初始化控件
 		initWidget();
@@ -119,7 +117,24 @@ public class LoginActivity extends BaseActivity {
 				break;
 			}
 			case R.id.login_button:{
+				userPhone=accountEdit.getText().toString();
+				userPWd=passwordEdit.getText().toString();
+				/*LoginRequest("15871714056","123");
+				if(loginResult==1){
+					Toasty.success(LoginActivity.this,"登录成功").show();
+					Intent intent=new Intent(LoginActivity.this,MainPageActivity.class);
+					startActivity(intent);
+				}else{
 
+				}*/
+				LoginRequest(userPhone,userPWd);
+				if(loginResult==1){
+					Toasty.success(LoginActivity.this,"登录成功").show();
+					Intent intent=new Intent(LoginActivity.this,MainPageActivity.class);
+					startActivity(intent);
+				}else{
+
+				}
 				Intent intent=new Intent(LoginActivity.this,MainPageActivity.class);
 				startActivity(intent);
 				break;
@@ -128,23 +143,20 @@ public class LoginActivity extends BaseActivity {
 		}
 	}
 	private void LoginRequest(final String userPhone,final String userPwd){
-		Log.d("UserTest", "点击开始通讯");
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					Log.d("LoginRequest", "尝试与服务器连接");
-					response = HttpUtil.LoginRequest(ServerInfo.ADDRESS, ServerInfo.SIGNIN_PORT, userPhone,userPwd);
-					Log.d("LoginRequest", "通讯结束");
-					Log.d("LoginRequest", response);
+					Logger.d("开始与服务器通讯，发出登录请求");
+					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone,userPwd);
 
-					loginResult= Utility.handleSigninRespose(response);
+					//loginResult= Utility.handleLoginRespose(response,LoginActivity.this);
 
 				} catch (IOException e) {
-					Log.d("LoginRequest", "连接失败，IO error");
+					Logger.d("通信失败，IO error");
 					e.printStackTrace();
 				} catch (JSONException e) {
-					Log.d("LoginRequest", "连接失败,JSON error");
+					Logger.d("通信失败，JSON error");
 					e.printStackTrace();
 				}
 

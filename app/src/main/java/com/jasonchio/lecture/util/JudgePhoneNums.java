@@ -36,7 +36,7 @@ public class JudgePhoneNums {
 	 *
 	 * @param phoneNums
 	 */
-	public boolean judgePhoneNums(String phoneNums) {
+	public static boolean judgePhoneNums(String phoneNums) {
 		if (isMatchLength(phoneNums, 11) && isMobileNO(phoneNums)) {
 			return true;
 		}
@@ -45,13 +45,11 @@ public class JudgePhoneNums {
 
 	private static boolean isMatchLength(String str, int length) {
 		if (str.isEmpty()) {
-			Log.d("!!!!!!!!!","phone empty");
 			return false;
 		} else {
 			if(str.length() == length)
 				return true;
 			else{
-				Log.d("!!!!!!!!!","phone length wrong");
 				return false;
 			}
 		}
@@ -65,7 +63,6 @@ public class JudgePhoneNums {
 			if(mobileNums.matches(telRegex)){
 				return true;
 			}else{
-				Log.d("!!!!!!!","phone number is wrong");
 				return false;
 			}
 		}

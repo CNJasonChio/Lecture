@@ -1,7 +1,5 @@
 package com.jasonchio.lecture.database;
 
-import android.net.Uri;
-
 import org.litepal.crud.DataSupport;
 
 /**
@@ -47,6 +45,16 @@ public class LectureDB extends DataSupport {
 	String lecutreUri;      //讲座原文URL
 
 	int lecutreLikers;      //讲座收藏数
+
+	String lectureImage;    //讲座图片
+
+	public String getLectureImage() {
+		return lectureImage;
+	}
+
+	public void setLectureImage(String lectureImage) {
+		this.lectureImage = lectureImage;
+	}
 
 	public int getLectureId() {
 		return lectureId;

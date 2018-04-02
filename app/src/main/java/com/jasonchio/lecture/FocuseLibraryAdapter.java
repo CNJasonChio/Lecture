@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.jasonchio.lecture.database.LibraryDB;
+
 import java.util.List;
 
 /**
@@ -38,18 +40,18 @@ import java.util.List;
  * Created by zhaoyaobang on 2018/3/10.
  */
 
-public class FocuseLibraryAdapter extends ArrayAdapter<Library> {
+public class FocuseLibraryAdapter extends ArrayAdapter<LibraryDB> {
 
 	private int libraryItemId;
 
-	public FocuseLibraryAdapter(Context context, int lectureItemId, List<Library> objects){
+	public FocuseLibraryAdapter(Context context, int lectureItemId, List<LibraryDB> objects){
 		super(context,lectureItemId,objects);
 		this.libraryItemId= lectureItemId;
 	}
 	@Override
 	public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-		Library library=getItem(position);
+		LibraryDB library=getItem(position);
 
 		View view= LayoutInflater.from(getContext()).inflate(libraryItemId,parent,false);
 

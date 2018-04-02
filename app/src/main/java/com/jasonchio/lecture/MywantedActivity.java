@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.jasonchio.lecture.database.LectureDB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +34,9 @@ public class MywantedActivity extends BaseActivity {
 	ListView listView;
 	int consts = 0;
 
-	Lecture lecture = new Lecture("NoteExpress文献管理与论文写作讲座", "2017年12月7日(周三)14：30", "武汉大学图书馆", consts, contents, R.drawable.test_image);
+	//LectureDB lecture = new LectureDB("NoteExpress文献管理与论文写作讲座", "2017年12月7日(周三)14：30", "武汉大学图书馆", consts, contents, R.drawable.test_image);
 
-	List<Lecture> lecturelist = new ArrayList<>();
+	List<LectureDB> lecturelist = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,19 +53,18 @@ public class MywantedActivity extends BaseActivity {
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Lecture lecture=lecturelist.get(position);
+				LectureDB lecture=lecturelist.get(position);
 				Intent intent=new Intent(MywantedActivity.this,LectureDetailActivity.class);
 				startActivity(intent);
-				Toast.makeText(MywantedActivity.this,"lecture"+lecture.getLectureLikers(),Toast.LENGTH_SHORT).show();
+
 			}
 		});
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				consts++;
-				lecture.setLectureLikers(consts);
-				lecturelist.add(lecture);
+
+				//lecturelist.add(lecture);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -73,9 +73,8 @@ public class MywantedActivity extends BaseActivity {
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				consts++;
-				lecture.setLectureLikers(consts);
-				lecturelist.add(lecture);
+
+				//lecturelist.add(lecture);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}

@@ -26,4 +26,28 @@ package com.jasonchio.lecture.gson;
  * Created by zhaoyaobang on 2018/3/31.
  */
 public class SigninResult {
+
+	/**
+	 * user_id :
+	 * statue :
+	 */
+
+	private int user_id;
+	private int statue;
+
+	public int getUser_id() {
+		return user_id;
+	}
+
+	public void setUser_id(int user_id) {
+		this.user_id = user_id;
+	}
+
+	public int getState() {
+		return statue;
+	}
+
+	public void setState(int statue) {
+		this.statue = statue;
+	}
 }

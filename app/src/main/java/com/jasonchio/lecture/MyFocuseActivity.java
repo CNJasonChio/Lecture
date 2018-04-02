@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.jasonchio.lecture.database.LibraryDB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +27,9 @@ public class MyFocuseActivity extends BaseActivity {
 	SwipeToLoadLayout swipeToLoadLayout;
 	FocuseLibraryAdapter mAdapter;
 
-	Library library = new Library("武汉大学图书馆");
+	//LibraryDB library = new LibraryDB("武汉大学图书馆");
 
-	List<Library> librarylist = new ArrayList<>();
+	List<LibraryDB> librarylist = new ArrayList<>();
 
 	ListView listView;
 	@Override
@@ -46,7 +47,7 @@ public class MyFocuseActivity extends BaseActivity {
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Library library=librarylist.get(position);
+				LibraryDB library=librarylist.get(position);
 				Intent intent=new Intent(MyFocuseActivity.this,LibraryDetailActivity.class);
 				startActivity(intent);
 			}
@@ -55,7 +56,7 @@ public class MyFocuseActivity extends BaseActivity {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				librarylist.add(library);
+				//librarylist.add(library);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -64,13 +65,13 @@ public class MyFocuseActivity extends BaseActivity {
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				librarylist.add(library);
+				//librarylist.add(library);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
 
-		autoRefresh();
+		//autoRefresh();
 	}
 
 	private void autoRefresh() {

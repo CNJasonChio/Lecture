@@ -7,6 +7,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.jasonchio.lecture.database.LectureDB;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +19,13 @@ public class AddCommentActivity extends BaseActivity {
 	Button titleSecondButton;
 
 	TextView comment_text;
-	List<Lecture> lectureList=new ArrayList<>();
+	List<LectureDB> lectureList=new ArrayList<>();
 	LectureAdapter lectureAdapter;
 
 	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
 	int consts=0;
 
-	Lecture lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",consts,contents,R.drawable.test_image);
+	//LectureDB lecture=new LectureDB("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",consts,contents,R.drawable.test_image);
 
 	ListView listView;
 	@Override
@@ -36,7 +38,7 @@ public class AddCommentActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
-		lectureList.add(lecture);
+		//lectureList.add(lecture);
 
 		titleFirstButton.setOnClickListener(this);
 		titleSecondButton.setOnClickListener(this);

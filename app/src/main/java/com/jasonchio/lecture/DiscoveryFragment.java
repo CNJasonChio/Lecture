@@ -14,7 +14,15 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.jasonchio.lecture.database.CommentDB;
+import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,17 +72,21 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 
 	boolean islike=false;
 
-	Lecture lecture;
+	LectureDB lecture;
 
 	String time="2018年12月7日";
 
 	String userName="赵耀邦";
 
-	Comment comment;
+	CommentDB comment;
 
 	ListView listView;
 
-	List<Comment> commentList =new ArrayList<>();
+	String response;
+
+	int commentRequestResul=-1;
+
+	List<CommentDB> commentList =new ArrayList<>();
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -118,8 +130,13 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				initComment();
-				commentList.add(comment);
+
+				/*
+				* 处理逻辑同推荐页面
+				* */
+				//initComment();
+				//commentList.add(comment);
+				CommentRequest();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -128,8 +145,8 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				initComment();
-				commentList.add(comment);
+				//initComment();
+				//commentList.add(comment);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}
@@ -151,8 +168,8 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		Comment comment= commentList.get(position);
-		Lecture lecture1=comment.getLecture();
+		CommentDB comment= commentList.get(position);
+		LectureDB lecture1=comment.getLectureDB();
 		Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
 		startActivity(intent);
 	}
@@ -162,7 +179,7 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 		int position;
 		position = (Integer) v.getTag();
 
-		Comment comment= commentList.get(position);
+		CommentDB comment= commentList.get(position);
 
 		switch (v.getId()){
 			case R.id.comment_user_layout:
@@ -177,15 +194,16 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 
 				if(islike){
 					Toast.makeText(getActivity(),"取消点赞",Toast.LENGTH_SHORT).show();
+					/*评论点赞问题，待修复
 					comment.setCommentLikers(comment.getCommentLikers()-1);
 					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like);
-					mAdapter.notifyDataSetChanged();
+					mAdapter.notifyDataSetChanged();*/
 					islike=false;
 				}else{
 					Toast.makeText(getActivity(),"点赞",Toast.LENGTH_SHORT).show();
-					comment.setCommentLikers(comment.getCommentLikers()+1);
+					/*comment.setCommentLikers(comment.getCommentLikers()+1);
 					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like_selected);
-					mAdapter.notifyDataSetChanged();
+					mAdapter.notifyDataSetChanged();*/
 					islike=true;
 				}
 				break;
@@ -194,9 +212,37 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 	}
 
 	private void initComment(){
-		lecturelikes++;
-		lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆", lecturelikes,contents,R.drawable.test_image);
-		comment=new Comment(R.drawable.test_oliver,userName,lecture,time, likers,contents );
+		/*lecturelikes++;
+		lecture=new LectureDB("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆", lecturelikes,contents,R.drawable.test_image);
+		comment=new CommentDB(R.drawable.test_oliver,userName,lecture,time, likers,contents );*/
+	}
+
+	private void CommentRequest(){
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_PORT,0);
+
+					Logger.json(response);
+
+					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }
 

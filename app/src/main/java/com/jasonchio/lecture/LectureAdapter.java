@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.jasonchio.lecture.database.LectureDB;
+
 import java.util.List;
 
 /**
@@ -38,17 +40,18 @@ import java.util.List;
  * Created by zhaoyaobang on 2018/3/10.
  */
 
-public class LectureAdapter extends ArrayAdapter<Lecture> {
+public class LectureAdapter extends ArrayAdapter<LectureDB> {
 
 	private int lectureItemId;
 
-	public LectureAdapter(Context context, int lectureItemId, List<Lecture> objects){
+	public LectureAdapter(Context context, int lectureItemId, List<LectureDB> objects){
 		super(context,lectureItemId,objects);
 		this.lectureItemId= lectureItemId;
 	}
 	@Override
 	public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-		Lecture lecture=getItem(position);
+
+		LectureDB lecture=getItem(position);
 		View view= LayoutInflater.from(getContext()).inflate(lectureItemId,parent,false);
 		TextView lectureTitle=(TextView)view.findViewById(R.id.lecture_title_text);
 		ImageView lectureImage=(ImageView)view.findViewById(R.id.lecture_source_image);
@@ -58,11 +61,13 @@ public class LectureAdapter extends ArrayAdapter<Lecture> {
 		TextView lectureLikers=(TextView)view.findViewById(R.id.lecture_likers_text);
 
 		lectureTitle.setText(lecture.getLectureTitle());
-		lectureImage.setImageResource(lecture.getLectureImageId());
+		/*讲座效果图，待修复
+		lectureImage.setImageResource(lecture.getLectureImage());
+		*/
 		lectureContent.setText(lecture.getLectureContent());
 		lectureTime.setText(lecture.getLectureTime());
-		lectureSource.setText(lecture.getLectureSource());
-		lectureLikers.setText(String.valueOf(lecture.getLectureLikers()));
+		lectureSource.setText(lecture.getLecutreSource());
+		lectureLikers.setText(String.valueOf(lecture.getLecutreLikers()));
 
 		return view;
 	}

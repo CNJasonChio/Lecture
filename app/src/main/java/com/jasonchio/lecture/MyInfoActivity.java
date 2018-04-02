@@ -27,11 +27,10 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.gson.Gson;
-import com.jasonchio.lecture.gson.UserTest;
 import com.jasonchio.lecture.util.CircleImageView;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
 
@@ -61,12 +60,16 @@ public class MyInfoActivity extends BaseActivity {
 	CircleImageView photoImage;
 
 	TextView nameText;
+	String userName;
 
 	TextView sexText;
+	String userSex;
 
 	TextView schoolText;
+	String userSchool;
 
 	TextView birthdayText;
+	String userBirthday;
 
 	TitleLayout titleLayout;
 
@@ -74,7 +77,7 @@ public class MyInfoActivity extends BaseActivity {
 
 	Uri finalUri;
 
-	String userInfoResult;
+	int userInfoResult;
 
 	PopupWindow pop;
 
@@ -84,6 +87,9 @@ public class MyInfoActivity extends BaseActivity {
 	public static final int OPEN_ALBUM = 2;
 	public static final int PHOTO_ALREADY = 3;
 
+	String response;
+
+	int myinfoRequestResult=-1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +108,7 @@ public class MyInfoActivity extends BaseActivity {
 		birthdayLayout.setOnClickListener(this);
 		titleFirstButton.setOnClickListener(this);
 
+		MyinfoRequest();
 	}
 
 	@Override
@@ -179,6 +186,7 @@ public class MyInfoActivity extends BaseActivity {
 			String days;
 			days = new StringBuffer().append(mYear).append("年").append(mMonth).append("月").append(mDay).append("日").toString();
 			birthdayText.setText(days);
+			changeMyinfoRequest();
 		}
 	};
 
@@ -228,6 +236,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				nameText.setText(userInput.getText());
+				changeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
@@ -251,6 +260,7 @@ public class MyInfoActivity extends BaseActivity {
 				// showToast(which+"");
 				sexText.setText(sexArray[which]);
 				dialog.dismiss();// 随便点击一个item消失对话框，不用点击确认取消
+				changeMyinfoRequest();
 			}
 		});
 		builder3.show();// 让弹出框显示
@@ -488,37 +498,64 @@ public class MyInfoActivity extends BaseActivity {
 		return null;
 	}
 
+	private void MyinfoRequest(){
 
-//	private void getUserInfo(final int userID){
-//		Log.d("UserTest","点击开始通讯");
-//		new Thread(new Runnable() {
-//			@Override
-//			public void run() {
-//				try {
-//					Log.d("UserTest","尝试与服务器连接");
-//					userInfoResult=HttpUtil.UserInfoRequest(ADDRESS,PORT,userID);
-//					Log.d("UserTest","通讯结束");
-//				} catch (IOException e) {
-//					Log.d("UserTest","连接失败，IO");
-//					e.printStackTrace();
-//				} catch (JSONException e) {
-//					Log.d("UserTest","连接失败JSON");
-//					e.printStackTrace();
-//				}
-//				runOnUiThread(new Runnable() {
-//					@Override
-//					public void run() {
-//						Log.d("UserTest","在主线程中更改UI");
-//						Gson gson=new Gson();
-//						UserTest userTest =gson.fromJson(userInfoResult, UserTest.class);
-//						Log.d("UserTest",userInfoResult);
-//						Log.d("UserTest",userTest.getUser_name());
-//						Log.d("UserTest",userTest.getUser_password());
-//
-//					}
-//				});
-//			}
-//		}).start();
-//
-//	}
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,4 );
+
+					Logger.json(response);
+
+					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void changeMyinfoRequest(){
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					userName=nameText.getText().toString();
+					userSex=sexText.getText().toString();
+					userSchool=schoolText.getText().toString();
+					userBirthday=birthdayText.getText().toString();
+
+					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGEINFO_REQUEST_PORT,4,userName,"15817174056",userSex,userBirthday,userBirthday);
+
+					Logger.json(response);
+
+					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
 }
