@@ -14,7 +14,13 @@ import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.database.CommentDB;
 import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +58,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	ListView listView;
 
+	String response;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -61,6 +68,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		initWidget();
 		//初始化视图
 		initView();
+
+		MyCommentRequest();
 
 		mAdapter.setOnInnerItemOnClickListener(this);
 		listView.setOnItemClickListener(this);
@@ -171,4 +180,27 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		lecturelikes++;
 		/*lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆", lecturelikes,contents,R.drawable.test_image);
 		comment=new Comment(R.drawable.test_oliver,userName,lecture,time, likers,contents );*/
-	}}
+	}
+
+	private void MyCommentRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_PORT,4);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+}

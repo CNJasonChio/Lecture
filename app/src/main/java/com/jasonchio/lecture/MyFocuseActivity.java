@@ -16,7 +16,13 @@ import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.database.LibraryDB;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +38,8 @@ public class MyFocuseActivity extends BaseActivity {
 	List<LibraryDB> librarylist = new ArrayList<>();
 
 	ListView listView;
+
+	String response;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,6 +49,8 @@ public class MyFocuseActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
+
+		MyFouceseRequest();
 
 		titleFirstButton.setOnClickListener(this);
 
@@ -112,6 +122,28 @@ public class MyFocuseActivity extends BaseActivity {
 			}
 			default:
 		}
+	}
+
+	private void MyFouceseRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,4);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }
 

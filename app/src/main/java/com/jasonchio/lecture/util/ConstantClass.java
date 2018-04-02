@@ -44,5 +44,13 @@ public class ConstantClass {
 	//请求个人信息端口
 	public static final int MYINFO_REQUEST_PORT=2006;
 	//请求个人信息端口
-	public static final int CHANGEINFO_REQUEST_PORT=2007;
+	public static final int CHANGE_MYINFO_REQUEST_PORT =2007;
+	//查找讲座端口
+	public static final int SEARCH_LECTURE_REQUEST_PORT=2008;
+	//请求"我的想看"端口
+	public static final int MYWANTED_LECTURE_REQUEST_PORT=2009;
+	//请求"我的关注"端口
+	public static final int MYFOCUSE_LIBRARY_REQUEST_PORT=2010;
+	//请求"我的点评"端口
+	public static final int MYCOMMENT_REQUEST_PORT=2011;
 }

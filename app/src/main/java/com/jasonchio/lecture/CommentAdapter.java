@@ -77,7 +77,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 	public View getView(int position, View view, ViewGroup parent) {
 		final ViewHolder viewHolder;
 		final CommentDB comment=commentList.get(position);
-		LectureDB lecture=comment.getLectureDB();
+//		LectureDB lecture=comment.getLectureDB();
 
 		if (view == null) {
 			viewHolder = new ViewHolder();
@@ -115,14 +115,14 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		viewHolder.commentLikeLayout.setTag(position);
 		viewHolder.commentText.setTag(position);
 
-		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
-		/*
-		评论对应的讲座的效果图，待修复
-		viewHolder.lectureImage.setImageResource(lecture.getLectureImage());*/
-		viewHolder.lectureContent.setText(lecture.getLectureContent());
-		viewHolder.lectureTime.setText(lecture.getLectureTime());
-		viewHolder.lectureSource.setText(lecture.getLecutreSource());
-		viewHolder.lectureLikers.setText(String.valueOf(lecture.getLecutreLikers()));
+//		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
+//		/*
+//		评论对应的讲座的效果图，待修复
+//		viewHolder.lectureImage.setImageResource(lecture.getLectureImage());*/
+//		viewHolder.lectureContent.setText(lecture.getLectureContent());
+//		viewHolder.lectureTime.setText(lecture.getLectureTime());
+//		viewHolder.lectureSource.setText(lecture.getLecutreSource());
+//		viewHolder.lectureLikers.setText(String.valueOf(lecture.getLecutreLikers()));
 
 		/*评论对应的用户信息，待修复
 		viewHolder.userPhoto.setImageResource(comment.getUserPhotoId());

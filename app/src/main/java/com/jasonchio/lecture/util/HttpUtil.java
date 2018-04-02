@@ -478,6 +478,235 @@ public class HttpUtil {
 		return null;
 	}
 
+	//搜索讲座
+	public static String SearchLectureRequest(String address, int port, String searchKey) throws IOException, JSONException {
+
+
+		Logger.d("SearchLectureRequest");
+
+		JSONObject testjson = new JSONObject();
+
+		String response;
+
+		testjson.put("searchKey", searchKey);
+
+		String test = testjson.toString();
+
+		Socket socket;
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		try {
+			//创建Socket对象 & 指定服务端的IP及端口号
+			socket = new Socket(address, port);
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+			Logger.d("给服务器发送数据完毕");
+			//接收服务器返回的数据
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+			Logger.d("接收服务器数据完毕");
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			bufferedReader.close();
+			reader.close();
+			inputStream.close();
+		}
+		return null;
+	}
+
+	//获取“我的想看”
+	public static String MyWantedRequest(String address, int port, int userId) throws IOException, JSONException {
+
+		Logger.d("MyWantedRequest");
+
+		JSONObject testjson = new JSONObject();
+
+		String response;
+
+		testjson.put("userID", userId);
+
+		String test = testjson.toString();
+
+		Socket socket;
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		try {
+			//创建Socket对象 & 指定服务端的IP及端口号
+			socket = new Socket(address, port);
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+			Logger.d("给服务器发送数据完毕");
+			//接收服务器返回的数据
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+			Logger.d("获取服务器数据完毕");
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			bufferedReader.close();
+			reader.close();
+			inputStream.close();
+		}
+		return null;
+	}
+
+	//获取“我的关注”
+	public static String MyFocusedRequest(String address, int port, int userId) throws JSONException, IOException {
+
+		Logger.d("MyFocusedRequest");
+		JSONObject testjson = new JSONObject();
+
+		String response;
+
+		testjson.put("userID", userId);
+
+		String test = testjson.toString();
+
+		Socket socket;
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		try {
+			//创建Socket对象 & 指定服务端的IP及端口号
+			socket = new Socket(address, port);
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+			Logger.d("给服务器发送数据完毕");
+			//接收服务器返回的数据
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+			Logger.d("获取服务器数据完毕");
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			bufferedReader.close();
+			reader.close();
+			inputStream.close();
+		}
+		return null;
+	}
+
+	//获取“我的点评”
+	public static String MycommentRequest(String address, int port, int userId) throws IOException, JSONException {
+
+		Logger.d("MycommentRequest");
+
+		JSONObject testjson = new JSONObject();
+
+		String response;
+
+		testjson.put("userID", userId);
+
+		String test = testjson.toString();
+
+		Socket socket;
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		try {
+			//创建Socket对象 & 指定服务端的IP及端口号
+			socket = new Socket(address, port);
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+			Logger.d("给服务器发送数据完毕");
+			//接收服务器返回的数据
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+
+			Logger.d("获取服务器数据完毕");
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			bufferedReader.close();
+			reader.close();
+			inputStream.close();
+		}
+		return null;
+	}
+
 	//请求图书馆信息
 	public static String LibraryRequest(String address, int port, String libraryName) throws JSONException, IOException {
 
@@ -714,65 +943,6 @@ public class HttpUtil {
 		return null;
 	}
 
-	//搜索讲座
-	public static String SearchLectureRequest(String address, int port, String searchKey) throws IOException, JSONException {
-
-		Log.d("testSearchLec", "SearchLectureRequest");
-
-		JSONObject testjson = new JSONObject();
-
-		String response;
-
-		testjson.put("searchKey", searchKey);
-
-
-		String test = testjson.toString();
-		Log.d("testSearchLec", test);
-
-		Socket socket;
-
-		InputStream inputStream = null;
-
-		InputStreamReader reader = null;
-
-		BufferedReader bufferedReader = null;
-
-		OutputStream outputStream;
-
-		try {
-			//创建Socket对象 & 指定服务端的IP及端口号
-			socket = new Socket(address, port);
-			//创建输出流对象outputStream
-			outputStream = socket.getOutputStream();
-			//写入要发送给服务器的数据
-			outputStream.write(test.getBytes());
-			//发送数据到服务端
-			outputStream.flush();
-			//关闭输出流
-			socket.shutdownOutput();
-			Log.d("testSearchLec", "给服务器发送数据完毕");
-			//接收服务器返回的数据
-			//创建输入流对象InputStream
-			inputStream = socket.getInputStream();
-			//创建输入流读取器对象 并传入输入流对象
-			reader = new InputStreamReader(inputStream);
-			bufferedReader = new BufferedReader(reader);
-			//通过输入流读取器对象 接收服务器发送过来的数据
-			response = bufferedReader.readLine();
-			Log.d("testSearchLec", "获取服务器数据完毕");
-			return response;
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			bufferedReader.close();
-			reader.close();
-			inputStream.close();
-		}
-		return null;
-	}
-
 	//评论讲座
 	public static String AddCommentRequest(String address, int port, String commentContent, int userId, int lectureId, String commentTime) throws IOException, JSONException {
 
@@ -834,179 +1004,6 @@ public class HttpUtil {
 		return null;
 	}
 
-	//获取“我的想看”
-	public static String MyWantedRequest(String address, int port, int userId) throws IOException, JSONException {
-
-		Log.d("testMyWanted", "MyWantedRequest");
-
-		JSONObject testjson = new JSONObject();
-
-		String response;
-
-		testjson.put("userID", userId);
-
-		String test = testjson.toString();
-		Log.d("testMyWanted", test);
-
-		Socket socket;
-
-		InputStream inputStream = null;
-
-		InputStreamReader reader = null;
-
-		BufferedReader bufferedReader = null;
-
-		OutputStream outputStream;
-
-		try {
-			//创建Socket对象 & 指定服务端的IP及端口号
-			socket = new Socket(address, port);
-			//创建输出流对象outputStream
-			outputStream = socket.getOutputStream();
-			//写入要发送给服务器的数据
-			outputStream.write(test.getBytes());
-			//发送数据到服务端
-			outputStream.flush();
-			//关闭输出流
-			socket.shutdownOutput();
-			Log.d("testMyWanted", "给服务器发送数据完毕");
-			//接收服务器返回的数据
-			//创建输入流对象InputStream
-			inputStream = socket.getInputStream();
-			//创建输入流读取器对象 并传入输入流对象
-			reader = new InputStreamReader(inputStream);
-			bufferedReader = new BufferedReader(reader);
-			//通过输入流读取器对象 接收服务器发送过来的数据
-			response = bufferedReader.readLine();
-			Log.d("testMyWanted", "获取服务器数据完毕");
-			return response;
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			bufferedReader.close();
-			reader.close();
-			inputStream.close();
-		}
-		return null;
-	}
-
-	//获取“我的关注”
-	public static String MyFocusedRequest(String address, int port, int userId) throws JSONException, IOException {
-
-		Log.d("testMyFocused", "MyFocusedRequest");
-
-		JSONObject testjson = new JSONObject();
-
-		String response;
-
-		testjson.put("userID", userId);
-
-		String test = testjson.toString();
-		Log.d("testMyWanted", test);
-
-		Socket socket;
-
-		InputStream inputStream = null;
-
-		InputStreamReader reader = null;
-
-		BufferedReader bufferedReader = null;
-
-		OutputStream outputStream;
-
-		try {
-			//创建Socket对象 & 指定服务端的IP及端口号
-			socket = new Socket(address, port);
-			//创建输出流对象outputStream
-			outputStream = socket.getOutputStream();
-			//写入要发送给服务器的数据
-			outputStream.write(test.getBytes());
-			//发送数据到服务端
-			outputStream.flush();
-			//关闭输出流
-			socket.shutdownOutput();
-			Log.d("testMyWanted", "给服务器发送数据完毕");
-			//接收服务器返回的数据
-			//创建输入流对象InputStream
-			inputStream = socket.getInputStream();
-			//创建输入流读取器对象 并传入输入流对象
-			reader = new InputStreamReader(inputStream);
-			bufferedReader = new BufferedReader(reader);
-			//通过输入流读取器对象 接收服务器发送过来的数据
-			response = bufferedReader.readLine();
-			Log.d("testMyWanted", "获取服务器数据完毕");
-			return response;
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			bufferedReader.close();
-			reader.close();
-			inputStream.close();
-		}
-		return null;
-	}
-
-	//获取“我的点评”
-	public static String MycommentRequest(String address, int port, int userId) throws IOException, JSONException {
-
-		Log.d("testMycomment", "MycommentRequest");
-
-		JSONObject testjson = new JSONObject();
-
-		String response;
-
-		testjson.put("userID", userId);
-
-		String test = testjson.toString();
-		Log.d("testMycomment", test);
-
-		Socket socket;
-
-		InputStream inputStream = null;
-
-		InputStreamReader reader = null;
-
-		BufferedReader bufferedReader = null;
-
-		OutputStream outputStream;
-
-		try {
-			//创建Socket对象 & 指定服务端的IP及端口号
-			socket = new Socket(address, port);
-			//创建输出流对象outputStream
-			outputStream = socket.getOutputStream();
-			//写入要发送给服务器的数据
-			outputStream.write(test.getBytes());
-			//发送数据到服务端
-			outputStream.flush();
-			//关闭输出流
-			socket.shutdownOutput();
-			Log.d("testMycomment", "给服务器发送数据完毕");
-			//接收服务器返回的数据
-			//创建输入流对象InputStream
-			inputStream = socket.getInputStream();
-			//创建输入流读取器对象 并传入输入流对象
-			reader = new InputStreamReader(inputStream);
-			bufferedReader = new BufferedReader(reader);
-			//通过输入流读取器对象 接收服务器发送过来的数据
-			response = bufferedReader.readLine();
-			Log.d("testMycomment", "获取服务器数据完毕");
-			return response;
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			bufferedReader.close();
-			reader.close();
-			inputStream.close();
-		}
-		return null;
-	}
 
 	//给评论点赞
 	public static String LikeThisComment(String address, int port, int commentId, boolean islike) throws IOException, JSONException {

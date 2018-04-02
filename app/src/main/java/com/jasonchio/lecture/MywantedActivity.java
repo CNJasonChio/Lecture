@@ -19,7 +19,14 @@ import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +45,10 @@ public class MywantedActivity extends BaseActivity {
 
 	List<LectureDB> lecturelist = new ArrayList<>();
 
+	String response;
+
+	int mywantedResult=-1;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,6 +59,7 @@ public class MywantedActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+		MywantedRequest();
 		titleFirstButton.setOnClickListener(this);
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -120,5 +132,27 @@ public class MywantedActivity extends BaseActivity {
 			}
 			default:
 		}
+	}
+
+	private void MywantedRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,4);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

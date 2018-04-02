@@ -60,16 +60,16 @@ public class MyInfoActivity extends BaseActivity {
 	CircleImageView photoImage;
 
 	TextView nameText;
-	String userName;
+	String userName=null;
 
 	TextView sexText;
-	String userSex;
+	String userSex=null;
 
 	TextView schoolText;
-	String userSchool;
+	String userSchool=null;
 
 	TextView birthdayText;
-	String userBirthday;
+	String userBirthday=null;
 
 	TitleLayout titleLayout;
 
@@ -206,6 +206,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				schoolText.setText(userInput.getText());
+				changeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
@@ -543,7 +544,7 @@ public class MyInfoActivity extends BaseActivity {
 					userSchool=schoolText.getText().toString();
 					userBirthday=birthdayText.getText().toString();
 
-					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGEINFO_REQUEST_PORT,4,userName,"15817174056",userSex,userBirthday,userBirthday);
+					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,4,userName,"15817174056",userSex,userSchool,userBirthday);
 
 					Logger.json(response);
 
