@@ -27,13 +27,14 @@ package com.jasonchio.lecture.gson;
  */
 public class SigninResult {
 
+
 	/**
 	 * user_id :
-	 * statue :
+	 * state :
 	 */
 
 	private int user_id;
-	private int statue;
+	private int state;
 
 	public int getUser_id() {
 		return user_id;
@@ -44,10 +45,10 @@ public class SigninResult {
 	}
 
 	public int getState() {
-		return statue;
+		return state;
 	}
 
-	public void setState(int statue) {
-		this.statue = statue;
+	public void setState(int state) {
+		this.state = state;
 	}
 }

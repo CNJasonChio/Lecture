@@ -1,6 +1,9 @@
 package com.jasonchio.lecture;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,20 +11,24 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.database.LectureDB;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-
+import org.litepal.crud.DataSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import es.dmoral.toasty.Toasty;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
 
 /**
  * /**
@@ -49,7 +56,7 @@ import java.util.List;
  * Created by zhaoyaobang on 2018/3/6.
  */
 
-public class RecommentFragment extends Fragment  {
+public class RecommentFragment extends Fragment {
 
 	private View rootview;
 
@@ -57,16 +64,15 @@ public class RecommentFragment extends Fragment  {
 
 	LectureAdapter mAdapter;
 
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
+	List<LectureDB> lecturelist = new ArrayList<>();
 
-	int consts=0;
-
-
-	List<LectureDB> lecturelist=new ArrayList<>();
+	ListView listView;
 
 	String response;
 
 	int lectureRequestResult;
+
+	Handler handler;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,31 +80,51 @@ public class RecommentFragment extends Fragment  {
 	                         Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
-		if(rootview == null){
-			rootview=inflater.inflate(R.layout.fragment_recommend,null);
-			Toast.makeText(getActivity(),"FragmentRecommend==onCreateView",Toast.LENGTH_SHORT ).show();
+		if (rootview == null) {
+			rootview = inflater.inflate(R.layout.fragment_recommend, null);
+			Toast.makeText(getActivity(), "FragmentRecommend==onCreateView", Toast.LENGTH_SHORT).show();
 		}
-		ViewGroup parent=(ViewGroup)rootview.getParent();
-		if(parent!=null){
+		ViewGroup parent = (ViewGroup) rootview.getParent();
+		if (parent != null) {
 			parent.removeView(rootview);
 		}
 
 		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
 
-		ListView listView = (ListView) rootview.findViewById(R.id.swipe_target);
+		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem,lecturelist);
+		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem, lecturelist);
 
 		listView.setAdapter(mAdapter);
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (lectureRequestResult == 0) {
+							Toasty.success(getContext(), "获取讲座成功").show();
+							showLectureInfoToTop();
+						} else if (lectureRequestResult == 1) {
+							Toasty.error(getContext(), "讲座信息暂无更新").show();
+						} else {
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				/*点击进入讲座详情页，待修复
-				LectureDB lecture=lecturelist.get(position);
 
-				Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
-				startActivity(intent);*/
+				LectureDB lecture = lecturelist.get(position);
+
+				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
+				intent.putExtra("lecture_id", lecture.getLectureId());
+				startActivity(intent);
 
 			}
 		});
@@ -107,12 +133,8 @@ public class RecommentFragment extends Fragment  {
 			@Override
 			public void onRefresh() {
 
-				LectureRequest();
+				showLectureInfoToTop();
 
-				/*添加讲座到显示列表待修复
-				lecturelist.add(lecture);
-				* */
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
 		});
@@ -121,14 +143,6 @@ public class RecommentFragment extends Fragment  {
 			@Override
 			public void onLoadMore() {
 
-				/*
-				* 从数据库中加载十条
-				* */
-
-				/*添加讲座到显示列表待修复
-				lecturelist.add(lecture);
-				* */
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
@@ -147,28 +161,35 @@ public class RecommentFragment extends Fragment  {
 		});
 	}
 
-	private void LectureRequest(){
+	private void LectureRequest() {
 
 		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
 		//showLectureInfo();
 		/*
-		* 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT,35);
+					int lastLecureID=Utility.lastLetureinDB();
+
+					lastLecureID=10;
+					Logger.d("lastLecureID"+lastLecureID);
+
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
 
 					Logger.json(response);
 
-					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+					lectureRequestResult = Utility.handleLectureResponse(response);
 
+					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
 				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
 					e.printStackTrace();
 				}
 			}
@@ -176,7 +197,30 @@ public class RecommentFragment extends Fragment  {
 	}
 
 	//将从数据库中查找到的讲座显示到界面中
-	private void showLectureInfo(List<LectureDB> list){
+	private void showLectureInfoToTop() {
 
+		ContentRequest("http://119.29.93.31:2000/1.txt", new Callback() {
+			@Override
+			public void onFailure(Call call, IOException e) {
+				Logger.d("content获取失败");
+			}
+
+			@Override
+			public void onResponse(Call call, Response response) throws IOException {
+				Utility.handleContentResponse(response.body().string());
+			}
+		});
+		List<LectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(mAdapter.getCount()).find(LectureDB.class);
+
+		Logger.d(mAdapter.getCount());
+		if(lectureDBList.size()<1){
+			LectureRequest();
+			return;
+		}
+		lecturelist.addAll(0,lectureDBList);
+
+		listView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
 	}
+
 }

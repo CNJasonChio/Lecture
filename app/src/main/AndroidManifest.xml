@@ -4,10 +4,14 @@
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.BAIDU_LOCATION_SERVICE" />
 
     <application
         android:name="org.litepal.LitePalApplication"
@@ -33,6 +37,9 @@
         <meta-data
             android:name="Mob-AppSecret"
             android:value="840fd527c49803984ae21b7da5fa57f7" />
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="wfowClDRGg8R3VeItIYpX1SyvNUmD5G0"/>
 
         <activity android:name=".SigninWithPhoneActivity" />
         <activity android:name=".MainPageActivity" />
@@ -65,5 +72,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"/>
         </provider>
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" >
+        </service>
     </application>
 </manifest>

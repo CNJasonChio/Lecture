@@ -44,7 +44,7 @@ public class SelfLoadMoreFooterView extends AppCompatTextView implements SwipeTr
 
 	@Override
 	public void onLoadMore() {
-		setText("下面还有呢，马上就来");
+		setText("已经到底了");
 	}
 
 	@Override
@@ -56,23 +56,23 @@ public class SelfLoadMoreFooterView extends AppCompatTextView implements SwipeTr
 	public void onMove(int yScrolled, boolean isComplete, boolean automatic) {
 		if (!isComplete) {
 			if (yScrolled <= -getHeight()) {
-				setText("放开我就有新东西了");
+				setText("真的没有了");
 			} else {
-				setText("想看新东西就往上拉");
+				setText("下面没东西了");
 			}
 		} else {
-			setText("我走啦，北北");
+			setText("");
 		}
 	}
 
 	@Override
 	public void onRelease() {
-		setText("LOADING MORE");
+		setText("");
 	}
 
 	@Override
 	public void onComplete() {
-		setText("嘿嘿，来了您那");
+		setText("");
 	}
 
 	@Override

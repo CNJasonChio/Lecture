@@ -38,7 +38,7 @@ import android.widget.Toast;
  * Created by zhaoyaobang on 2018/3/6.
  */
 
-public class MeFragment extends Fragment{
+public class  MeFragment extends Fragment{
 
 	TitleLayout titleLayout;
 	LinearLayout meLayout;

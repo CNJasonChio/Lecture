@@ -28,7 +28,7 @@ import org.litepal.crud.DataSupport;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class LectureDB extends DataSupport {
+public class InterimLectureDB extends DataSupport {
 
 	int lectureId;       //讲座ID
 
@@ -49,7 +49,7 @@ public class LectureDB extends DataSupport {
 	String lectureImage;    //讲座图片
 
 
-	public LectureDB(String lectureTitle, String lectureTime, String lecutreSource, String lectureContent, int lecutreLikers) {
+	public InterimLectureDB(String lectureTitle, String lectureTime, String lecutreSource, String lectureContent, int lecutreLikers) {
 		this.lectureTitle = lectureTitle;
 		this.lectureLocation = lectureLocation;
 		this.lectureTime = lectureTime;
@@ -58,7 +58,7 @@ public class LectureDB extends DataSupport {
 		this.lecutreLikers = lecutreLikers;
 	}
 
-	public LectureDB() {
+	public InterimLectureDB() {
 	}
 
 	public String getLectureImage() {

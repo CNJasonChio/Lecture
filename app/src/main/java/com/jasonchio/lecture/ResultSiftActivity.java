@@ -1,45 +1,69 @@
 package com.jasonchio.lecture;
 
-import android.graphics.Color;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 
+import com.jasonchio.lecture.database.InterimLectureDB;
+import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ResultSift.DropDownMenu;
 import com.jasonchio.lecture.util.ResultSift.ListDropDownAdapter;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+import org.litepal.crud.DataSupport;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import es.dmoral.toasty.Toasty;
+
 public class ResultSiftActivity extends BaseActivity {
 
-	private String headers[] = {"年龄", "性别"};// 条件选择的标题
+	private String headers[] = {"与我相关", "地区"};// 条件选择的标题
 	private List<View> popupViews = new ArrayList<View>();
 	private DropDownMenu mDropDownMenu;//自定义VIew类的对象
 	private TitleLayout titleLayout;
 	private Button titleFirstButton;
 	private Button titleSecondButton;
-	private ListDropDownAdapter ageAdapter;  //年龄显示的适配器
-	private ListDropDownAdapter sexAdapter;//   性别显示的适配器
+	private ListDropDownAdapter aboutMeAdapter; //与我相关显示的适配器
+	private ListDropDownAdapter areaAdapter;    //地区显示的适配器
 
-	private String ages[] = {"不限", "18岁以下", "18-22岁", "23-26岁", "27-35岁", "35岁以上"};
-	private String sexs[] = {"不限", "男", "女"};
+	private String aboutUser[] = {"不限", "我的学校", "我的关注", "我的附近"};
+	private String area[] = {"不限", "武昌区", "汉口区","洪山区","江岸区","江汉区","硚口区","汉阳区","青山区","东西湖区","蔡甸区","江夏区","黄陂区","新洲区","汉南区"};
 
-	private int constellationPosition = 0;//  选中群体样式列表的序列号
+	String searchStr;
 
+	String response;
+
+	Handler handler;
+
+	int lectureSearchResult;
+
+	int lectureRequestResult;
+
+	LectureAdapter mAdapter;
+
+	List<LectureDB> lecturelist = new ArrayList<>();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_result_sift);
+
+		Intent intent=getIntent();
+
+		searchStr= intent.getStringExtra("search_key");
 
 		//初始化控件
 		initWidget();
@@ -47,19 +71,57 @@ public class ResultSiftActivity extends BaseActivity {
 		initView();
 
 		titleFirstButton.setOnClickListener(this);
-		initView(); //初始化对象
 		initData();//初始化 数据
 		initEvent();// 初始化点击事件
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (lectureSearchResult == 0) {
+							Toasty.success(ResultSiftActivity.this, "查找讲座成功").show();
+							showLectureInfoToTop();
+						} else if (lectureSearchResult == 1) {
+							Toasty.error(ResultSiftActivity.this, "无符合条件的讲座").show();
+						} else if(lectureSearchResult==3){
+							LectureRequest();
+						}else {
+							Toasty.error(ResultSiftActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							Utility.handleLectureSearchResponse(response);
+						}
+				}
+				return true;
+			}
+		});
+
+		searchLectureRequest();
+
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+				LectureDB lecture = lecturelist.get(position);
+				Intent intent = new Intent(ResultSiftActivity.this, LectureDetailActivity.class);
+				intent.putExtra("lecture_id", lecture.getLectureId());
+				startActivity(intent);
+
+			}
+		});
 	}
 
 	//下面四个是点击选择条件选择是弹出的视图View，可以是ListView也可以是VIew
 
-	ListView ageView;
-	ListView sexView;
+	ListView aboutMeView;
+	ListView areaView;
 
 
-	TextView textView;//选择条件中间显示的视图，可以是View、ListView、TextView
-
+	//TextView textView;//选择条件中间显示的视图，可以是View、ListView、TextView
+	ListView listView;
 	/**
 	 * 初始化数据
 	 */
@@ -72,17 +134,17 @@ public class ResultSiftActivity extends BaseActivity {
 
 		titleLayout.setSecondButtonVisible(View.GONE);
 
-		//init age menu
-		ageView = new ListView(this);
-		ageView.setDividerHeight(0);
-		ageAdapter = new ListDropDownAdapter(this, Arrays.asList(ages));
-		ageView.setAdapter(ageAdapter);
+		//init about menu
+		aboutMeView = new ListView(this);
+		aboutMeView.setDividerHeight(0);
+		aboutMeAdapter = new ListDropDownAdapter(this, Arrays.asList(aboutUser));
+		aboutMeView.setAdapter(aboutMeAdapter);
 
-		//init sex menu
-		sexView = new ListView(this);
-		sexView.setDividerHeight(0);
-		sexAdapter = new ListDropDownAdapter(this, Arrays.asList(sexs));
-		sexView.setAdapter(sexAdapter);
+		//init area menu
+		areaView = new ListView(this);
+		areaView.setDividerHeight(0);
+		areaAdapter = new ListDropDownAdapter(this, Arrays.asList(area));
+		areaView.setAdapter(areaAdapter);
 
 	}
 
@@ -99,21 +161,19 @@ public class ResultSiftActivity extends BaseActivity {
 
 	private void initData() {
 		//init popupViews
-		//popupViews.add(cityView);
-		popupViews.add(ageView);
-		popupViews.add(sexView);
-		//popupViews.add(constellationView);
+		popupViews.add(aboutMeView);
+		popupViews.add(areaView);
 
 		//init context view
-		textView = new TextView(this);
-		textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-		textView.setText("内容显示区域"+"\n");
-		textView.setGravity(Gravity.CENTER);
-		textView.setTextSize(20);
 
+		listView =new ListView(this);
+		listView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		//init dropdownview
-		mDropDownMenu.setDropDownMenu(Arrays.asList(headers), popupViews, textView);
+		mDropDownMenu.setDropDownMenu(Arrays.asList(headers), popupViews, listView);
 
+		mAdapter = new LectureAdapter(ResultSiftActivity.this, R.layout.lecure_listitem, lecturelist);
+
+		listView.setAdapter(mAdapter);
 	}
 
 	/**
@@ -122,22 +182,22 @@ public class ResultSiftActivity extends BaseActivity {
 	private void initEvent() {
 		//add item click event
 
-		ageView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		aboutMeView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				ageAdapter.setCheckItem(position);
-				mDropDownMenu.setTabText(position == 0 ? headers[0] : ages[position]);
-				textView.append(position == 0 ?headers[0] : ages[position]+"\n");
+				aboutMeAdapter.setCheckItem(position);
+				mDropDownMenu.setTabText(position == 0 ? headers[0] : aboutUser[position]);
+
 				mDropDownMenu.closeMenu();
 			}
 		});
 
-		sexView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		areaView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				sexAdapter.setCheckItem(position);
-				mDropDownMenu.setTabText(position == 0 ? headers[1] : sexs[position]);
-				textView.append(position == 0 ?headers[1] : sexs[position]+"\n");
+				areaAdapter.setCheckItem(position);
+				mDropDownMenu.setTabText(position == 0 ? headers[1] : area[position]);
+				//textView.append(position == 0 ?headers[1] : area[position]+"\n");
 				mDropDownMenu.closeMenu();
 			}
 		});
@@ -165,5 +225,95 @@ public class ResultSiftActivity extends BaseActivity {
 				break;
 			}
 		}
+	}
+
+	private void searchLectureRequest(){
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					/*
+					* 从数据库中查找关键词
+					* 将搜索到的讲座用临时数据库保存
+					* */
+					response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_PORT,searchStr);
+
+					Logger.json(response);
+
+					lectureSearchResult= Utility.handleLectureSearchResponse(response);
+
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void LectureRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					int lastLecureID=Utility.lastLetureinDB();
+
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+
+					lectureRequestResult=Utility.handleLectureResponse(lectureresponse);
+
+					handler.sendEmptyMessage(2);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+	private void showLectureInfoToTop() {
+
+		List<InterimLectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(10).find(InterimLectureDB.class);
+
+		List<LectureDB> lectureDBS=new ArrayList<>();
+
+		if(lectureDBList.size()<1){
+			searchLectureRequest();
+			return;
+		}else{
+			for(InterimLectureDB interimLectureDB:lectureDBList){
+				LectureDB lectureDB=new LectureDB();
+				lectureDB.setLectureContent(interimLectureDB.getLectureContent());
+				lectureDB.setLecutreLikers(interimLectureDB.getLecutreLikers());
+				lectureDB.setLecutreSource(interimLectureDB.getLecutreSource());
+				lectureDB.setLectureTime(interimLectureDB.getLectureTime());
+				lectureDB.setLectureLocation(interimLectureDB.getLectureLocation());
+				lectureDB.setLectureTitle(interimLectureDB.getLectureTitle());
+				lectureDB.setLectureId(interimLectureDB.getLectureId());
+				lectureDB.setLectureImage(interimLectureDB.getLectureImage());
+				lectureDB.setLecutreUrl(interimLectureDB.getLecutreUrl());
+
+				lectureDBS.add(lectureDB);
+			}
+		}
+		lecturelist.addAll(0,lectureDBS);
+
+		listView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
 	}
 }

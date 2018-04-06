@@ -28,7 +28,8 @@ package com.jasonchio.lecture.util;
 public class ConstantClass {
 
 	//当前登录用户的ID
-	int userID=0;
+	public static int userOnline=0;
+
 	//服务器地址
 	public static final String ADDRESS="119.29.93.31";
 	//注册端口
@@ -53,4 +54,18 @@ public class ConstantClass {
 	public static final int MYFOCUSE_LIBRARY_REQUEST_PORT=2010;
 	//请求"我的点评"端口
 	public static final int MYCOMMENT_REQUEST_PORT=2011;
+	//添加或取消讲座至/从"我的想看"端口
+	public static final int ADD_CANCEL_WANTED_REQUEST_PORT=2012;
+	//添加或取消讲座至/从"我的关注"端口
+	public static final int ADD_CANCEL_FOCUSE_REQUEST_PORT=2013;
+	//请求图书馆信息端口
+	public static final int LIBRARY_REQUEST_PORT=2014;
+	//发送用户位置端口
+	public static final int SEND_POSITION_PORT=2015;
+	//添加评论端口
+	public static final int ADD_COMMENT_PORT=2016;
+	//给评论点赞或取消点赞端口
+	public static final int LIKE_COMMENT_PORT=2017;
+	//用户更改头像端口
+	public static final int CHANGE_HEAD_PORT=2018;
 }

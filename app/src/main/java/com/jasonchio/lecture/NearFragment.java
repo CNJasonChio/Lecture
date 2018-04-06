@@ -90,6 +90,7 @@ public class NearFragment extends Fragment{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				LectureDB lecture=lecturelist.get(position);
 				Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
+				intent.putExtra("lecture_id",lecture.getLectureId());
 				startActivity(intent);
 					}
 		});
@@ -115,7 +116,7 @@ public class NearFragment extends Fragment{
 			}
 		});
 
-		//autoRefresh();
+		autoRefresh();
 
 		return rootview;
 	}

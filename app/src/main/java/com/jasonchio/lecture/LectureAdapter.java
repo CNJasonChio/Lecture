@@ -72,4 +72,8 @@ public class LectureAdapter extends ArrayAdapter<LectureDB> {
 		return view;
 	}
 
+	@Override
+	public int getCount() {
+		return super.getCount();
+	}
 }

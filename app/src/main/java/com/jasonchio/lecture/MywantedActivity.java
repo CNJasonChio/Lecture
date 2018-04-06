@@ -37,18 +37,26 @@ public class MywantedActivity extends BaseActivity {
 	Button titleFirstButton;
 	LectureAdapter mAdapter;
 
-	String contents = "十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
 	ListView listView;
-	int consts = 0;
 
-	//LectureDB lecture = new LectureDB("NoteExpress文献管理与论文写作讲座", "2017年12月7日(周三)14：30", "武汉大学图书馆", consts, contents, R.drawable.test_image);
+	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
 
-	List<LectureDB> lecturelist = new ArrayList<>();
+	int consts=0;
+
+	String title="测试测试测试测试测试测试测试测试测试测试";
+
+	String time="2018年4月03日 晚6：00";
+
+	String source="武汉理工大学图书馆";
+
+	LectureDB lecture=new LectureDB(title,time,source,contents,100);
+
 
 	String response;
 
 	int mywantedResult=-1;
 
+	List<LectureDB> lecturelist=new ArrayList<>();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -60,6 +68,7 @@ public class MywantedActivity extends BaseActivity {
 		initView();
 
 		MywantedRequest();
+
 		titleFirstButton.setOnClickListener(this);
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -76,7 +85,7 @@ public class MywantedActivity extends BaseActivity {
 			@Override
 			public void onRefresh() {
 
-				//lecturelist.add(lecture);
+				lecturelist.add(lecture);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -86,7 +95,7 @@ public class MywantedActivity extends BaseActivity {
 			@Override
 			public void onLoadMore() {
 
-				//lecturelist.add(lecture);
+				lecturelist.add(lecture);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}
@@ -155,4 +164,6 @@ public class MywantedActivity extends BaseActivity {
 			}
 		}).start();
 	}
+
+
 }

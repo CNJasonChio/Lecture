@@ -48,6 +48,36 @@ public class UserDB extends DataSupport {
 
 	double userLongitude;   //用户经度
 
+	String userFocuseLirary;    //用户关注的图书馆
+
+	String userWantedLecture;   //用户的评论
+
+	String userComment;     //用户的评论
+
+	public String getUserFocuseLirary() {
+		return userFocuseLirary;
+	}
+
+	public void setUserFocuseLirary(String userFocuseLirary) {
+		this.userFocuseLirary = userFocuseLirary;
+	}
+
+	public String getUserWantedLecture() {
+		return userWantedLecture;
+	}
+
+	public void setUserWantedLecture(String userWantedLecture) {
+		this.userWantedLecture = userWantedLecture;
+	}
+
+	public String getUserComment() {
+		return userComment;
+	}
+
+	public void setUserComment(String userComment) {
+		this.userComment = userComment;
+	}
+
 	public int getUserId() {
 		return userId;
 	}

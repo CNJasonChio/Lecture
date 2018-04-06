@@ -4,10 +4,26 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.jasonchio.lecture.database.LibraryDB;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
+
+import org.json.JSONException;
+import org.litepal.crud.DataSupport;
+
+import java.io.IOException;
+import java.util.List;
+
+import es.dmoral.toasty.Toasty;
 
 public class LibraryDetailActivity extends BaseActivity {
 
@@ -20,28 +36,60 @@ public class LibraryDetailActivity extends BaseActivity {
 	Button titleFirstButton;
 	Button titleSecondButton;
 
-	boolean ifFocused=false;
+	int isFocuse=0;
 
-	String name="武汉理工大学图书馆";
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
+	String response;
 
-	String original="http://lgdy.whut.edu.cn/index.php?c=home&a=detail&id=90705";
+	String libName;
+
+	String original;
+
+	List<LibraryDB> libraryDBList;
+
+	Handler handler;
+
+	int libraryRequestResult=-1;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library_detail);
 
+		Intent intent=getIntent();
+		libName=intent.getStringExtra("library_id");
+
+
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
 
+		initLibrary(libName);
 		titleFirstButton.setOnClickListener(this);
 
 		titleSecondButton.setOnClickListener(this);
 
 		libraryOriginal.setOnClickListener(this);
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (libraryRequestResult == 0) {
+							Toasty.success(LibraryDetailActivity.this, "获取图书馆详情成功").show();
+							initLibrary(libName);
+						} else if (libraryRequestResult == 1) {
+							Toasty.error(LibraryDetailActivity.this, "图书馆信息暂无").show();
+						} else {
+							Toasty.error(LibraryDetailActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -52,16 +100,18 @@ public class LibraryDetailActivity extends BaseActivity {
 				break;
 			}
 			case R.id.library_title_second_button:{
-				if(ifFocused){
+				if(isFocuse ==1){
 					titleSecondButton.setText("点击关注");
 					titleSecondButton.setTextColor(Color.argb(255,16,16,16));
 					titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
-					ifFocused=false;
+					isFocuse =0;
+					FocuseChangeRequest();
 				}else {
 					titleSecondButton.setText("已关注");
 					titleSecondButton.setTextColor(Color.argb(255,255,157,0));
 					titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
-					ifFocused=true;
+					isFocuse =1;
+					FocuseChangeRequest();
 				}
 				break;
 			}
@@ -89,11 +139,8 @@ public class LibraryDetailActivity extends BaseActivity {
 		HideSysTitle();
 		titleLayoutTitleText.setText("图书馆详情");
 
-		libraryContent.setText(contents);
-		libraryImage.setImageResource(R.drawable.test_image);
-		libraryName.setText(name);
 
-		if(ifFocused){
+		if(isFocuse ==1){
 			titleSecondButton.setText("已关注");
 			titleSecondButton.setTextColor(Color.argb(255,255,157,0));
 			titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
@@ -102,6 +149,69 @@ public class LibraryDetailActivity extends BaseActivity {
 			titleSecondButton.setText("点击关注");
 			titleSecondButton.setTextColor(Color.argb(255,16,16,16));
 			titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
+		}
+	}
+
+	private void FocuseChangeRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,4,10,isFocuse);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+	private void LibraryRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_PORT,libName);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					libraryRequestResult = Utility.handleLibraryResponse(response);
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void initLibrary(String libName){
+		/*
+		* 现在数据库里查找，没有就向服务器请求
+		* */
+
+		libraryDBList= DataSupport.where("libraryName=?",libName).find(LibraryDB.class);
+
+		if(libraryDBList.size()==0){
+			LibraryRequest();
+		}else{
+			for(LibraryDB libraryDB:libraryDBList){
+				//libraryImage=(ImageView)findViewById(R.id.library_photo_image);
+				libraryName.setText(libraryDB.getLibraryName());
+				//libraryContent=(TextView)findViewById(R.id.library_content_text);
+				original=libraryDB.getLibraryUrl();
+			}
 		}
 	}
 }

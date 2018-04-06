@@ -15,5 +15,6 @@
         <mapping class="com.jasonchio.lecture.database.LectureDB"></mapping>
         <mapping class="com.jasonchio.lecture.database.LibraryDB"></mapping>
         <mapping class="com.jasonchio.lecture.database.UserDB"></mapping>
+        <mapping class="com.jasonchio.lecture.database.InterimLectureDB"></mapping>
     </list>
 </litepal>

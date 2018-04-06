@@ -1,6 +1,7 @@
 package com.jasonchio.lecture;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -8,7 +9,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,23 +29,32 @@ public class AddCommentActivity extends BaseActivity {
 	List<LectureDB> lectureList=new ArrayList<>();
 	LectureAdapter lectureAdapter;
 
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
+	String contents;
+
+	String response;
+
 	int consts=0;
 
-	//LectureDB lecture=new LectureDB("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",consts,contents,R.drawable.test_image);
+	LectureDB lecture=new LectureDB("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",contents,100);
 
 	ListView listView;
+
+	String commentTime="2018-04-03 14:30:11";
+
+	int lectureID=0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_comment);
 
+		Intent intent=getIntent();
+		lectureID=intent.getIntExtra("lecture_id",0);
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
 
-		//lectureList.add(lecture);
+		lectureList.add(lecture);
 
 		titleFirstButton.setOnClickListener(this);
 		titleSecondButton.setOnClickListener(this);
@@ -72,10 +88,33 @@ public class AddCommentActivity extends BaseActivity {
 				break;
 			}
 			case R.id.title_second_button:{
+				AddCommentRequest();
 				finish();
 				break;
 			}
 			default:
 		}
 	}
+	private void AddCommentRequest() {
+		contents=comment_text.getText().toString();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.AddCommentRequest(ConstantClass.ADDRESS, ConstantClass. ADD_COMMENT_PORT,contents,ConstantClass.userOnline,lectureID,commentTime);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
 }

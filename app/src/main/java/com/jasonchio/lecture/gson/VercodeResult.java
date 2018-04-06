@@ -1,8 +1,4 @@
-package com.jasonchio.lecture.util;
-
-import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
+package com.jasonchio.lecture.gson;
 
 /**
  * /**
@@ -27,9 +23,41 @@ import android.widget.Toast;
  * 　　　　　┗┻┛　┗┻┛
  * ━━━━━━神兽出没━━━━━━by:zhaoyaobang
  * <p>
- * Created by zhaoyaobang on 2018/2/27.
+ * Created by zhaoyaobang on 2018/4/3.
  */
+public class VercodeResult {
 
-public class JudgePhoneNums {
+	/**
+	 * httpStatus :
+	 * error :
+	 * status :
+	 */
 
+	private int httpStatus;
+	private String error;
+	private int status;
+
+	public int getHttpStatus() {
+		return httpStatus;
+	}
+
+	public void setHttpStatus(int httpStatus) {
+		this.httpStatus = httpStatus;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
 }

@@ -41,9 +41,10 @@ public class SearchActivity extends BaseActivity {
 			@Override
 			public void SearchAciton(String string) {
 
-				searchLectureRequest();
-			/*	Intent intent=new Intent(SearchActivity.this,ResultSiftActivity.class);
-				startActivity(intent);*/
+				searchStr=searchEdit.getText().toString();
+				Intent intent=new Intent(SearchActivity.this,ResultSiftActivity.class);
+				intent.putExtra("search_key",searchStr);
+				startActivity(intent);
 
 			}
 		});
@@ -73,34 +74,6 @@ public class SearchActivity extends BaseActivity {
 	@Override
 	public void onClick(View v) {
 
-	}
-	private void searchLectureRequest(){
-
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					searchStr=searchEdit.getText().toString();
-
-					response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_PORT,searchStr);
-
-					Logger.json(response);
-
-					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
-
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
 	}
 }
 

@@ -55,6 +55,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 	CommentDB comment;
 
 	List<CommentDB> commentList =new ArrayList<>();
+	List<LectureDB> lectureList =new ArrayList<>();
 
 	ListView listView;
 
@@ -123,7 +124,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		titleSecondButton=titleLayout.getSecondButton();
 		titleFirstButton=titleLayout.getFirstButton();
 		listView = (ListView) findViewById(R.id.swipe_target);
-		mAdapter = new CommentAdapter(commentList,MycommentActivity.this);
+		mAdapter = new CommentAdapter(commentList,lectureList,MycommentActivity.this);
 		listView.setAdapter(mAdapter);
 	}
 
@@ -143,9 +144,10 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 	@Override
 	public void itemClick(View v) {
 		int position;
+
 		position = (Integer) v.getTag();
 
-		//CommentDB comment= commentList.get(position);
+		CommentDB comment= commentList.get(position);
 
 		switch (v.getId()){
 			case R.id.comment_user_layout:

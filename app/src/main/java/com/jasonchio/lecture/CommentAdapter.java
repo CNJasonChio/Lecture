@@ -49,12 +49,14 @@ import java.util.List;
 public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 
 	private List<CommentDB> commentList;
+	private List<LectureDB> lectureList;
 	private Context context;
 	private InnerItemOnclickListener listener;
 
-	public CommentAdapter(List<CommentDB> list,Context context){
-		this.commentList=list;
+	public CommentAdapter(List<CommentDB> commentDBList,List<LectureDB> lectureDBList,Context context){
+		this.commentList=commentDBList;
 		this.context=context;
+		this.lectureList=lectureDBList;
 	}
 
 	@Override
@@ -77,7 +79,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 	public View getView(int position, View view, ViewGroup parent) {
 		final ViewHolder viewHolder;
 		final CommentDB comment=commentList.get(position);
-//		LectureDB lecture=comment.getLectureDB();
+		final LectureDB lecture=lectureList.get(position);
 
 		if (view == null) {
 			viewHolder = new ViewHolder();
@@ -115,21 +117,22 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		viewHolder.commentLikeLayout.setTag(position);
 		viewHolder.commentText.setTag(position);
 
-//		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
-//		/*
-//		评论对应的讲座的效果图，待修复
-//		viewHolder.lectureImage.setImageResource(lecture.getLectureImage());*/
-//		viewHolder.lectureContent.setText(lecture.getLectureContent());
-//		viewHolder.lectureTime.setText(lecture.getLectureTime());
-//		viewHolder.lectureSource.setText(lecture.getLecutreSource());
-//		viewHolder.lectureLikers.setText(String.valueOf(lecture.getLecutreLikers()));
+		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
+		/*
+		评论对应的讲座的效果图，待修复
+		viewHolder.lectureImage.setImageResource(lecture.getLectureImage());*/
+		viewHolder.lectureContent.setText(lecture.getLectureContent());
+		viewHolder.lectureTime.setText(lecture.getLectureTime());
+		viewHolder.lectureSource.setText(lecture.getLecutreSource());
+		viewHolder.lectureLikers.setText(String.valueOf(lecture.getLecutreLikers()));
 
-		/*评论对应的用户信息，待修复
-		viewHolder.userPhoto.setImageResource(comment.getUserPhotoId());
 		viewHolder.commentText.setText(comment.getCommentContent());
-		viewHolder.userName.setText(comment.getUserName());
 		viewHolder.commentTime.setText(comment.getCommentTime());
 		viewHolder.commentLikers.setText(String.valueOf(comment.getCommentLikers()));
+
+/*		//评论对应的用户信息，待修复
+		viewHolder.userPhoto.setImageResource(comment.getUserPhotoId());
+		viewHolder.userName.setText(comment.getUserName());
 		viewHolder.commentLikersImage.setImageResource(comment.getCommentLikersImage());*/
 		return view;
 	}

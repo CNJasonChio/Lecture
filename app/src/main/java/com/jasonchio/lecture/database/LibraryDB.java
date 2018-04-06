@@ -36,13 +36,20 @@ public class LibraryDB extends DataSupport {
 
 	String libraryContent;      //图书馆正文
 
-	String libraryUri;          //图书馆源地址的URL
+	String libraryUrl;          //图书馆源地址的URL
 
-	String libraryImageUri;     //图书馆照片的URL
+	String libraryImageUrl;     //图书馆照片的URL
 
 	double libraryLatitude;     //图书馆纬度
 
 	double libraryLongitude;    //图书馆经度
+
+	public LibraryDB() {
+	}
+
+	public LibraryDB(String libraryName) {
+		this.libraryName = libraryName;
+	}
 
 	public int getLibraryID() {
 		return libraryID;
@@ -68,20 +75,20 @@ public class LibraryDB extends DataSupport {
 		this.libraryContent = libraryContent;
 	}
 
-	public String getLibraryUri() {
-		return libraryUri;
+	public String getLibraryUrl() {
+		return libraryUrl;
 	}
 
-	public void setLibraryUri(String libraryUri) {
-		this.libraryUri = libraryUri;
+	public void setLibraryUrl(String libraryUrl) {
+		this.libraryUrl = libraryUrl;
 	}
 
-	public String getLibraryImageUri() {
-		return libraryImageUri;
+	public String getLibraryImageUrl() {
+		return libraryImageUrl;
 	}
 
-	public void setLibraryImageUri(String libraryImageUri) {
-		this.libraryImageUri = libraryImageUri;
+	public void setLibraryImageUrl(String libraryImageUrl) {
+		this.libraryImageUrl = libraryImageUrl;
 	}
 
 	public double getLibraryLatitude() {
@@ -99,4 +106,5 @@ public class LibraryDB extends DataSupport {
 	public void setLibraryLongitude(double libraryLongitude) {
 		this.libraryLongitude = libraryLongitude;
 	}
+
 }

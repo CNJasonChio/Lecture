@@ -186,7 +186,7 @@ public class MyInfoActivity extends BaseActivity {
 			String days;
 			days = new StringBuffer().append(mYear).append("年").append(mMonth).append("月").append(mDay).append("日").toString();
 			birthdayText.setText(days);
-			changeMyinfoRequest();
+			ChangeMyinfoRequest();
 		}
 	};
 
@@ -206,7 +206,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				schoolText.setText(userInput.getText());
-				changeMyinfoRequest();
+				ChangeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
@@ -237,7 +237,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				nameText.setText(userInput.getText());
-				changeMyinfoRequest();
+				ChangeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
@@ -261,7 +261,7 @@ public class MyInfoActivity extends BaseActivity {
 				// showToast(which+"");
 				sexText.setText(sexArray[which]);
 				dialog.dismiss();// 随便点击一个item消失对话框，不用点击确认取消
-				changeMyinfoRequest();
+				ChangeMyinfoRequest();
 			}
 		});
 		builder3.show();// 让弹出框显示
@@ -352,6 +352,7 @@ public class MyInfoActivity extends BaseActivity {
 						Bitmap bitmap = BitmapFactory.decodeStream(
 								getContentResolver().openInputStream(finalUri));
 						photoImage.setImageBitmap(bitmap);
+						changeUserHead(bitmap);
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 					}
@@ -527,7 +528,7 @@ public class MyInfoActivity extends BaseActivity {
 		}).start();
 	}
 
-	private void changeMyinfoRequest(){
+	private void ChangeMyinfoRequest(){
 
 		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
 		//showLectureInfo();
@@ -545,6 +546,39 @@ public class MyInfoActivity extends BaseActivity {
 					userBirthday=birthdayText.getText().toString();
 
 					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,4,userName,"15817174056",userSex,userSchool,userBirthday);
+
+					Logger.json(response);
+
+					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void changeUserHead(final Bitmap bitmap){
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+
+		// * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					userName=nameText.getText().toString();
+					userSex=sexText.getText().toString();
+					userSchool=schoolText.getText().toString();
+					userBirthday=birthdayText.getText().toString();
+
+					response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_PORT,4,bitmap);
 
 					Logger.json(response);
 

@@ -2,7 +2,8 @@ package com.jasonchio.lecture;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +16,25 @@ import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.gson.MyFocuseResult;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+import org.litepal.crud.DataSupport;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.dmoral.toasty.Toasty;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+
+import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
 
 /**
  * /**
@@ -61,6 +78,13 @@ public class FocuseFragment extends Fragment  {
 
 	List<LectureDB> lecturelist = new ArrayList<>();
 
+	String response;
+
+	Handler handler;
+
+	int myFocuseRequestResult=0;
+
+	int lectureRequestResult;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -82,11 +106,31 @@ public class FocuseFragment extends Fragment  {
 
 		listView.setAdapter(mAdapter);
 
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (myFocuseRequestResult == 0) {
+							Toasty.success(getContext(), "获取关注讲座成功").show();
+
+						} else if (myFocuseRequestResult == 1) {
+							Toasty.error(getContext(), "数据库无更新").show();
+						} else {
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
+
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				LectureDB lecture=lecturelist.get(position);
 				Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
+				intent.putExtra("lecture_id",lecture.getLectureId());
 				startActivity(intent);
 			}
 		});
@@ -95,8 +139,7 @@ public class FocuseFragment extends Fragment  {
 			@Override
 			public void onRefresh() {
 
-				/*处理逻辑同推荐页面，加数据库筛选条件（关注的图书馆）*/
-				//lecturelist.add(lecture);
+				MyFocuseRequest();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -106,9 +149,6 @@ public class FocuseFragment extends Fragment  {
 			@Override
 			public void onLoadMore() {
 
-				//lecturelist.add(lecture);
-				mAdapter.notifyDataSetChanged();
-				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
 
@@ -125,4 +165,77 @@ public class FocuseFragment extends Fragment  {
 			}
 		});
 	}
+
+	private void MyFocuseRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,ConstantClass.userOnline);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					myFocuseRequestResult = Utility.handelFocuseLectureResponse(response);
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void LectureRequest() {
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					int lastLecureID=Utility.lastLetureinDB();
+
+					Logger.d("lastLecureID"+lastLecureID);
+
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+
+					Logger.json(response);
+
+					lectureRequestResult = Utility.handleLectureResponse(response);
+
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+/*	private void showLectureInfoToTop() {
+
+		List<LectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(mAdapter.getCount()).find(LectureDB.class);
+
+		Logger.d(mAdapter.getCount());
+		if(lectureDBList.size()<1){
+			LectureRequest();
+			return;
+		}
+		lecturelist.addAll(0,lectureDBList);
+
+		listView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
+	}*/
 }

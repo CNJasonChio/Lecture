@@ -32,19 +32,24 @@ public class CommentDB extends DataSupport{
 
 	int commentId;       //评论的ID
 
-	String commentuserId;   //该评论的用户ID
+	String  commentuserName;   //该评论的用户名
 
-	String commentlecureId; //该评论的讲座ID
+	int  commentlecureId; //该评论的讲座ID
 
 	String commentContent;  //评论的内容
 
 	String commentTime;     //评论的时间
 
-	String commentLikers;   //评论的点赞数
+	int commentLikers;   //评论的点赞数
 
-	LectureDB lectureDB;    //评论对应的讲座
+	public CommentDB(String commentContent, String commentTime, int commentLikers, LectureDB lectureDB) {
+		this.commentContent = commentContent;
+		this.commentTime = commentTime;
+		this.commentLikers = commentLikers;
+	}
 
-
+	public CommentDB() {
+	}
 
 	public int getCommentId() {
 		return commentId;
@@ -55,18 +60,18 @@ public class CommentDB extends DataSupport{
 	}
 
 	public String getCommentuserId() {
-		return commentuserId;
+		return commentuserName;
 	}
 
-	public void setCommentuserId(String commentuserId) {
-		this.commentuserId = commentuserId;
+	public void setCommentuserId(String commentuserName) {
+		this.commentuserName = commentuserName;
 	}
 
-	public String getCommentlecureId() {
+	public int getCommentlecureId() {
 		return commentlecureId;
 	}
 
-	public void setCommentlecureId(String commentlecureId) {
+	public void setCommentlecureId(int commentlecureId) {
 		this.commentlecureId = commentlecureId;
 	}
 
@@ -86,19 +91,12 @@ public class CommentDB extends DataSupport{
 		this.commentTime = commentTime;
 	}
 
-	public String getCommentLikers() {
+	public int getCommentLikers() {
 		return commentLikers;
 	}
 
-	public void setCommentLikers(String commentLikers) {
+	public void setCommentLikers(int commentLikers) {
 		this.commentLikers = commentLikers;
 	}
 
-	public LectureDB getLectureDB() {
-		return lectureDB;
-	}
-
-	public void setLectureDB(LectureDB lectureDB) {
-		this.lectureDB = lectureDB;
-	}
 }
