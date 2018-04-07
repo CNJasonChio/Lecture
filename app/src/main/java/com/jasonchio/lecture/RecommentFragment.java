@@ -175,7 +175,6 @@ public class RecommentFragment extends Fragment {
 
 					int lastLecureID=Utility.lastLetureinDB();
 
-					lastLecureID=10;
 					Logger.d("lastLecureID"+lastLecureID);
 
 					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
@@ -199,17 +198,6 @@ public class RecommentFragment extends Fragment {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		ContentRequest("http://119.29.93.31:2000/1.txt", new Callback() {
-			@Override
-			public void onFailure(Call call, IOException e) {
-				Logger.d("content获取失败");
-			}
-
-			@Override
-			public void onResponse(Call call, Response response) throws IOException {
-				Utility.handleContentResponse(response.body().string());
-			}
-		});
 		List<LectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(mAdapter.getCount()).find(LectureDB.class);
 
 		Logger.d(mAdapter.getCount());

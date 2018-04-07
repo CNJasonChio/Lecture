@@ -23,7 +23,15 @@ import com.orhanobut.logger.Logger;
 
 import org.litepal.crud.DataSupport;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+
+import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
 
 /**
  * /**
@@ -176,8 +184,11 @@ public class Utility {
 				lectureDB.setLecutreSource(lecture.getLecture_source());
 				lectureDB.setLecutreLikers(lecture.getLecture_fans_amount());
 				lectureDB.setLecutreUrl(lecture.getLecture_url());
-				//lectureDB.setLectureContent(lecture);
+				lectureDB.setLectureContent(lecture.getLecture_information());
 				lectureDB.save();
+				if(lectureDB.getLectureContent()!=null && lectureDB.getLectureContent().length()!=0){
+					getLectureContent(lectureDB.getLectureId(),lectureDB.getLectureContent());
+				}
 			}
 		}
 
@@ -239,7 +250,7 @@ public class Utility {
 		List<Integer> focuseLibrary=result.getFocus_library_id();
 
 		if(state==0){
-			String userFocuseLirary=null;
+			String userFocuseLirary="";
 			for(int focuse:focuseLibrary){
 				userFocuseLirary +=Integer.toString(focuse)+",";
 			}
@@ -391,13 +402,53 @@ public class Utility {
 		return commentID;
 	}
 
-	public static void handleContentResponse(String response){
-		Logger.d(response);
+	public static void handleContentResponse(String response,int lectureId){
+
+		if(!TextUtils.isEmpty(response)){
+			Logger.d(response);
+
+			LectureDB lectureDB=new LectureDB();
+			lectureDB.setLectureContent(response);
+
+			lectureDB.updateAll("lectureId=?",Integer.toString(lectureId));
+
+		}
 	}
 
 	//分割用户的关注、想看、评论ID字符串
 	public static String[] getStrings(String userString){
+
 		String[] result = userString.split(",");
 		return result;
 	}
+
+	public static String getUserFocuse(int userID){
+
+			List<UserDB> userDBList=DataSupport.where("userId=?",Integer.toString(userID)).find(UserDB.class);
+			String userFocuse=null;
+			for(UserDB userDB:userDBList){
+				userFocuse=userDB.getUserFocuseLirary();
+			}
+			return userFocuse;
+	}
+
+	public static boolean getLectureContent(final int lectureID, String lectureInfo){
+
+		final boolean[] result = new boolean[1];
+		ContentRequest(lectureInfo, new Callback() {
+			@Override
+			public void onFailure(Call call, IOException e) {
+				Logger.d("content获取失败");
+				result[0]=false;
+			}
+
+			@Override
+			public void onResponse(Call call, Response response) throws IOException {
+				Utility.handleContentResponse(response.body().string(),lectureID);
+				result[0] =true;
+			}
+		});
+		return result[0];
+	}
+
 }

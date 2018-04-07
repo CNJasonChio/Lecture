@@ -85,6 +85,8 @@ public class FocuseFragment extends Fragment  {
 	int myFocuseRequestResult=0;
 
 	int lectureRequestResult;
+
+	ListView listView;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -100,7 +102,7 @@ public class FocuseFragment extends Fragment  {
 
 		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
 
-		ListView listView = (ListView) rootview.findViewById(R.id.swipe_target);
+		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
 		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem, lecturelist);
 
@@ -112,14 +114,17 @@ public class FocuseFragment extends Fragment  {
 				switch (msg.what){
 					case 1:
 						if (myFocuseRequestResult == 0) {
-							Toasty.success(getContext(), "获取关注讲座成功").show();
-
+							showLectureInfoToTop();
 						} else if (myFocuseRequestResult == 1) {
 							Toasty.error(getContext(), "数据库无更新").show();
 						} else {
 							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
 						}
 						break;
+					case 2:
+						if(lectureRequestResult==0){
+							showLectureInfoToTop();
+						}
 				}
 				return true;
 			}
@@ -140,6 +145,7 @@ public class FocuseFragment extends Fragment  {
 			public void onRefresh() {
 
 				MyFocuseRequest();
+
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -211,7 +217,7 @@ public class FocuseFragment extends Fragment  {
 
 					lectureRequestResult = Utility.handleLectureResponse(response);
 
-					handler.sendEmptyMessage(1);
+					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -224,18 +230,30 @@ public class FocuseFragment extends Fragment  {
 	}
 
 	//将从数据库中查找到的讲座显示到界面中
-/*	private void showLectureInfoToTop() {
+	private void showLectureInfoToTop() {
 
-		List<LectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(mAdapter.getCount()).find(LectureDB.class);
+		String userFocuse=Utility.getUserFocuse(ConstantClass.userOnline);
 
-		Logger.d(mAdapter.getCount());
-		if(lectureDBList.size()<1){
-			LectureRequest();
-			return;
+		String[] focuseLibrary=Utility.getStrings(userFocuse);
+
+		List<LectureDB> lectureDBList=new ArrayList<>();
+
+		for(int i=0;i<focuseLibrary.length;i++){
+			List<LectureDB> tempList= DataSupport.where("lectureId=?",focuseLibrary[1]).find(LectureDB.class);
+			if(tempList.size()<1){
+				LectureRequest();
+				return;
+			}else{
+				for(LectureDB lectureDB:tempList){
+					lectureDBList.add(lectureDB);
+				}
+			}
 		}
+
 		lecturelist.addAll(0,lectureDBList);
 
 		listView.setSelection(0);
+
 		mAdapter.notifyDataSetChanged();
-	}*/
+	}
 }

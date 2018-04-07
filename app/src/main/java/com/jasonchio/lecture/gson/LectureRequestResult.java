@@ -124,6 +124,7 @@ public class LectureRequestResult {
 		private String lecture_source;
 		private String lecture_url;
 		private int lecture_fans_amount;
+		private String lecture_information;
 
 		public static LectureBean objectFromData(String str) {
 
@@ -223,6 +224,14 @@ public class LectureRequestResult {
 
 		public void setLecture_fans_amount(int lecture_fans_amount) {
 			this.lecture_fans_amount = lecture_fans_amount;
+		}
+
+		public String getLecture_information() {
+			return lecture_information;
+		}
+
+		public void setLecture_information(String lecture_information) {
+			this.lecture_information = lecture_information;
 		}
 	}
 }

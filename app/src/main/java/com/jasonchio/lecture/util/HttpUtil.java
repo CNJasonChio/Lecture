@@ -1067,6 +1067,7 @@ public class HttpUtil {
 	public static String changeUserHead(String address, int port, int userID,Bitmap userHead) throws IOException, JSONException {
 
 		Logger.d("changeUserInfo");
+
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
 		userHead.compress(Bitmap.CompressFormat.PNG,100,bout);
@@ -1089,7 +1090,7 @@ public class HttpUtil {
 			//创建输出流对象outputStream
 			outputStream = socket.getOutputStream();
 			//写入要发送给服务器的数据
-			outputStream.write(userID);
+			//outputStream.write(userID);
 			outputStream.write(bout.toByteArray());
 			//发送数据到服务端
 			outputStream.flush();
