@@ -36,7 +36,7 @@ public class MyWantedResult {
 	 */
 
 	private int state;
-	private List<String> want_lectures_id;
+	private List<Integer> want_lectures_id;
 
 	public int getState() {
 		return state;
@@ -46,11 +46,11 @@ public class MyWantedResult {
 		this.state = state;
 	}
 
-	public List<String> getWant_lectures_id() {
+	public List<Integer> getWant_lectures_id() {
 		return want_lectures_id;
 	}
 
-	public void setWant_lectures_id(List<String> want_lectures_id) {
+	public void setWant_lectures_id(List<Integer> want_lectures_id) {
 		this.want_lectures_id = want_lectures_id;
 	}
 }

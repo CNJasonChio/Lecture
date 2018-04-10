@@ -58,6 +58,7 @@ public class HttpUtil {
 
 		//向服务器发送的json数据
 		JSONObject sendJson = new JSONObject();
+
 		sendJson.put("userPhone", userPhone);
 		sendJson.put("userPwd", userPwd);
 
@@ -236,7 +237,7 @@ public class HttpUtil {
 	}
 
 	//请求讲座数据
-	public static String LectureRequest(String address, int port, int lectureID) throws IOException, JSONException {
+	public static String LectureRequest(String address, int port, long lectureID) throws IOException, JSONException {
 
 		Logger.d("LectureRequset started");
 
@@ -297,7 +298,7 @@ public class HttpUtil {
 	}
 
 	//请求评论信息
-	public static String CommentRequest(String address, int port,int commentID) throws IOException, JSONException {
+	public static String CommentRequest(String address, int port,long commentID) throws IOException, JSONException {
 
 		Logger.d("CommentzsRequset started");
 
@@ -358,7 +359,7 @@ public class HttpUtil {
 	}
 
 	//请求用户信息
-	public static String UserInfoRequest(String address, int port, int userID) throws IOException, JSONException {
+	public static String UserInfoRequest(String address, int port,long userID) throws IOException, JSONException {
 
 		Logger.d("UserInfoRequest started");
 
@@ -415,7 +416,7 @@ public class HttpUtil {
 	}
 
 	//修改用户个人信息
-	public static String changeUserInfo(String address, int port,int userID, String userName, String userPhone, String userSex, String userSchool, String userBirthday) throws IOException, JSONException {
+	public static String changeUserInfo(String address, int port,long userID, String userName, String userPhone, String userSex, String userSchool, String userBirthday) throws IOException, JSONException {
 
 		Logger.d("changeUserInfo");
 
@@ -594,7 +595,7 @@ public class HttpUtil {
 	}
 
 	//获取“我的关注”
-	public static String MyFocusedRequest(String address, int port, int userId) throws JSONException, IOException {
+	public static String MyFocusedRequest(String address, int port, long userId) throws JSONException, IOException {
 
 		Logger.d("MyFocusedRequest");
 		JSONObject testjson = new JSONObject();
@@ -650,7 +651,7 @@ public class HttpUtil {
 	}
 
 	//获取“我的点评”
-	public static String MycommentRequest(String address, int port, int userId) throws IOException, JSONException {
+	public static String MycommentRequest(String address, int port, long userId) throws IOException, JSONException {
 
 		Logger.d("MycommentRequest");
 
@@ -768,7 +769,7 @@ public class HttpUtil {
 	}
 
 	//添加图书馆至“我的关注”（或取消）
-	public static String AddLibraryFocusedRequest(String address, int port, int userId, int libraryId, int isfocused) throws IOException, JSONException {
+	public static String AddLibraryFocusedRequest(String address, int port, long userId, long libraryId, int isfocused) throws IOException, JSONException {
 
 		Logger.d("AddLibraryFocusedRequest");
 
@@ -886,7 +887,7 @@ public class HttpUtil {
 	}
 
 	//提交用户位置信息
-	public static String SendPosition(String address, int port, int userId, double userLongtitude, double userLatitude) throws IOException, JSONException {
+	public static String SendPosition(String address, int port, long userId, double userLongtitude, double userLatitude) throws IOException, JSONException {
 
 		Logger.d("SendPosition");
 		JSONObject testjson = new JSONObject();
@@ -946,7 +947,7 @@ public class HttpUtil {
 	}
 
 	//评论讲座
-	public static String AddCommentRequest(String address, int port, String commentContent, int userId, int lectureId, String commentTime) throws IOException, JSONException {
+	public static String AddCommentRequest(String address, int port, String commentContent, long userId, int lectureId, String commentTime) throws IOException, JSONException {
 
 		Logger.d("AddCommentRequest");
 		JSONObject testjson = new JSONObject();
@@ -1005,7 +1006,7 @@ public class HttpUtil {
 	}
 
 	//给评论点赞
-	public static String LikeThisComment(String address, int port, int commentId, int userID,int islike) throws IOException, JSONException {
+	public static String LikeThisComment(String address, int port, long commentId, long userID,int islike) throws IOException, JSONException {
 
 		Logger.d("LikeThisComment");
 
@@ -1064,7 +1065,7 @@ public class HttpUtil {
 	}
 
 	//修改用户头像
-	public static String changeUserHead(String address, int port, int userID,Bitmap userHead) throws IOException, JSONException {
+	public static String changeUserHead(String address, int port,long userID,Bitmap userHead,int size) throws IOException, JSONException {
 
 		Logger.d("changeUserInfo");
 
@@ -1073,6 +1074,13 @@ public class HttpUtil {
 		userHead.compress(Bitmap.CompressFormat.PNG,100,bout);
 
 		String response;
+
+		JSONObject testjson = new JSONObject();
+
+		testjson.put("userID",userID);
+		testjson.put("size",size);
+
+		String test = testjson.toString();
 
 		Socket socket;
 
@@ -1090,7 +1098,7 @@ public class HttpUtil {
 			//创建输出流对象outputStream
 			outputStream = socket.getOutputStream();
 			//写入要发送给服务器的数据
-			//outputStream.write(userID);
+			outputStream.write(test.getBytes());
 			outputStream.write(bout.toByteArray());
 			//发送数据到服务端
 			outputStream.flush();

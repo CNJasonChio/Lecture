@@ -1,6 +1,8 @@
-package com.jasonchio.lecture.database;
+package com.jasonchio.lecture.greendao;
 
-import org.litepal.crud.DataSupport;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * /**
@@ -28,9 +30,11 @@ import org.litepal.crud.DataSupport;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class InterimLectureDB extends DataSupport {
+@Entity
+public class InterimLectureDB {
 
-	int lectureId;       //讲座ID
+	@Id
+	long lectureId;       //讲座ID
 
 	String lectureTitle;    //讲座标题
 
@@ -48,37 +52,36 @@ public class InterimLectureDB extends DataSupport {
 
 	String lectureImage;    //讲座图片
 
-
-	public InterimLectureDB(String lectureTitle, String lectureTime, String lecutreSource, String lectureContent, int lecutreLikers) {
+	@Generated(hash = 1043590360)
+	public InterimLectureDB(long lectureId, String lectureTitle,
+			String lectureLocation, String lectureTime, String lecutreSource,
+			String lectureContent, String lectureUrl, int lecutreLikers,
+			String lectureImage) {
+		this.lectureId = lectureId;
 		this.lectureTitle = lectureTitle;
 		this.lectureLocation = lectureLocation;
 		this.lectureTime = lectureTime;
 		this.lecutreSource = lecutreSource;
 		this.lectureContent = lectureContent;
+		this.lectureUrl = lectureUrl;
 		this.lecutreLikers = lecutreLikers;
-	}
-
-	public InterimLectureDB() {
-	}
-
-	public String getLectureImage() {
-		return lectureImage;
-	}
-
-	public void setLectureImage(String lectureImage) {
 		this.lectureImage = lectureImage;
 	}
 
-	public int getLectureId() {
-		return lectureId;
+	@Generated(hash = 1900539246)
+	public InterimLectureDB() {
 	}
 
-	public void setLectureId(int lectureId) {
+	public long getLectureId() {
+		return this.lectureId;
+	}
+
+	public void setLectureId(long lectureId) {
 		this.lectureId = lectureId;
 	}
 
 	public String getLectureTitle() {
-		return lectureTitle;
+		return this.lectureTitle;
 	}
 
 	public void setLectureTitle(String lectureTitle) {
@@ -86,7 +89,7 @@ public class InterimLectureDB extends DataSupport {
 	}
 
 	public String getLectureLocation() {
-		return lectureLocation;
+		return this.lectureLocation;
 	}
 
 	public void setLectureLocation(String lectureLocation) {
@@ -94,7 +97,7 @@ public class InterimLectureDB extends DataSupport {
 	}
 
 	public String getLectureTime() {
-		return lectureTime;
+		return this.lectureTime;
 	}
 
 	public void setLectureTime(String lectureTime) {
@@ -102,35 +105,43 @@ public class InterimLectureDB extends DataSupport {
 	}
 
 	public String getLecutreSource() {
-		return lecutreSource;
+		return this.lecutreSource;
 	}
 
 	public void setLecutreSource(String lecutreSource) {
 		this.lecutreSource = lecutreSource;
 	}
 
-	public String getLecutreUrl() {
-		return lectureUrl;
+	public String getLectureContent() {
+		return this.lectureContent;
 	}
 
-	public void setLecutreUrl(String lecutreUri) {
-		this.lectureUrl = lecutreUri;
+	public void setLectureContent(String lectureContent) {
+		this.lectureContent = lectureContent;
+	}
+
+	public String getLectureUrl() {
+		return this.lectureUrl;
+	}
+
+	public void setLectureUrl(String lectureUrl) {
+		this.lectureUrl = lectureUrl;
 	}
 
 	public int getLecutreLikers() {
-		return lecutreLikers;
+		return this.lecutreLikers;
 	}
 
 	public void setLecutreLikers(int lecutreLikers) {
 		this.lecutreLikers = lecutreLikers;
 	}
 
-
-	public String getLectureContent() {
-		return lectureContent;
+	public String getLectureImage() {
+		return this.lectureImage;
 	}
 
-	public void setLectureContent(String lectureContent) {
-		this.lectureContent = lectureContent;
+	public void setLectureImage(String lectureImage) {
+		this.lectureImage = lectureImage;
 	}
+
 }

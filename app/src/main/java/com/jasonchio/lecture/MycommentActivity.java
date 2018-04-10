@@ -1,28 +1,34 @@
 package com.jasonchio.lecture;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
-import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.database.CommentDB;
-import com.jasonchio.lecture.database.LectureDB;
+import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;;
+import com.jasonchio.lecture.greendao.CommentDB;
+import com.jasonchio.lecture.greendao.CommentDBDao;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.dmoral.toasty.Toasty;
 
 public class MycommentActivity extends BaseActivity implements CommentAdapter.InnerItemOnclickListener,AdapterView.OnItemClickListener{
 
@@ -36,23 +42,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	Button titleFirstButton;
 
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
-
-	int likers =0;
-
-	int lecturelikes=0;
-
-	boolean islike=false;
-
-	LectureDB lecture;
-
-	String time="2017年12月7日(周三)14：30";
-
-	String userName="赵耀邦";
-
-	String commentText="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EX";
-
-	CommentDB comment;
+	int islike;
 
 	List<CommentDB> commentList =new ArrayList<>();
 	List<LectureDB> lectureList =new ArrayList<>();
@@ -60,6 +50,21 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 	ListView listView;
 
 	String response;
+
+	DaoSession daoSession;
+
+	CommentDBDao mCommentDao;
+
+	LectureDBDao mLectureDao;
+
+	UserDBDao mUserDao;
+
+	int commentRequestResult;
+
+	int lectureRequestResult;
+
+	Handler handler;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,16 +75,13 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		//初始化视图
 		initView();
 
-		MyCommentRequest();
-
 		mAdapter.setOnInnerItemOnClickListener(this);
 		listView.setOnItemClickListener(this);
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				initComment();
-				commentList.add(comment);
+
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -88,17 +90,36 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				initComment();
-				commentList.add(comment);
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
 
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if ( commentRequestResult == 0) {
+							showCommentInfoToTop();
+						} else if ( commentRequestResult == 1) {
+							Toasty.error(MycommentActivity.this, "数据库无更新").show();
+						} else {
+							Toasty.error(MycommentActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							showCommentInfoToTop();
+						}
+						break;
+				}
+				return true;
+			}
+		});
 		autoRefresh();
+
 	}
-
-
 
 	private void autoRefresh() {
 		swipeToLoadLayout.post(new Runnable() {
@@ -126,6 +147,11 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		listView = (ListView) findViewById(R.id.swipe_target);
 		mAdapter = new CommentAdapter(commentList,lectureList,MycommentActivity.this);
 		listView.setAdapter(mAdapter);
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mCommentDao=daoSession.getCommentDBDao();
+		mLectureDao=daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -136,8 +162,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		CommentDB comment= commentList.get(position);
-	//	LectureDB lecture1=comment.getLecture();
 		Intent intent=new Intent(MycommentActivity.this,LectureDetailActivity.class);
+		intent.putExtra("lecture_id",comment.getCommentlecureId());
 		startActivity(intent);
 	}
 
@@ -154,34 +180,27 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				Toast.makeText(MycommentActivity.this,"查看评论人资料",Toast.LENGTH_SHORT).show();
 				break;
 			case R.id.comment_lecture_layout:
-
 				Intent intent=new Intent(MycommentActivity.this,LectureDetailActivity.class);
+				intent.putExtra("lecture_id",comment.getCommentlecureId());
 				startActivity(intent);
 				break;
 			case R.id.comment_like_layout:
-/*
-				if(islike){
+				if(islike==1){
 					Toast.makeText(MycommentActivity.this,"取消点赞",Toast.LENGTH_SHORT).show();
-					comment.setCommentLikers(comment.getCommentLikers()-1);
+					/*comment.setCommentLikers(comment.getCommentLikers()-1);
 					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like);
-					mAdapter.notifyDataSetChanged();
-					islike=false;
+					mAdapter.notifyDataSetChanged();*/
+					islike=0;
 				}else{
 					Toast.makeText(MycommentActivity.this,"点赞",Toast.LENGTH_SHORT).show();
-					comment.setCommentLikers(comment.getCommentLikers()+1);
+					/*comment.setCommentLikers(comment.getCommentLikers()+1);
 					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like_selected);
-					mAdapter.notifyDataSetChanged();
-					islike=true;
-				}*/
+					mAdapter.notifyDataSetChanged()*/;
+					islike=1;
+				}
 				break;
 			default:
 		}
-	}
-
-	private void initComment(){
-		lecturelikes++;
-		/*lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆", lecturelikes,contents,R.drawable.test_image);
-		comment=new Comment(R.drawable.test_oliver,userName,lecture,time, likers,contents );*/
 	}
 
 	private void MyCommentRequest() {
@@ -191,10 +210,11 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_PORT,4);
+					response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_PORT,ConstantClass.userOnline);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					commentRequestResult = Utility.handleCommonResponse(response);
+
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -204,5 +224,108 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				}
 			}
 		}).start();
+	}
+
+	private void CommentRequest(){
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					long lastCommentID=Utility.lastCommentinDB(mCommentDao);
+
+					Logger.d("lastCommentID "+lastCommentID);
+
+					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_PORT,lastCommentID);
+
+					Logger.json(response);
+
+					commentRequestResult= Utility.handleCommentResponse(response,mCommentDao);
+
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void LectureRequest() {
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
+
+					Logger.d("lastLecureID"+lastLecureID);
+
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+
+					Logger.json(response);
+
+					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
+
+					handler.sendEmptyMessage(2);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+	private void showCommentInfoToTop() {
+
+		String userComment=Utility.getUserComment(ConstantClass.userOnline,mUserDao);
+
+		String[] myComment = Utility.getStrings(userComment);
+
+		if(myComment.length==0){
+			MyCommentRequest();
+			return;
+		}else{
+			CommentDB comment;
+			for(int i=0;i<myComment.length;i++){
+				comment=mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(myComment[i])).build().unique();
+				if(comment ==null){
+					CommentRequest();
+					return;
+				}else{
+					LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(comment.getCommentlecureId())).build().unique();
+					if(lecture!=null){
+						lectureList.add(lecture);
+						commentList.add(comment);
+					}else{
+						LectureRequest();
+						return;
+					}
+
+				}
+			}
+		}
+
+		listView.setSelection(0);
+
+		mAdapter.notifyDataSetChanged();
 	}
 }

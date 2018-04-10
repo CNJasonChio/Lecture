@@ -1,6 +1,5 @@
 package com.jasonchio.lecture;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -8,16 +7,20 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.greendao.CommentDBDao;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class AddCommentActivity extends BaseActivity {
 
@@ -26,22 +29,28 @@ public class AddCommentActivity extends BaseActivity {
 	Button titleSecondButton;
 
 	TextView comment_text;
+
 	List<LectureDB> lectureList=new ArrayList<>();
+
 	LectureAdapter lectureAdapter;
 
 	String contents;
 
 	String response;
 
-	int consts=0;
-
-	LectureDB lecture=new LectureDB("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",contents,100);
-
 	ListView listView;
 
-	String commentTime="2018-04-03 14:30:11";
-
 	int lectureID=0;
+
+	DaoSession daoSession;
+
+	LectureDBDao mLectureDao;
+
+	UserDBDao mUserDao;
+
+	int addCommentResult;
+
+	String commentTime;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -49,12 +58,13 @@ public class AddCommentActivity extends BaseActivity {
 
 		Intent intent=getIntent();
 		lectureID=intent.getIntExtra("lecture_id",0);
+
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
 
-		lectureList.add(lecture);
+		showLecure();
 
 		titleFirstButton.setOnClickListener(this);
 		titleSecondButton.setOnClickListener(this);
@@ -78,6 +88,10 @@ public class AddCommentActivity extends BaseActivity {
 		listView=(ListView)findViewById(R.id.comment_lecture_selected_list);
 		lectureAdapter=new LectureAdapter(AddCommentActivity.this,R.layout.lecure_listitem,lectureList);
 		listView.setAdapter(lectureAdapter);
+
+		daoSession = ((MyApplication)getApplication()).getDaoSession();
+		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -88,6 +102,7 @@ public class AddCommentActivity extends BaseActivity {
 				break;
 			}
 			case R.id.title_second_button:{
+				commentTime=Utility.getNowTime();
 				AddCommentRequest();
 				finish();
 				break;
@@ -102,10 +117,11 @@ public class AddCommentActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
+
 					response = HttpUtil.AddCommentRequest(ConstantClass.ADDRESS, ConstantClass. ADD_COMMENT_PORT,contents,ConstantClass.userOnline,lectureID,commentTime);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					addCommentResult = Utility.handleAddCommentResponse(response,mUserDao);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -117,4 +133,8 @@ public class AddCommentActivity extends BaseActivity {
 		}).start();
 	}
 
+	private void showLecure(){
+		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
+		lectureList.add(lecture);
+	}
 }

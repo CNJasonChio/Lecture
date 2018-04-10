@@ -8,17 +8,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-import org.litepal.crud.DataSupport;
-
 import java.io.IOException;
 import java.util.List;
-
 import es.dmoral.toasty.Toasty;
 
 public class LectureDetailActivity extends BaseActivity {
@@ -35,8 +34,6 @@ public class LectureDetailActivity extends BaseActivity {
 	TextView lectureContent;
 	TextView lectureOriginal;
 
-	List<LectureDB> lecture;
-
 	int isWanted =0;
 
 	String response;
@@ -47,6 +44,11 @@ public class LectureDetailActivity extends BaseActivity {
 
 	int lectureId;
 
+	DaoSession daoSession;
+
+	LectureDBDao mLectureDao;
+
+	int changeWantedResult;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,6 +84,9 @@ public class LectureDetailActivity extends BaseActivity {
 		lecturePlace=(TextView)findViewById(R.id.lecture_detail_place_text) ;
 		lectureContent=(TextView)findViewById(R.id.lecture_detail_content_text) ;
 		lectureOriginal=(TextView)findViewById(R.id.lecture_detail_original_text) ;
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mLectureDao=daoSession.getLectureDBDao();
 	}
 	protected void initView(){
 
@@ -152,7 +157,7 @@ public class LectureDetailActivity extends BaseActivity {
 					response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_PORT,4,42,isWanted);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					changeWantedResult = Utility.handleCommonResponse(response);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -164,27 +169,24 @@ public class LectureDetailActivity extends BaseActivity {
 		}).start();
 	}
 
-	private void initLectureDetail(int lecutureId){
+	private void initLectureDetail(long lecutureId){
 		/*
 		* 从数据库中查找
 		* */
-		lecture= DataSupport.where("lectureId=?",Integer.toString(lecutureId)).find(LectureDB.class);
-		if(lecture.size()!=0){
-			for(LectureDB lectureDB:lecture){
+		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lecutureId)).build().unique();
 
-				lectureTitle.setText(lectureDB.getLectureTitle());
-				lectureSource.setText(lectureDB.getLecutreSource());
-				lectureTime.setText(lectureDB.getLectureTime());
-				lecturePlace.setText(lectureDB.getLectureLocation());
-				lectureContent.setText(lectureDB.getLectureContent());
-				source=lectureDB.getLecutreSource();
-				original=lectureDB.getLecutreUrl();
-			}
-		}else{
+		if(lecture!=null){
+			lectureTitle.setText(lecture.getLectureTitle());
+			lectureSource.setText(lecture.getLecutreSource());
+			lectureTime.setText(lecture.getLectureTime());
+			lecturePlace.setText(lecture.getLectureLocation());
+			lectureContent.setText(lecture.getLectureContent());
+			source=lecture.getLecutreSource();
+			original=lecture.getLectureUrl();
+		} else{
 			Toasty.error(LectureDetailActivity.this,"加载讲座信息出错");
 			finish();
 		}
-
 
 	}
 }

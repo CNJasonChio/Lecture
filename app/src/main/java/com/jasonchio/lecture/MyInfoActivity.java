@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
@@ -27,9 +29,15 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.UserDB;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
@@ -38,6 +46,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
+
+import es.dmoral.toasty.Toasty;
 
 import static android.content.ContentValues.TAG;
 
@@ -55,6 +65,8 @@ public class MyInfoActivity extends BaseActivity {
 
 	RelativeLayout birthdayLayout;
 
+	RelativeLayout phoneLayout;
+
 	LinearLayout ll_popup;
 
 	CircleImageView photoImage;
@@ -71,13 +83,14 @@ public class MyInfoActivity extends BaseActivity {
 	TextView birthdayText;
 	String userBirthday=null;
 
+	TextView phoneText;
+	String userPhone;
+
 	TitleLayout titleLayout;
 
 	Button titleFirstButton;
 
 	Uri finalUri;
-
-	int userInfoResult;
 
 	PopupWindow pop;
 
@@ -89,7 +102,17 @@ public class MyInfoActivity extends BaseActivity {
 
 	String response;
 
-	int myinfoRequestResult=-1;
+	int myinfoRequestResult;
+
+	int changeInfoResult;
+
+	int changeUserHeadResult;
+
+	DaoSession daoSession;
+
+	UserDBDao mUserDao;
+
+	Handler handler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +124,8 @@ public class MyInfoActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+		MyinfoRequest();
+
 		photoLayout.setOnClickListener(this);
 		nameLayout.setOnClickListener(this);
 		sexLayout.setOnClickListener(this);
@@ -108,7 +133,34 @@ public class MyInfoActivity extends BaseActivity {
 		birthdayLayout.setOnClickListener(this);
 		titleFirstButton.setOnClickListener(this);
 
-		MyinfoRequest();
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if ( myinfoRequestResult == 0) {
+							showMyinfo();
+						} else {
+							Toasty.error(MyInfoActivity.this, "获取用户信息失败，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(changeInfoResult==0){
+							Toasty.success(MyInfoActivity.this,"修改成功").show();
+						}else {
+							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
+						}
+						break;
+					case 3:
+						if(changeUserHeadResult==0){
+							Toasty.success(MyInfoActivity.this,"修改成功").show();
+						}else{
+							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
+						}
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -128,13 +180,19 @@ public class MyInfoActivity extends BaseActivity {
 		sexLayout = (RelativeLayout) findViewById(R.id.myinfo_sex_layout);
 		schoolLayout = (RelativeLayout) findViewById(R.id.myinfo_school_layout);
 		birthdayLayout = (RelativeLayout) findViewById(R.id.myinfo_birthday_layout);
+		phoneLayout=(RelativeLayout)findViewById(R.id.myinfo_phone_layout);
 
 		photoImage = (CircleImageView) findViewById(R.id.myinfo_photo_image);
 		nameText = (TextView) findViewById(R.id.myinfo_name_text);
 		sexText = (TextView) findViewById(R.id.myinfo_sex_text);
 		schoolText = (TextView) findViewById(R.id.myinfo_school_text);
 		birthdayText = (TextView) findViewById(R.id.myinfo_birthday_text);
+		phoneText=(TextView)findViewById(R.id.myinfo_phone_text);
+
 		titleFirstButton = titleLayout.getFirstButton();
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mUserDao=daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -146,7 +204,6 @@ public class MyInfoActivity extends BaseActivity {
 			}
 			case R.id.myinfo_profilephoto_layout: {
 				showPopupWindow();
-				//getUserInfo(1);
 				break;
 			}
 			case R.id.myinfo_name_layout: {
@@ -168,6 +225,10 @@ public class MyInfoActivity extends BaseActivity {
 				final int mDay = nowdate.get(Calendar.DAY_OF_MONTH);
 				//调用DatePickerDialog
 				new DatePickerDialog(MyInfoActivity.this, onDateSetListener, mYear, mMonth, mDay).show();
+				break;
+			}
+			case R.id.myinfo_phone_layout:{
+				onSetPhone();
 				break;
 			}
 			default:
@@ -206,6 +267,37 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				schoolText.setText(userInput.getText());
+				ChangeMyinfoRequest();
+			}
+		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				dialog.cancel();
+			}
+		});
+
+		// create alert dialog
+		AlertDialog alertDialog = alertDialogBuilder.create();
+
+		// show it
+		alertDialog.show();
+	}
+
+	private void onSetPhone() {
+		// 使用LayoutInflater来加载dialog_setname.xml布局
+		LayoutInflater layoutInflater = LayoutInflater.from(this);
+		View nameView = layoutInflater.inflate(R.layout.myinfo_dialog_setname, null);
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+		// 使用setView()方法将布局显示到dialog
+		alertDialogBuilder.setView(nameView).setTitle("请输入您的手机号").setMessage("PS：手机号作为唯一登录方式，不可重复");
+
+		final EditText userInput = (EditText) nameView.findViewById(R.id.changename_edit);
+
+		// 设置Dialog按钮
+		alertDialogBuilder.setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				// 获取edittext的内容,显示到textview
+				phoneText.setText(userInput.getText());
 				ChangeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -352,7 +444,9 @@ public class MyInfoActivity extends BaseActivity {
 						Bitmap bitmap = BitmapFactory.decodeStream(
 								getContentResolver().openInputStream(finalUri));
 						photoImage.setImageBitmap(bitmap);
-						changeUserHead(bitmap);
+
+
+						changeUserHead(bitmap,Utility.getBitmapSize(bitmap));
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 					}
@@ -361,8 +455,6 @@ public class MyInfoActivity extends BaseActivity {
 			}
 		}
 	}
-
-
 
 	private void openCamera() {
 		File outputfile = new File(getExternalCacheDir(), "output.png");
@@ -502,22 +594,18 @@ public class MyInfoActivity extends BaseActivity {
 
 	private void MyinfoRequest(){
 
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 
-					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,4 );
+					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,ConstantClass.userOnline );
 
 					Logger.json(response);
 
-					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+					myinfoRequestResult= Utility.handleUserInfoResponse(response,mUserDao);
 
+					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -530,11 +618,6 @@ public class MyInfoActivity extends BaseActivity {
 
 	private void ChangeMyinfoRequest(){
 
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -544,13 +627,20 @@ public class MyInfoActivity extends BaseActivity {
 					userSex=sexText.getText().toString();
 					userSchool=schoolText.getText().toString();
 					userBirthday=birthdayText.getText().toString();
+					userPhone=phoneText.getText().toString();
 
-					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,4,userName,"15817174056",userSex,userSchool,userBirthday);
+					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
 
 					Logger.json(response);
 
-					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
-
+					UserDB user=new UserDB();
+					user.setUserName(userName);
+					user.setUserPhone(userPhone);
+					user.setUserSex(userSex);
+					user.setUserSchool(userSchool);
+					user.setUserBirthday(userBirthday);
+					changeInfoResult= Utility.handleChangeInfoResponse(response,mUserDao,user);
+					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -561,7 +651,7 @@ public class MyInfoActivity extends BaseActivity {
 		}).start();
 	}
 
-	private void changeUserHead(final Bitmap bitmap){
+	private void changeUserHead(final Bitmap bitmap, final int size){
 
 		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
 		//showLectureInfo();
@@ -573,17 +663,13 @@ public class MyInfoActivity extends BaseActivity {
 			public void run() {
 				try {
 
-					userName=nameText.getText().toString();
-					userSex=sexText.getText().toString();
-					userSchool=schoolText.getText().toString();
-					userBirthday=birthdayText.getText().toString();
-
-					response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_PORT,4,bitmap);
+					response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_PORT,ConstantClass.userOnline,bitmap,size);
 
 					Logger.json(response);
 
-					//lectureRequestResult= Utility.handleLectureResponse(response,getContext());
+					changeUserHeadResult= Utility.handleChangeUserHeadResponse(response,mUserDao);
 
+					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -592,5 +678,23 @@ public class MyInfoActivity extends BaseActivity {
 				}
 			}
 		}).start();
+	}
+
+	private void showMyinfo(){
+
+
+		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+
+		String userHead=user.getUserPhotoUrl();
+		if(userHead.length()!=0 && userHead!=null){
+			Glide.with(MyInfoActivity.this).load(userHead).into(photoImage);
+		}else{
+			photoImage.setImageResource(R.mipmap.ic_launcher);
+		}
+		nameText.setText(user.getUserName());
+		sexText.setText(user.getUserSex());
+		schoolText.setText(user.getUserSchool());
+		birthdayText.setText(user.getUserBirthday());
+		phoneText.setText(user.getUserPhone());
 	}
 }

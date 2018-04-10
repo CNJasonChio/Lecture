@@ -11,17 +11,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 import org.json.JSONException;
-import org.litepal.tablemanager.Connector;
-
 import java.io.IOException;
 import es.dmoral.toasty.Toasty;
-
 import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public class LoginActivity extends BaseActivity {
@@ -47,6 +46,9 @@ public class LoginActivity extends BaseActivity {
 	int loginResult = -1;
 
 	Handler handler;
+
+	DaoSession mDaoSession ;
+	UserDBDao mUserDao;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,7 +56,7 @@ public class LoginActivity extends BaseActivity {
 
 		addLogAdapter(new AndroidLogAdapter());
 
-		Connector.getDatabase();
+		//Connector.getDatabase();
 
 		//初始化控件
 		initWidget();
@@ -115,6 +117,9 @@ public class LoginActivity extends BaseActivity {
 		qqLoginImage = (ImageView) findViewById(R.id.login_qq_login);
 		sinaLoginImage = (ImageView) findViewById(R.id.login_sina_login);
 		isCanSee = (ImageView) findViewById(R.id.login_pwd_cansee);
+
+		mDaoSession = ((MyApplication)getApplication()).getDaoSession();
+		mUserDao = mDaoSession.getUserDBDao();
 	}
 
 	@Override
@@ -169,7 +174,7 @@ public class LoginActivity extends BaseActivity {
 			public void run() {
 				try {
 					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone, userPwd);
-					loginResult = Utility.handleLoginRespose(response);
+					loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("通信失败，IO error");

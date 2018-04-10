@@ -47,7 +47,7 @@
                 android:textColor="#BBBBBB"
                 android:textSize="11sp"
                 android:id="@+id/mywanted_lecture_likers_text"
-                android:layout_toLeftOf="@id/mywanted_lecture_likers_iamge"/>
+                android:layout_toLeftOf="@+id/mywanted_lecture_likers_iamge"/>
 
             <ImageView
                 android:layout_width="12dp"

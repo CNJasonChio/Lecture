@@ -1,6 +1,11 @@
-package com.jasonchio.lecture.gson;
+package com.jasonchio.lecture;
 
-import java.util.List;
+import android.app.Application;
+
+import com.jasonchio.lecture.greendao.DaoMaster;
+import com.jasonchio.lecture.greendao.DaoSession;
+
+import org.greenrobot.greendao.database.Database;
 
 /**
  * /**
@@ -25,31 +30,23 @@ import java.util.List;
  * 　　　　　┗┻┛　┗┻┛
  * ━━━━━━神兽出没━━━━━━by:zhaoyaobang
  * <p>
- * Created by zhaoyaobang on 2018/3/31.
+ * Created by zhaoyaobang on 2018/4/8.
  */
-public class MyFocuseResult {
+public class MyApplication extends Application{
 
-	/**
-	 * state :
-	 * focus_library_id :
-	 */
+	public static final boolean ENCRYPTED = false;//是否创建加密数据库
+	private DaoSession daoSession;
 
-	private int state;
-	private List<String> focus_library_id;
+	@Override
+	public void onCreate() {
+		super.onCreate();
 
-	public int getState() {
-		return state;
+		DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture-db");
+		Database db = helper.getWritableDb();
+		daoSession = new DaoMaster(db).newSession();
 	}
 
-	public void setState(int state) {
-		this.state = state;
-	}
-
-	public List<String> getFocus_library_id() {
-		return focus_library_id;
-	}
-
-	public void setFocus_library_id(List<String> focus_library_id) {
-		this.focus_library_id = focus_library_id;
+	public DaoSession getDaoSession() {
+		return daoSession;
 	}
 }

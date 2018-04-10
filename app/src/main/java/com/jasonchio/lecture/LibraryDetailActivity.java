@@ -10,19 +10,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.jasonchio.lecture.database.LibraryDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LibraryDB;
+import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-import org.litepal.crud.DataSupport;
-
 import java.io.IOException;
-import java.util.List;
-
 import es.dmoral.toasty.Toasty;
 
 public class LibraryDetailActivity extends BaseActivity {
@@ -44,12 +40,16 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	String original;
 
-	List<LibraryDB> libraryDBList;
 
 	Handler handler;
 
-	int libraryRequestResult=-1;
+	int libraryRequestResult;
 
+	int changeFocuseResult;
+
+	DaoSession daoSession;
+
+	LibraryDBDao mLibraryDao;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +133,10 @@ public class LibraryDetailActivity extends BaseActivity {
 		titleFirstButton=(Button)findViewById(R.id.library_title_first_button);
 		titleSecondButton=(Button)findViewById(R.id.library_title_second_button);
 		titleLayoutTitleText=(TextView)findViewById(R.id.library_titlelayout_title_text);
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mLibraryDao=daoSession.getLibraryDBDao();
+
 	}
 	protected void initView(){
 
@@ -162,7 +166,7 @@ public class LibraryDetailActivity extends BaseActivity {
 					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,4,10,isFocuse);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					changeFocuseResult = Utility.handleCommonResponse(response);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -173,6 +177,7 @@ public class LibraryDetailActivity extends BaseActivity {
 			}
 		}).start();
 	}
+
 	private void LibraryRequest() {
 
 		new Thread(new Runnable() {
@@ -183,7 +188,7 @@ public class LibraryDetailActivity extends BaseActivity {
 					response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_PORT,libName);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					libraryRequestResult = Utility.handleLibraryResponse(response);
+					libraryRequestResult = Utility.handleLibraryResponse(response,mLibraryDao);
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -201,17 +206,15 @@ public class LibraryDetailActivity extends BaseActivity {
 		* 现在数据库里查找，没有就向服务器请求
 		* */
 
-		libraryDBList= DataSupport.where("libraryName=?",libName).find(LibraryDB.class);
-
-		if(libraryDBList.size()==0){
-			LibraryRequest();
+		LibraryDB library=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
+		if(library!=null){
+			//libraryImage=(ImageView)findViewById(R.id.library_photo_image);
+			libraryName.setText(library.getLibraryName());
+			libraryContent.setText(library.getLibraryContent());
+			original=library.getLibraryUrl();
 		}else{
-			for(LibraryDB libraryDB:libraryDBList){
-				//libraryImage=(ImageView)findViewById(R.id.library_photo_image);
-				libraryName.setText(libraryDB.getLibraryName());
-				//libraryContent=(TextView)findViewById(R.id.library_content_text);
-				original=libraryDB.getLibraryUrl();
-			}
+			LibraryRequest();
 		}
+
 	}
 }

@@ -14,21 +14,18 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 import org.json.JSONException;
-import org.litepal.crud.DataSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import es.dmoral.toasty.Toasty;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
-import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
 
 /**
  * /**
@@ -74,6 +71,10 @@ public class RecommentFragment extends Fragment {
 
 	Handler handler;
 
+	DaoSession daoSession;
+
+	LectureDBDao mLectureDao;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -94,6 +95,9 @@ public class RecommentFragment extends Fragment {
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
 		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem, lecturelist);
+
+		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
+		mLectureDao=daoSession.getLectureDBDao();
 
 		listView.setAdapter(mAdapter);
 
@@ -173,7 +177,7 @@ public class RecommentFragment extends Fragment {
 			public void run() {
 				try {
 
-					int lastLecureID=Utility.lastLetureinDB();
+					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
 
 					Logger.d("lastLecureID"+lastLecureID);
 
@@ -181,7 +185,7 @@ public class RecommentFragment extends Fragment {
 
 					Logger.json(response);
 
-					lectureRequestResult = Utility.handleLectureResponse(response);
+					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
 
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
@@ -198,7 +202,7 @@ public class RecommentFragment extends Fragment {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		List<LectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(mAdapter.getCount()).find(LectureDB.class);
+		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 
 		Logger.d(mAdapter.getCount());
 		if(lectureDBList.size()<1){

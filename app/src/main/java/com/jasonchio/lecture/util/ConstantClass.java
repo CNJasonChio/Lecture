@@ -28,7 +28,7 @@ package com.jasonchio.lecture.util;
 public class ConstantClass {
 
 	//当前登录用户的ID
-	public static int userOnline=0;
+	public static long userOnline=0;
 
 	//服务器地址
 	public static final String ADDRESS="119.29.93.31";
@@ -44,7 +44,7 @@ public class ConstantClass {
 	public static final int COMMENT_REQUEST_PORT=2005;
 	//请求个人信息端口
 	public static final int MYINFO_REQUEST_PORT=2006;
-	//请求个人信息端口
+	//更改个人信息端口
 	public static final int CHANGE_MYINFO_REQUEST_PORT =2007;
 	//查找讲座端口
 	public static final int SEARCH_LECTURE_REQUEST_PORT=2008;
@@ -68,4 +68,40 @@ public class ConstantClass {
 	public static final int LIKE_COMMENT_PORT=2017;
 	//用户更改头像端口
 	public static final int CHANGE_HEAD_PORT=2018;
+
+	public static final int SIGNIN_COM=1;
+
+	public static final int FINDPWD_COM=2;
+
+	public static final int LOGIN_COM=3;
+
+	public static final int LECTURE_REQUEST_COM=4;
+
+	public static final int COMMENT_REQUEST_COM=5;
+
+	public static final int MYINFO_REQUEST_COM=6;
+
+	public static final int CHANGE_MYINFO_REQUEST_COM=7;
+
+	public static final int SEARCH_LECTURE_REQUEST_COM=8;
+
+	public static final int MYWANTED_LECTURE_REQUEST_COM=9;
+
+	public static final int MYFOCUSE_LIBRARY_REQUEST_COM=10;
+
+	public static final int MYCOMMENT_REQUEST_COM=11;
+
+	public static final int ADD_CANCEL_WANTED_REQUEST_COM=12;
+
+	public static final int ADD_CANCEL_FOCUSE_REQUEST_COM=13;
+
+	public static final int LIBRARY_REQUEST_COM=14;
+
+	public static final int SEND_POSITION_COM=15;
+
+	public static final int ADD_COMMENT_COM=16;
+
+	public static final int LIKE_COMMENT_COM=17;
+
+	public static final int CHANGE_HEAD_COM=18;
 }

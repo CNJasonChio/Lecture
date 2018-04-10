@@ -1,41 +1,51 @@
 package com.jasonchio.lecture;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Handler;
 import android.os.Bundle;
+import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-
-import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.dmoral.toasty.Toasty;
 
 public class SelecteLectureCommentActivity extends BaseActivity {
 
 	TitleLayout titleLayout;
 	Button titleFirstButton;
 
-	List<LectureDB> lectureList=new ArrayList<>();
-	LectureAdapter lectureAdapter;
+	List<LectureDB> lecturelist=new ArrayList<>();
 
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
-	int consts=0;
 	ListView listView;
-	LectureDB lecture=new LectureDB("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",contents,consts);
+	LectureAdapter mAdapter;
 
 	String response;
+
+	DaoSession daoSession;
+
+	UserDBDao mUserDao;
+
+	LectureDBDao mLectureDao;
+
+	Handler handler;
+
+	int lectureRequestResult=-1;
+
+	int mywantedResult=-1;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,23 +55,48 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
-
-		MywantedRequest();
+		showWantedLecture();
 
 		titleFirstButton.setOnClickListener(this);
 
-		lectureList.add(lecture);
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (mywantedResult == 0) {
+							showWantedLecture();
+						} else if (mywantedResult == 1) {
+							Toasty.error(SelecteLectureCommentActivity.this, "数据库无更新").show();
+						} else {
+							Toasty.error(SelecteLectureCommentActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							showWantedLecture();
+						}
+					default:
+						break;
+				}
+				return true;
+			}
+		});
+
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				LectureDB lecture=lectureList.get(position);
+				LectureDB lecture=lecturelist.get(position);
 				Intent intent=new Intent(SelecteLectureCommentActivity.this,AddCommentActivity.class);
 				intent.putExtra("lecture_id",lecture.getLectureTitle());
 				startActivity(intent);
 				finish();
 			}
 		});
+
+
 	}
 
 	@Override
@@ -71,7 +106,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 		titleLayout.setSecondButtonVisible(View.GONE);
 		titleLayout.setTitle("请选择要评论的讲座");
-		listView.setAdapter(lectureAdapter);
+		listView.setAdapter(mAdapter);
 	}
 
 	@Override
@@ -79,7 +114,11 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 		titleLayout=(TitleLayout)findViewById(R.id.select_lecture_title_layout);
 		titleFirstButton=titleLayout.getFirstButton();
 		listView=(ListView)findViewById(R.id.select_lecture_list);
-		lectureAdapter=new LectureAdapter(SelecteLectureCommentActivity.this,R.layout.lecure_listitem,lectureList);
+		mAdapter=new LectureAdapter(SelecteLectureCommentActivity.this,R.layout.lecure_listitem,lecturelist);
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mLectureDao=daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -103,7 +142,9 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,4);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					mywantedResult= Utility.handleWantedLectureResponse(response,mUserDao);
+
+					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -115,4 +156,60 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 		}).start();
 	}
 
+
+	private void LectureRequest() {
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					long lastLecureID= Utility.lastLetureinDB(mLectureDao);
+
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+
+					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
+
+					handler.sendEmptyMessage(2);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+	private void showWantedLecture() {
+
+		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);
+
+		String[] wantedLecture = Utility.getStrings(temp);
+
+		if(wantedLecture.length==0){
+			MywantedRequest();
+			return;
+		}else{
+			for(int i=0;i<wantedLecture.length;i++){
+				LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(wantedLecture[i])).build().unique();
+
+				if(lecture==null){
+					LectureRequest();
+					return;
+				}else{
+					lecturelist.add(lecture);
+				}
+			}
+
+			listView.setSelection(0);
+
+			mAdapter.notifyDataSetChanged();
+		}
+	}
 }

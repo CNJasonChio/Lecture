@@ -1,7 +1,5 @@
 package com.jasonchio.lecture.gson;
 
-import java.util.List;
-
 /**
  * /**
  * <p>
@@ -27,15 +25,24 @@ import java.util.List;
  * <p>
  * Created by zhaoyaobang on 2018/3/31.
  */
-public class MyFocuseResult {
+public class ChangeUserHeadResult {
+
 
 	/**
+	 * user_id :
 	 * state :
-	 * focus_library_id :
 	 */
 
+	private String user_face_url;
 	private int state;
-	private List<String> focus_library_id;
+
+	public String getUser_face_url() {
+		return user_face_url;
+	}
+
+	public void setUser_face_url(String user_face_url) {
+		this.user_face_url = user_face_url;
+	}
 
 	public int getState() {
 		return state;
@@ -43,13 +50,5 @@ public class MyFocuseResult {
 
 	public void setState(int state) {
 		this.state = state;
-	}
-
-	public List<String> getFocus_library_id() {
-		return focus_library_id;
-	}
-
-	public void setFocus_library_id(List<String> focus_library_id) {
-		this.focus_library_id = focus_library_id;
 	}
 }

@@ -2,21 +2,26 @@ package com.jasonchio.lecture;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.database.LibraryDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.LibraryDB;
+import com.jasonchio.lecture.greendao.LibraryDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +38,6 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 
 	FocuseLibraryAdapter mAdapter;
 
-	LibraryDB library = new LibraryDB("武汉大学图书馆");
-
 	List<LibraryDB> librarylist = new ArrayList<>();
 
 	ListView listView;
@@ -44,6 +47,21 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 	int isFocuse=1;
 
 	Button addCancelButton;
+
+	DaoSession daoSession;
+
+	UserDBDao mUserDao;
+
+	LibraryDBDao mLibraryDao;
+
+	int focuseLibChangeResult;
+
+	int myFocuseLibRequestResult;
+
+	int libraryRequestResult;
+
+	Handler handler;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -53,8 +71,6 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		initWidget();
 		//初始化视图
 		initView();
-
-		MyFouceseRequest();
 
 		mAdapter.setOnInnerItemOnClickListener(this);
 		listView.setOnItemClickListener(this);
@@ -73,7 +89,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				librarylist.add(library);
+
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -82,9 +98,32 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				librarylist.add(library);
-				mAdapter.notifyDataSetChanged();
+
 				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (myFocuseLibRequestResult == 0) {
+							showFocuseLibrary();
+						} else if (myFocuseLibRequestResult == 1) {
+							Toasty.error(MyFocuseActivity.this, "数据库无更新").show();
+						} else {
+							Toasty.error(MyFocuseActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(libraryRequestResult==0){
+							showFocuseLibrary();
+						}
+						default:
+							break;
+				}
+				return true;
 			}
 		});
 
@@ -125,6 +164,12 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		mAdapter = new FocuseLibraryAdapter(librarylist,MyFocuseActivity.this);
 
 		addCancelButton=(Button)findViewById(R.id.myfocuse_add_cancel_button);
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+
+		mLibraryDao=daoSession.getLibraryDBDao();
+
+		mUserDao=daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -132,11 +177,10 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 
 	}
 
-
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		LibraryDB library= librarylist.get(position);
-		//	LectureDB lecture1=comment.getLecture();
 		Intent intent=new Intent(MyFocuseActivity.this,LibraryDetailActivity.class);
+		intent.putExtra("library_id",library.getLibraryID());
 		startActivity(intent);
 	}
 
@@ -156,24 +200,25 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 					titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);*/
 					isFocuse=0;
 					Toasty.info(MyFocuseActivity.this,"已取消关注");
-					FocuseChangeRequest();
+					FocuseChangeRequest(library.getLibraryID());
 					librarylist.remove(position);
 					mAdapter.notifyDataSetChanged();
 				break;
 			default:
 		}
 	}
-	private void MyFouceseRequest() {
+	private void MyFocuseRequest() {
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,4);
+					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,ConstantClass.userOnline);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					myFocuseLibRequestResult = Utility.handleFocuseLibraryResponse(response,mUserDao);
+
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -185,17 +230,67 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		}).start();
 	}
 
-	private void FocuseChangeRequest() {
+	private void FocuseChangeRequest(final long libraryID) {
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,4,10,isFocuse);
+					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,ConstantClass.userOnline,libraryID,isFocuse);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					focuseLibChangeResult = Utility.handleCommonResponse(response);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void showFocuseLibrary(){
+
+		String temp=Utility.getUserFocuse(ConstantClass.userOnline,mUserDao);
+
+		String[] focuseLibrary = Utility.getStrings(temp);
+
+		if(focuseLibrary.length==0){
+			MyFocuseRequest();
+			return;
+		}else{
+			for(int i=0;i<focuseLibrary.length;i++){
+				LibraryDB library=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(focuseLibrary[i])).build().unique();
+				if(library==null){
+					LibraryRequest(focuseLibrary[i]);
+					return;
+				}else{
+					librarylist.add(library);
+				}
+			}
+
+			listView.setSelection(0);
+
+			mAdapter.notifyDataSetChanged();
+		}
+	}
+
+	private void LibraryRequest(final String libraryName) {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_PORT,libraryName);
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					libraryRequestResult = Utility.handleLibraryResponse(response,mLibraryDao);
+
+					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();

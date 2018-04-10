@@ -1,34 +1,32 @@
 package com.jasonchio.lecture;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
-
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.LibraryDB;
+import com.jasonchio.lecture.greendao.LibraryDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.dmoral.toasty.Toasty;
 
 public class MywantedActivity extends BaseActivity {
 
@@ -39,24 +37,23 @@ public class MywantedActivity extends BaseActivity {
 
 	ListView listView;
 
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
-
-	int consts=0;
-
-	String title="测试测试测试测试测试测试测试测试测试测试";
-
-	String time="2018年4月03日 晚6：00";
-
-	String source="武汉理工大学图书馆";
-
-	LectureDB lecture=new LectureDB(title,time,source,contents,100);
-
 
 	String response;
 
 	int mywantedResult=-1;
 
+	int lectureRequestResult=-1;
+
 	List<LectureDB> lecturelist=new ArrayList<>();
+
+	DaoSession daoSession;
+
+	UserDBDao mUserDao;
+
+	LectureDBDao mLectureDao;
+
+	Handler handler;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -66,8 +63,6 @@ public class MywantedActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
-		MywantedRequest();
 
 		titleFirstButton.setOnClickListener(this);
 
@@ -85,7 +80,6 @@ public class MywantedActivity extends BaseActivity {
 			@Override
 			public void onRefresh() {
 
-				lecturelist.add(lecture);
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -95,9 +89,31 @@ public class MywantedActivity extends BaseActivity {
 			@Override
 			public void onLoadMore() {
 
-				lecturelist.add(lecture);
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (mywantedResult == 0) {
+							showWantedLecture();
+						} else if (mywantedResult == 1) {
+							Toasty.error(MywantedActivity.this, "数据库无更新").show();
+						} else {
+							Toasty.error(MywantedActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							showWantedLecture();
+						}
+					default:
+						break;
+				}
+				return true;
 			}
 		});
 
@@ -130,6 +146,11 @@ public class MywantedActivity extends BaseActivity {
 		listView = (ListView) findViewById(R.id.swipe_target);
 
 		mAdapter = new LectureAdapter(MywantedActivity.this, R.layout.lecure_listitem, lecturelist);
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+
+		mUserDao=daoSession.getUserDBDao();
+		mLectureDao=daoSession.getLectureDBDao();
 	}
 
 	@Override
@@ -153,7 +174,9 @@ public class MywantedActivity extends BaseActivity {
 					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,4);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					//signinResult = Utility.handleSigninRespose(response, SigninWithPhoneActivity.this);
+					mywantedResult= Utility.handleWantedLectureResponse(response,mUserDao);
+
+					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -165,5 +188,59 @@ public class MywantedActivity extends BaseActivity {
 		}).start();
 	}
 
+	private void LectureRequest() {
 
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
+
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+
+					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
+
+					handler.sendEmptyMessage(2);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+	private void showWantedLecture() {
+
+		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);
+
+		String[] wantedLecture = Utility.getStrings(temp);
+
+		if(wantedLecture.length==0){
+			MywantedRequest();
+			return;
+		}else{
+			for(int i=0;i<wantedLecture.length;i++){
+				LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(wantedLecture[i])).build().unique();
+
+				if(lecture==null){
+					LectureRequest();
+					return;
+				}else{
+					lecturelist.add(lecture);
+				}
+			}
+
+			listView.setSelection(0);
+
+			mAdapter.notifyDataSetChanged();
+		}
+	}
 }

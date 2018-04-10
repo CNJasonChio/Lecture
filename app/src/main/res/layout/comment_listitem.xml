@@ -77,7 +77,7 @@
             android:textColor="#BBBBBB"
             android:textSize="15sp"
             android:id="@+id/comment_likers_text"
-            android:layout_toLeftOf="@id/comment_like_image"
+            android:layout_toLeftOf="@+id/comment_like_image"
             android:layout_marginRight="4dp"/>
 
         <ImageView

@@ -14,10 +14,10 @@
         andorid:id="@+id/login_logo_layout">
 
         <ImageView
-            andorid:layout_width="wrap_content"
-            andorid:layout_height="wrap_content"
+            andorid:layout_width="170dp"
+            andorid:layout_height="170dp"
             andorid:layout_gravity="center"
-            andorid:src="@mipmap/ic_launcher"/>
+            andorid:src="@drawable/ic_logo" />
         <TextView
             andorid:layout_width="wrap_content"
             andorid:layout_height="wrap_content"
@@ -164,7 +164,7 @@
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:id="@+id/login_third_view_layout"
-        andorid:layout_above="@id/login_third_layout">
+        andorid:layout_above="@+id/login_third_layout">
 
         <View
             andorid:layout_width="wrap_content"
@@ -197,7 +197,7 @@
         andorid:layout_height="wrap_content"
         andorid:id="@+id/login_third_layout"
         andorid:layout_marginTop="15dp"
-        andorid:layout_above="@id/login_view3">
+        andorid:layout_above="@+id/login_view3">
 
         <ImageView
             andorid:id="@+id/login_qq_login"

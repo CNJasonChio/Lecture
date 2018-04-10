@@ -1,6 +1,8 @@
-package com.jasonchio.lecture.database;
+package com.jasonchio.lecture.greendao;
 
-import org.litepal.crud.DataSupport;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * /**
@@ -28,9 +30,11 @@ import org.litepal.crud.DataSupport;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class CommentDB extends DataSupport{
+@Entity
+public class CommentDB{
 
-	int commentId;       //评论的ID
+	@Id
+	long commentId;       //评论的ID
 
 	String  commentuserName;   //该评论的用户名
 
@@ -42,33 +46,39 @@ public class CommentDB extends DataSupport{
 
 	int commentLikers;   //评论的点赞数
 
-	public CommentDB(String commentContent, String commentTime, int commentLikers, LectureDB lectureDB) {
+	@Generated(hash = 161526459)
+	public CommentDB(long commentId, String commentuserName, int commentlecureId,
+			String commentContent, String commentTime, int commentLikers) {
+		this.commentId = commentId;
+		this.commentuserName = commentuserName;
+		this.commentlecureId = commentlecureId;
 		this.commentContent = commentContent;
 		this.commentTime = commentTime;
 		this.commentLikers = commentLikers;
 	}
 
+	@Generated(hash = 1839661279)
 	public CommentDB() {
 	}
 
-	public int getCommentId() {
-		return commentId;
+	public long getCommentId() {
+		return this.commentId;
 	}
 
-	public void setCommentId(int commentId) {
+	public void setCommentId(long commentId) {
 		this.commentId = commentId;
 	}
 
-	public String getCommentuserId() {
-		return commentuserName;
+	public String getCommentuserName() {
+		return this.commentuserName;
 	}
 
-	public void setCommentuserId(String commentuserName) {
+	public void setCommentuserName(String commentuserName) {
 		this.commentuserName = commentuserName;
 	}
 
 	public int getCommentlecureId() {
-		return commentlecureId;
+		return this.commentlecureId;
 	}
 
 	public void setCommentlecureId(int commentlecureId) {
@@ -76,7 +86,7 @@ public class CommentDB extends DataSupport{
 	}
 
 	public String getCommentContent() {
-		return commentContent;
+		return this.commentContent;
 	}
 
 	public void setCommentContent(String commentContent) {
@@ -84,7 +94,7 @@ public class CommentDB extends DataSupport{
 	}
 
 	public String getCommentTime() {
-		return commentTime;
+		return this.commentTime;
 	}
 
 	public void setCommentTime(String commentTime) {
@@ -92,7 +102,7 @@ public class CommentDB extends DataSupport{
 	}
 
 	public int getCommentLikers() {
-		return commentLikers;
+		return this.commentLikers;
 	}
 
 	public void setCommentLikers(int commentLikers) {

@@ -1,6 +1,8 @@
-package com.jasonchio.lecture.database;
+package com.jasonchio.lecture.greendao;
 
-import org.litepal.crud.DataSupport;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Generated;
 
 /**
  * /**
@@ -28,9 +30,11 @@ import org.litepal.crud.DataSupport;
  * Created by zhaoyaobang on 2018/3/23.
  */
 
-public class LibraryDB extends DataSupport {
+@Entity
+public class LibraryDB{
 
-	int libraryID;           //图书馆id
+	@Id
+	long libraryID;           //图书馆id
 
 	String libraryName;         //图书馆名字
 
@@ -44,23 +48,33 @@ public class LibraryDB extends DataSupport {
 
 	double libraryLongitude;    //图书馆经度
 
+	@Generated(hash = 833783416)
+	public LibraryDB(long libraryID, String libraryName, String libraryContent,
+			String libraryUrl, String libraryImageUrl, double libraryLatitude,
+			double libraryLongitude) {
+		this.libraryID = libraryID;
+		this.libraryName = libraryName;
+		this.libraryContent = libraryContent;
+		this.libraryUrl = libraryUrl;
+		this.libraryImageUrl = libraryImageUrl;
+		this.libraryLatitude = libraryLatitude;
+		this.libraryLongitude = libraryLongitude;
+	}
+
+	@Generated(hash = 1958976301)
 	public LibraryDB() {
 	}
 
-	public LibraryDB(String libraryName) {
-		this.libraryName = libraryName;
+	public long getLibraryID() {
+		return this.libraryID;
 	}
 
-	public int getLibraryID() {
-		return libraryID;
-	}
-
-	public void setLibraryID(int libraryID) {
+	public void setLibraryID(long libraryID) {
 		this.libraryID = libraryID;
 	}
 
 	public String getLibraryName() {
-		return libraryName;
+		return this.libraryName;
 	}
 
 	public void setLibraryName(String libraryName) {
@@ -68,7 +82,7 @@ public class LibraryDB extends DataSupport {
 	}
 
 	public String getLibraryContent() {
-		return libraryContent;
+		return this.libraryContent;
 	}
 
 	public void setLibraryContent(String libraryContent) {
@@ -76,7 +90,7 @@ public class LibraryDB extends DataSupport {
 	}
 
 	public String getLibraryUrl() {
-		return libraryUrl;
+		return this.libraryUrl;
 	}
 
 	public void setLibraryUrl(String libraryUrl) {
@@ -84,7 +98,7 @@ public class LibraryDB extends DataSupport {
 	}
 
 	public String getLibraryImageUrl() {
-		return libraryImageUrl;
+		return this.libraryImageUrl;
 	}
 
 	public void setLibraryImageUrl(String libraryImageUrl) {
@@ -92,7 +106,7 @@ public class LibraryDB extends DataSupport {
 	}
 
 	public double getLibraryLatitude() {
-		return libraryLatitude;
+		return this.libraryLatitude;
 	}
 
 	public void setLibraryLatitude(double libraryLatitude) {
@@ -100,11 +114,13 @@ public class LibraryDB extends DataSupport {
 	}
 
 	public double getLibraryLongitude() {
-		return libraryLongitude;
+		return this.libraryLongitude;
 	}
 
 	public void setLibraryLongitude(double libraryLongitude) {
 		this.libraryLongitude = libraryLongitude;
 	}
+
+
 
 }

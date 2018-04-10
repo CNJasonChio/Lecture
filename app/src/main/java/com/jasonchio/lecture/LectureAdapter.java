@@ -9,9 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.jasonchio.lecture.database.LectureDB;
-
+import com.jasonchio.lecture.greendao.LectureDB;
 import java.util.List;
 
 /**

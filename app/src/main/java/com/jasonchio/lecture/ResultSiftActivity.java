@@ -9,19 +9,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-
-import com.jasonchio.lecture.database.InterimLectureDB;
-import com.jasonchio.lecture.database.LectureDB;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.InterimLectureDB;
+import com.jasonchio.lecture.greendao.InterimLectureDBDao;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ResultSift.DropDownMenu;
 import com.jasonchio.lecture.util.ResultSift.ListDropDownAdapter;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-import org.litepal.crud.DataSupport;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +56,14 @@ public class ResultSiftActivity extends BaseActivity {
 	LectureAdapter mAdapter;
 
 	List<LectureDB> lecturelist = new ArrayList<>();
+
+	DaoSession daoSession;
+
+	UserDBDao mUserDao;
+
+	LectureDBDao mLectureDao;
+
+	InterimLectureDBDao mInterLecDao;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -92,7 +100,7 @@ public class ResultSiftActivity extends BaseActivity {
 						break;
 					case 2:
 						if(lectureRequestResult==0){
-							Utility.handleLectureSearchResponse(response);
+							Utility.handleLectureSearchResponse(response,mInterLecDao,mLectureDao);
 						}
 				}
 				return true;
@@ -156,6 +164,11 @@ public class ResultSiftActivity extends BaseActivity {
 		titleLayout=(TitleLayout)findViewById(R.id.result_sift_title_layout);
 		titleFirstButton=titleLayout.getFirstButton();
 		titleSecondButton=titleLayout.getSecondButton();
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mUserDao=daoSession.getUserDBDao();
+		mLectureDao=daoSession.getLectureDBDao();
+		mInterLecDao=daoSession.getInterimLectureDBDao();
 	}
 
 
@@ -247,7 +260,7 @@ public class ResultSiftActivity extends BaseActivity {
 
 					Logger.json(response);
 
-					lectureSearchResult= Utility.handleLectureSearchResponse(response);
+					lectureSearchResult= Utility.handleLectureSearchResponse(response,mInterLecDao,mLectureDao);
 
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
@@ -267,11 +280,11 @@ public class ResultSiftActivity extends BaseActivity {
 			public void run() {
 				try {
 
-					int lastLecureID=Utility.lastLetureinDB();
+					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
 
 					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
 
-					lectureRequestResult=Utility.handleLectureResponse(lectureresponse);
+					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
@@ -288,7 +301,8 @@ public class ResultSiftActivity extends BaseActivity {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		List<InterimLectureDB> lectureDBList= DataSupport.order("lectureId desc").limit(10).offset(10).find(InterimLectureDB.class);
+
+		List<InterimLectureDB> lectureDBList=mInterLecDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(InterimLectureDBDao.Properties.LectureId).build().list();
 
 		List<LectureDB> lectureDBS=new ArrayList<>();
 
@@ -306,7 +320,7 @@ public class ResultSiftActivity extends BaseActivity {
 				lectureDB.setLectureTitle(interimLectureDB.getLectureTitle());
 				lectureDB.setLectureId(interimLectureDB.getLectureId());
 				lectureDB.setLectureImage(interimLectureDB.getLectureImage());
-				lectureDB.setLecutreUrl(interimLectureDB.getLecutreUrl());
+				lectureDB.setLectureUrl(interimLectureDB.getLectureUrl());
 
 				lectureDBS.add(lectureDB);
 			}

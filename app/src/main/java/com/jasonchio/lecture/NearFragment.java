@@ -2,7 +2,7 @@ package com.jasonchio.lecture;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +10,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.database.LectureDB;
-
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
+import org.json.JSONException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +51,8 @@ import java.util.List;
  * Created by zhaoyaobang on 2018/3/7.
  */
 
-public class NearFragment extends Fragment{
+public class
+NearFragment extends Fragment{
 
 	private View rootview;
 
@@ -53,15 +60,20 @@ public class NearFragment extends Fragment{
 
 	LectureAdapter mAdapter;
 
-	String contents="十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
-
-	int consts=0;
-
-/*
-	Lecture lecture=new Lecture("NoteExpress文献管理与论文写作讲座","2017年12月7日(周三)14：30","武汉大学图书馆",consts,contents,R.drawable.test_image);
-*/
-
 	List<LectureDB> lecturelist=new ArrayList<>();
+
+	ListView listView;
+
+	int lectureRequestResult;
+
+	Handler handler;
+
+	DaoSession daoSession;
+
+	LectureDBDao mLectureDao;
+
+	String response;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -79,11 +91,15 @@ public class NearFragment extends Fragment{
 
 		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
 
-		ListView listView = (ListView) rootview.findViewById(R.id.swipe_target);
+		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
 		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem,lecturelist);
 
 		listView.setAdapter(mAdapter);
+
+		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
+
+		mLectureDao=daoSession.getLectureDBDao();
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
@@ -101,7 +117,7 @@ public class NearFragment extends Fragment{
 			/*
 			* 处理逻辑同推荐页面，加筛选条件（位置），先提交用户位置，接受返回的数据
 			* */
-				//lecturelist.add(lecture);
+				showLectureInfoToTop();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -110,8 +126,7 @@ public class NearFragment extends Fragment{
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-				//lecturelist.add(lecture);
-				mAdapter.notifyDataSetChanged();
+
 				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
@@ -129,5 +144,56 @@ public class NearFragment extends Fragment{
 			}
 		});
 	}
+
+	private void LectureRequest() {
+
+		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
+		//showLectureInfo();
+		/*
+		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					long lastLecureID= Utility.lastLetureinDB(mLectureDao);
+
+					Logger.d("lastLecureID"+lastLecureID);
+
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+
+					Logger.json(response);
+
+					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
+
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+	private void showLectureInfoToTop() {
+
+		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+
+		Logger.d(mAdapter.getCount());
+		if(lectureDBList.size()<1){
+			LectureRequest();
+			return;
+		}
+		lecturelist.addAll(0,lectureDBList);
+
+		listView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
+	}
+
 }
 

@@ -10,31 +10,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
-
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
-import com.jasonchio.lecture.database.LectureDB;
-import com.jasonchio.lecture.gson.MyFocuseResult;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
 import org.json.JSONException;
-import org.litepal.crud.DataSupport;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import es.dmoral.toasty.Toasty;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
-import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
 
 /**
  * /**
@@ -70,12 +62,6 @@ public class FocuseFragment extends Fragment  {
 
 	LectureAdapter mAdapter;
 
-	String contents = "十八大以来我国所取得的巨大进入了加速圆梦期，中华民族伟大复兴的中国梦正在由“遥想”“遥望”变为“近看”“凝视”。您是否在为一篇篇手动输入参考文献而痛苦？您是否在用EXCEL等原始手段为文献排序？您是否还在为从电脑成堆的文档中寻找所需要的文献而烦恼？您是否在茫茫文献海洋中迷失";
-
-	int consts = 0;
-
-//	LectureDB lecture = new LectureDB("NoteExpress文献管理与论文写作讲座", "2017年12月7日(周三)14：30", "武汉大学图书馆", consts, contents, R.drawable.test_image);
-
 	List<LectureDB> lecturelist = new ArrayList<>();
 
 	String response;
@@ -87,18 +73,28 @@ public class FocuseFragment extends Fragment  {
 	int lectureRequestResult;
 
 	ListView listView;
+
+	DaoSession daoSession;
+
+	UserDBDao mUserDao;
+
+	LectureDBDao mLectureDao;
+
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
 			rootview = inflater.inflate(R.layout.fragment_focuse, null);
-			Toast.makeText(getActivity(), "FragmentFocuse==onCreateView", Toast.LENGTH_SHORT).show();
 		}
 		ViewGroup parent = (ViewGroup) rootview.getParent();
 		if (parent != null) {
 			parent.removeView(rootview);
 		}
+		daoSession = ((MyApplication)getActivity().getApplication()).getDaoSession();
+		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
 
 		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
 
@@ -144,7 +140,6 @@ public class FocuseFragment extends Fragment  {
 			@Override
 			public void onRefresh() {
 
-				MyFocuseRequest();
 
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
@@ -182,7 +177,8 @@ public class FocuseFragment extends Fragment  {
 					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,ConstantClass.userOnline);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					myFocuseRequestResult = Utility.handelFocuseLectureResponse(response);
+					myFocuseRequestResult = Utility.handleFocuseLibraryResponse(response,mUserDao);
+
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -207,7 +203,7 @@ public class FocuseFragment extends Fragment  {
 			public void run() {
 				try {
 
-					int lastLecureID=Utility.lastLetureinDB();
+					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
 
 					Logger.d("lastLecureID"+lastLecureID);
 
@@ -215,7 +211,7 @@ public class FocuseFragment extends Fragment  {
 
 					Logger.json(response);
 
-					lectureRequestResult = Utility.handleLectureResponse(response);
+					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
 
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
@@ -232,28 +228,34 @@ public class FocuseFragment extends Fragment  {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		String userFocuse=Utility.getUserFocuse(ConstantClass.userOnline);
+		String userFocuse=Utility.getUserFocuse(ConstantClass.userOnline,mUserDao);
 
-		String[] focuseLibrary=Utility.getStrings(userFocuse);
+		String[] focuseLibrary = Utility.getStrings(userFocuse);
 
-		List<LectureDB> lectureDBList=new ArrayList<>();
+		if(focuseLibrary.length==0){
+			MyFocuseRequest();
+			return;
+		}else{
+			List<LectureDB> lectureDBList=new ArrayList<>();
 
-		for(int i=0;i<focuseLibrary.length;i++){
-			List<LectureDB> tempList= DataSupport.where("lectureId=?",focuseLibrary[1]).find(LectureDB.class);
-			if(tempList.size()<1){
-				LectureRequest();
-				return;
-			}else{
-				for(LectureDB lectureDB:tempList){
-					lectureDBList.add(lectureDB);
+			for(int i=0;i<focuseLibrary.length;i++){
+				List<LectureDB> lectureDBS=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LecutreSource.eq(focuseLibrary[i])).build().list();
+
+				if(lectureDBS.size()==0){
+					LectureRequest();
+					return;
+				}else{
+					for(LectureDB lectureDB:lectureDBS){
+						lectureDBList.add(lectureDB);
+					}
 				}
 			}
+
+			lecturelist.addAll(0,lectureDBList);
+
+			listView.setSelection(0);
+
+			mAdapter.notifyDataSetChanged();
 		}
-
-		lecturelist.addAll(0,lectureDBList);
-
-		listView.setSelection(0);
-
-		mAdapter.notifyDataSetChanged();
 	}
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Lecture</string>
+    <string name="app_name">聚讲座</string>
     <string name="title_activity_signin_with_phone">Sign in</string>
 
     <!-- Strings related to login -->
