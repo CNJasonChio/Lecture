@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
@@ -42,11 +43,13 @@ public class LectureDetailActivity extends BaseActivity {
 
 	String source;
 
-	int lectureId;
+	long lectureId;
 
 	DaoSession daoSession;
 
 	LectureDBDao mLectureDao;
+
+	UserDBDao mUserDao;
 
 	int changeWantedResult;
 	@Override
@@ -59,10 +62,13 @@ public class LectureDetailActivity extends BaseActivity {
 
 		//初始化控件
 		initWidget();
+		//判断用户是否添加该讲座到“我的想看”
+		lectureIsWanted();
+
 		//初始化视图
 		initView();
 
-		initLectureDetail(lectureId);
+		initLectureDetail();
 
 		//设置标题栏返回按钮点击监听事件
 		titleFirstButton.setOnClickListener(this);
@@ -87,23 +93,22 @@ public class LectureDetailActivity extends BaseActivity {
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mLectureDao=daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
 	}
 	protected void initView(){
 
 		//隐藏系统标题栏
 		HideSysTitle();
 
-
 		titleLayout.setTitle("讲座详情");
 
 		//判断是否已经添加想看
 		if(isWanted==1){
-			titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes_selected);
+			titleSecondButton.setBackgroundResource(R.drawable.ic_myinfo_mywanted);
 		}else{
 			titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
 		}
 	}
-
 
 	@Override
 	public void onClick(View v) {
@@ -115,12 +120,11 @@ public class LectureDetailActivity extends BaseActivity {
 			case R.id.title_second_button:{
 				if(isWanted==1){
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
-
 					Toast.makeText(LectureDetailActivity.this,"已从“我的想看”移除",Toast.LENGTH_SHORT).show();
 					isWanted =0;
 					WantedChangeRequest();
 				}else{
-					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes_selected);
+					titleSecondButton.setBackgroundResource(R.drawable.ic_myinfo_mywanted);
 					Toast.makeText(LectureDetailActivity.this,"已加入“我的想看”",Toast.LENGTH_SHORT).show();
 					isWanted =1;
 					WantedChangeRequest();
@@ -138,7 +142,7 @@ public class LectureDetailActivity extends BaseActivity {
 					Toasty.info(LectureDetailActivity.this,"暂无详情");
 				}else{
 					Intent intent=new Intent(LectureDetailActivity.this,LibraryDetailActivity.class);
-					intent.putExtra("library_id",source);
+					intent.putExtra("library_name",source);
 					startActivity(intent);
 				}
 				break;
@@ -154,10 +158,12 @@ public class LectureDetailActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_PORT,4,42,isWanted);
+					//response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_PORT,ConstantClass.userOnline,lectureID,isWanted);
+					response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_COM,ConstantClass.userOnline,lectureId,isWanted);
+
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					changeWantedResult = Utility.handleCommonResponse(response);
+					changeWantedResult = Utility.handleWantedChangeResponse(response,lectureId,mUserDao,mLectureDao,isWanted);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -169,11 +175,11 @@ public class LectureDetailActivity extends BaseActivity {
 		}).start();
 	}
 
-	private void initLectureDetail(long lecutureId){
+	private void initLectureDetail(){
 		/*
 		* 从数据库中查找
 		* */
-		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lecutureId)).build().unique();
+		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureId)).build().unique();
 
 		if(lecture!=null){
 			lectureTitle.setText(lecture.getLectureTitle());
@@ -187,6 +193,10 @@ public class LectureDetailActivity extends BaseActivity {
 			Toasty.error(LectureDetailActivity.this,"加载讲座信息出错");
 			finish();
 		}
+	}
 
+	private void lectureIsWanted(){
+		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureId)).build().unique();
+		isWanted=lecture.getIsWanted();
 	}
 }

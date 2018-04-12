@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LibraryDB;
 import com.jasonchio.lecture.greendao.LibraryDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
@@ -40,7 +41,6 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	String original;
 
-
 	Handler handler;
 
 	int libraryRequestResult;
@@ -51,21 +51,24 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	LibraryDBDao mLibraryDao;
 
+	UserDBDao mUserDao;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library_detail);
 
 		Intent intent=getIntent();
-		libName=intent.getStringExtra("library_id");
-
+		libName=intent.getStringExtra("library_name");
 
 		//初始化控件
 		initWidget();
+		//判断用户是否关注了该图书馆
+		libraryIsFocused();
 		//初始化视图
 		initView();
 
-		initLibrary(libName);
+
 		titleFirstButton.setOnClickListener(this);
 
 		titleSecondButton.setOnClickListener(this);
@@ -81,7 +84,7 @@ public class LibraryDetailActivity extends BaseActivity {
 							Toasty.success(LibraryDetailActivity.this, "获取图书馆详情成功").show();
 							initLibrary(libName);
 						} else if (libraryRequestResult == 1) {
-							Toasty.error(LibraryDetailActivity.this, "图书馆信息暂无").show();
+							Toasty.error(LibraryDetailActivity.this, "暂无图书馆信息").show();
 						} else {
 							Toasty.error(LibraryDetailActivity.this, "服务器出错，请稍候再试").show();
 						}
@@ -136,13 +139,12 @@ public class LibraryDetailActivity extends BaseActivity {
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mLibraryDao=daoSession.getLibraryDBDao();
-
+		mUserDao=daoSession.getUserDBDao();
 	}
 	protected void initView(){
 
 		HideSysTitle();
 		titleLayoutTitleText.setText("图书馆详情");
-
 
 		if(isFocuse ==1){
 			titleSecondButton.setText("已关注");
@@ -163,10 +165,12 @@ public class LibraryDetailActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,4,10,isFocuse);
+					//response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,ConstantClass.userOnline,libName,isFocuse);
+					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_COM,ConstantClass.userOnline,libName,isFocuse);
+
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					changeFocuseResult = Utility.handleCommonResponse(response);
+					changeFocuseResult = Utility.handleFocuseChangeResponse(response,libName,mUserDao,mLibraryDao,isFocuse);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -185,7 +189,8 @@ public class LibraryDetailActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_PORT,libName);
+					//response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_PORT,libName);
+					response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_COM, ConstantClass.userOnline,libName);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					libraryRequestResult = Utility.handleLibraryResponse(response,mLibraryDao);
@@ -216,5 +221,11 @@ public class LibraryDetailActivity extends BaseActivity {
 			LibraryRequest();
 		}
 
+	}
+
+	private void libraryIsFocused(){
+		LibraryDB libraryDB=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
+
+		isFocuse=libraryDB.getIsFocused();
 	}
 }

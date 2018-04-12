@@ -71,6 +71,7 @@ public class MywantedActivity extends BaseActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				LectureDB lecture=lecturelist.get(position);
 				Intent intent=new Intent(MywantedActivity.this,LectureDetailActivity.class);
+				intent.putExtra("lecture_id",(int) lecture.getLectureId());
 				startActivity(intent);
 
 			}
@@ -79,7 +80,7 @@ public class MywantedActivity extends BaseActivity {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-
+				showWantedLecture();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -102,7 +103,10 @@ public class MywantedActivity extends BaseActivity {
 							showWantedLecture();
 						} else if (mywantedResult == 1) {
 							Toasty.error(MywantedActivity.this, "数据库无更新").show();
-						} else {
+						} else if(mywantedResult==3){
+							Toasty.info(MywantedActivity.this,"还没有想看的讲座哟，快去讲座推荐看一看吧！").show();
+							swipeToLoadLayout.setRefreshing(false);
+						}else {
 							Toasty.error(MywantedActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -171,7 +175,8 @@ public class MywantedActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,4);
+					//response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,ConstantClass.userOnline);
+					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_COM,ConstantClass.userOnline);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					mywantedResult= Utility.handleWantedLectureResponse(response,mUserDao);
@@ -202,7 +207,8 @@ public class MywantedActivity extends BaseActivity {
 
 					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
 
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline ,lastLecureID);
 
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 
@@ -217,16 +223,22 @@ public class MywantedActivity extends BaseActivity {
 			}
 		}).start();
 	}
+
 	private void showWantedLecture() {
 
 		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);
-
-		String[] wantedLecture = Utility.getStrings(temp);
-
-		if(wantedLecture.length==0){
+		if(temp==null || temp.length()==0){
 			MywantedRequest();
 			return;
+		}
+		String[] wantedLecture = Utility.getStrings(temp);
+		if(wantedLecture.length==0){
+			Toasty.error(MywantedActivity.this,"解析用户想看的讲座失败，请联系开发者").show();
+			return;
 		}else{
+			if (!lecturelist.isEmpty()) {
+				lecturelist.removeAll(lecturelist);
+			}
 			for(int i=0;i<wantedLecture.length;i++){
 				LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(wantedLecture[i])).build().unique();
 

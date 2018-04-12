@@ -37,14 +37,13 @@ import java.util.List;
  */
 public class CommentRequestResult {
 
-
 	/**
 	 * state : 0
 	 * comment :
 	 */
 
 	private int state;
-	private List<CommentBean> comment;
+	private List <CommentBean> comment;
 
 	public static CommentRequestResult objectFromData(String str) {
 
@@ -64,19 +63,19 @@ public class CommentRequestResult {
 		return null;
 	}
 
-	public static List<CommentRequestResult> arrayCommentRequestResultFromData(String str) {
+	public static List <CommentRequestResult> arrayCommentRequestResultFromData(String str) {
 
-		Type listType = new TypeToken<ArrayList<CommentRequestResult>>() {
+		Type listType = new TypeToken <ArrayList <CommentRequestResult>>() {
 		}.getType();
 
 		return new Gson().fromJson(str, listType);
 	}
 
-	public static List<CommentRequestResult> arrayCommentRequestResultFromData(String str, String key) {
+	public static List <CommentRequestResult> arrayCommentRequestResultFromData(String str, String key) {
 
 		try {
 			JSONObject jsonObject = new JSONObject(str);
-			Type listType = new TypeToken<ArrayList<CommentRequestResult>>() {
+			Type listType = new TypeToken <ArrayList <CommentRequestResult>>() {
 			}.getType();
 
 			return new Gson().fromJson(jsonObject.getString(str), listType);
@@ -98,11 +97,11 @@ public class CommentRequestResult {
 		this.state = state;
 	}
 
-	public List<CommentBean> getComment() {
+	public List <CommentBean> getComment() {
 		return comment;
 	}
 
-	public void setComment(List<CommentBean> comment) {
+	public void setComment(List <CommentBean> comment) {
 		this.comment = comment;
 	}
 
@@ -110,6 +109,7 @@ public class CommentRequestResult {
 		/**
 		 * comment_id :
 		 * comment_user :
+		 * user_face_url:
 		 * comment_information :
 		 * comment_lecture :
 		 * comment_time :
@@ -117,11 +117,13 @@ public class CommentRequestResult {
 		 */
 
 		private int comment_id;
-		private int comment_user;
+		private String comment_user;
+		private String user_face_url;
 		private String comment_information;
 		private int comment_lecture;
 		private String comment_time;
 		private int comment_good_amount;
+		private int comment_user_like;
 
 		public static CommentBean objectFromData(String str) {
 
@@ -141,19 +143,19 @@ public class CommentRequestResult {
 			return null;
 		}
 
-		public static List<CommentBean> arrayCommentBeanFromData(String str) {
+		public static List <CommentBean> arrayCommentBeanFromData(String str) {
 
-			Type listType = new TypeToken<ArrayList<CommentBean>>() {
+			Type listType = new TypeToken <ArrayList <CommentBean>>() {
 			}.getType();
 
 			return new Gson().fromJson(str, listType);
 		}
 
-		public static List<CommentBean> arrayCommentBeanFromData(String str, String key) {
+		public static List <CommentBean> arrayCommentBeanFromData(String str, String key) {
 
 			try {
 				JSONObject jsonObject = new JSONObject(str);
-				Type listType = new TypeToken<ArrayList<CommentBean>>() {
+				Type listType = new TypeToken <ArrayList <CommentBean>>() {
 				}.getType();
 
 				return new Gson().fromJson(jsonObject.getString(str), listType);
@@ -175,11 +177,11 @@ public class CommentRequestResult {
 			this.comment_id = comment_id;
 		}
 
-		public int getComment_user() {
+		public String getComment_user() {
 			return comment_user;
 		}
 
-		public void setComment_user(int comment_user) {
+		public void setComment_user(String comment_user) {
 			this.comment_user = comment_user;
 		}
 
@@ -213,6 +215,22 @@ public class CommentRequestResult {
 
 		public void setComment_good_amount(int comment_good_amount) {
 			this.comment_good_amount = comment_good_amount;
+		}
+
+		public int getComment_user_like() {
+			return comment_user_like;
+		}
+
+		public void setComment_user_like(int comment_user_like) {
+			this.comment_user_like = comment_user_like;
+		}
+
+		public String getUser_face_url() {
+			return user_face_url;
+		}
+
+		public void setUser_face_url(String user_face_url) {
+			this.user_face_url = user_face_url;
 		}
 	}
 }

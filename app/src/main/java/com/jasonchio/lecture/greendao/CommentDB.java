@@ -38,7 +38,9 @@ public class CommentDB{
 
 	String  commentuserName;   //该评论的用户名
 
-	int  commentlecureId; //该评论的讲座ID
+	String userHead;
+
+	long  commentlecureId; //该评论的讲座ID
 
 	String commentContent;  //评论的内容
 
@@ -46,15 +48,20 @@ public class CommentDB{
 
 	int commentLikers;   //评论的点赞数
 
-	@Generated(hash = 161526459)
-	public CommentDB(long commentId, String commentuserName, int commentlecureId,
-			String commentContent, String commentTime, int commentLikers) {
+	int isLike;          //是否已经点赞
+
+	@Generated(hash = 278975562)
+	public CommentDB(long commentId, String commentuserName, String userHead,
+			long commentlecureId, String commentContent, String commentTime,
+			int commentLikers, int isLike) {
 		this.commentId = commentId;
 		this.commentuserName = commentuserName;
+		this.userHead = userHead;
 		this.commentlecureId = commentlecureId;
 		this.commentContent = commentContent;
 		this.commentTime = commentTime;
 		this.commentLikers = commentLikers;
+		this.isLike = isLike;
 	}
 
 	@Generated(hash = 1839661279)
@@ -77,11 +84,19 @@ public class CommentDB{
 		this.commentuserName = commentuserName;
 	}
 
-	public int getCommentlecureId() {
+	public String getUserHead() {
+		return this.userHead;
+	}
+
+	public void setUserHead(String userHead) {
+		this.userHead = userHead;
+	}
+
+	public long getCommentlecureId() {
 		return this.commentlecureId;
 	}
 
-	public void setCommentlecureId(int commentlecureId) {
+	public void setCommentlecureId(long commentlecureId) {
 		this.commentlecureId = commentlecureId;
 	}
 
@@ -109,4 +124,12 @@ public class CommentDB{
 		this.commentLikers = commentLikers;
 	}
 
+	public int getIsLike() {
+		return this.isLike;
+	}
+
+	public void setIsLike(int isLike) {
+		this.isLike = isLike;
+	}
+	
 }

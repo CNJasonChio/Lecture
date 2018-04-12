@@ -85,7 +85,6 @@
             android:layout_height="20dp"
             android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
-            android:src="@drawable/ic_discovery_comment_like"
             android:id="@+id/comment_like_image"/>
     </RelativeLayout>
 

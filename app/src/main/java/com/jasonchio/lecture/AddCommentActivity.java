@@ -7,7 +7,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.jasonchio.lecture.greendao.CommentDBDao;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
@@ -40,7 +39,7 @@ public class AddCommentActivity extends BaseActivity {
 
 	ListView listView;
 
-	int lectureID=0;
+	long lectureID=0;
 
 	DaoSession daoSession;
 
@@ -51,20 +50,21 @@ public class AddCommentActivity extends BaseActivity {
 	int addCommentResult;
 
 	String commentTime;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_comment);
 
 		Intent intent=getIntent();
-		lectureID=intent.getIntExtra("lecture_id",0);
+		lectureID=intent.getIntExtra("lecture_id",1);
 
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
 
-		showLecure();
+		showLecture();
 
 		titleFirstButton.setOnClickListener(this);
 		titleSecondButton.setOnClickListener(this);
@@ -118,7 +118,9 @@ public class AddCommentActivity extends BaseActivity {
 				try {
 					//获取服务器返回数据
 
-					response = HttpUtil.AddCommentRequest(ConstantClass.ADDRESS, ConstantClass. ADD_COMMENT_PORT,contents,ConstantClass.userOnline,lectureID,commentTime);
+					//response = HttpUtil.AddCommentRequest(ConstantClass.ADDRESS, ConstantClass. ADD_COMMENT_PORT,contents,ConstantClass.userOnline,lectureID,commentTime);
+					response = HttpUtil.AddCommentRequest(ConstantClass.ADDRESS, ConstantClass. ADD_COMMENT_COM,contents,ConstantClass.userOnline,lectureID,commentTime);
+
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					addCommentResult = Utility.handleAddCommentResponse(response,mUserDao);
@@ -133,7 +135,7 @@ public class AddCommentActivity extends BaseActivity {
 		}).start();
 	}
 
-	private void showLecure(){
+	private void showLecture(){
 		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
 		lectureList.add(lecture);
 	}

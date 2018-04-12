@@ -307,8 +307,9 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_PORT, userPhone, userPwd);
-					
+					//response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_PORT, userPhone, userPwd);
+					//response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_PORT, userPhone, userPwd);
+					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_COM, userPhone, userPwd);
 					//解析和处理服务器返回的数据
 					signinResult = Utility.handleSigninRespose(response);
 

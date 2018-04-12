@@ -1,16 +1,26 @@
 package com.jasonchio.lecture;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.CommentDB;
+import com.jasonchio.lecture.greendao.CommentDBDao;
 import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.Utility;
 
 import java.util.List;
 
@@ -47,11 +57,17 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 	private List<LectureDB> lectureList;
 	private Context context;
 	private InnerItemOnclickListener listener;
+	private UserDBDao mUserDao;
+	private CommentDBDao mCommentDao;
+	private ListView listView;
 
-	public CommentAdapter(List<CommentDB> commentDBList,List<LectureDB> lectureDBList,Context context){
+	public CommentAdapter(ListView listView,List<CommentDB> commentDBList,List<LectureDB> lectureDBList,UserDBDao mUserDao,CommentDBDao mCommentDao,Context context){
+		this.listView=listView;
 		this.commentList=commentDBList;
 		this.context=context;
 		this.lectureList=lectureDBList;
+		this.mUserDao=mUserDao;
+		this.mCommentDao=mCommentDao;
 	}
 
 	@Override
@@ -98,6 +114,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 			viewHolder.lectureSource=(TextView)view.findViewById(R.id.lecture_source_text);
 			viewHolder.lectureLikers=(TextView)view.findViewById(R.id.lecture_likers_text);
 			viewHolder.commentLikersImage=(ImageView)view.findViewById(R.id.comment_like_image);
+			viewHolder.lectureWantedImage=(ImageView)view.findViewById(R.id.lecture_wanted_image);
 			view.setTag(viewHolder);
 		} else {
 			viewHolder = (ViewHolder) view.getTag();
@@ -113,9 +130,10 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		viewHolder.commentText.setTag(position);
 
 		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
-		/*
-		评论对应的讲座的效果图，待修复
-		viewHolder.lectureImage.setImageResource(lecture.getLectureImage());*/
+
+		if(lecture.getLectureImage()!=null){
+			Glide.with(context).load(lecture.getLectureImage()).into(viewHolder.lectureImage);
+		}
 		viewHolder.lectureContent.setText(lecture.getLectureContent());
 		viewHolder.lectureTime.setText(lecture.getLectureTime());
 		viewHolder.lectureSource.setText(lecture.getLecutreSource());
@@ -125,10 +143,21 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		viewHolder.commentTime.setText(comment.getCommentTime());
 		viewHolder.commentLikers.setText(String.valueOf(comment.getCommentLikers()));
 
-/*		//评论对应的用户信息，待修复
-		viewHolder.userPhoto.setImageResource(comment.getUserPhotoId());
-		viewHolder.userName.setText(comment.getUserName());
-		viewHolder.commentLikersImage.setImageResource(comment.getCommentLikersImage());*/
+		viewHolder.userName.setText(comment.getCommentuserName());
+		viewHolder.userName.setText(comment.getCommentuserName());
+		if(lecture.getIsWanted()==0){
+			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_lecture_likes);
+		}else {
+			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_myinfo_mywanted);
+		}
+		if(comment.getIsLike()==1){
+			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
+		}else{
+			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
+		}
+		if(comment.getUserHead()!=null || comment.getUserHead() != " "){
+			Glide.with(context).load(comment.getUserHead()).into(viewHolder.userPhoto);
+		}
 		return view;
 	}
 
@@ -151,7 +180,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		TextView lectureTime;
 		TextView lectureSource;
 		TextView lectureLikers;
-
+		ImageView lectureWantedImage;
 	}
 
 	interface InnerItemOnclickListener {
@@ -165,6 +194,65 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 	@Override
 	public void onClick(View v) {
 		listener.itemClick(v);
+	}
+
+	public void changeCommentLike(int position, int islike){
+
+		Message msg=Message.obtain();
+		msg.arg1=position;
+		if(islike==0){
+			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
+			msg.arg2=R.drawable.ic_discovery_comment_like;
+		}else{
+			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
+			msg.arg2=R.drawable.ic_discovery_comment_like_selected;
+		}
+
+		CommentDB comment=commentList.get(position);
+		if(islike==1){
+			comment.setCommentLikers(comment.getCommentLikers()+1);
+			mCommentDao.update(comment);
+		}else {
+			comment.setCommentLikers(comment.getCommentLikers()-1);
+			mCommentDao.update(comment);
+		}
+		commentList.set(position,comment);
+		handler.sendMessage(msg);
+	}
+
+	private Handler handler = new Handler()
+	{
+		public void handleMessage(android.os.Message msg)
+		{
+			updateItem(msg.arg1,msg.arg2);
+		}
+	};
+
+	/**、
+	 * 刷新指定item
+	 *
+	 * @param index item在listview中的位置
+	 */
+	private void updateItem(int index,int drawable)
+	{
+		if (listView == null)
+		{
+			return;
+		}
+
+		// 获取当前可以看到的item位置
+		int visiblePosition = listView.getFirstVisiblePosition();
+
+		// 如添加headerview后 firstview就是hearderview
+		// 所有索引+1 取第一个view
+		// View view = listview.getChildAt(index - visiblePosition + 1);
+		// 获取点击的view
+
+		View view = listView.getChildAt(index - visiblePosition);
+
+		ImageView likeImage=view.findViewById(R.id.comment_like_image);
+
+		likeImage.setImageResource(drawable);
 	}
 
 }

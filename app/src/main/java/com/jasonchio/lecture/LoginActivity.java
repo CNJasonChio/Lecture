@@ -173,7 +173,8 @@ public class LoginActivity extends BaseActivity {
 			@Override
 			public void run() {
 				try {
-					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone, userPwd);
+					//response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone, userPwd);
+					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, userPwd);
 					loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {

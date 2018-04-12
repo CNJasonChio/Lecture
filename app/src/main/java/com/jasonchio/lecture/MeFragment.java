@@ -55,7 +55,6 @@ public class  MeFragment extends Fragment{
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if(rootview == null){
 			rootview=inflater.inflate(R.layout.fragment_me,null);
-			Toast.makeText(getActivity(),"FragmentMe==onCreateView",Toast.LENGTH_SHORT ).show();
 		}
 		ViewGroup parent=(ViewGroup)rootview.getParent();
 		if(parent!=null){

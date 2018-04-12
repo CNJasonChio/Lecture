@@ -83,7 +83,6 @@ public class RecommentFragment extends Fragment {
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
 			rootview = inflater.inflate(R.layout.fragment_recommend, null);
-			Toast.makeText(getActivity(), "FragmentRecommend==onCreateView", Toast.LENGTH_SHORT).show();
 		}
 		ViewGroup parent = (ViewGroup) rootview.getParent();
 		if (parent != null) {
@@ -109,6 +108,7 @@ public class RecommentFragment extends Fragment {
 						if (lectureRequestResult == 0) {
 							Toasty.success(getContext(), "获取讲座成功").show();
 							showLectureInfoToTop();
+							mLectureDao=daoSession.getLectureDBDao();
 						} else if (lectureRequestResult == 1) {
 							Toasty.error(getContext(), "讲座信息暂无更新").show();
 						} else {
@@ -125,9 +125,9 @@ public class RecommentFragment extends Fragment {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
 				LectureDB lecture = lecturelist.get(position);
-
+				Logger.d(lecture.getLectureId());
 				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
-				intent.putExtra("lecture_id", lecture.getLectureId());
+				intent.putExtra("lecture_id", (int) lecture.getLectureId());
 				startActivity(intent);
 
 			}
@@ -181,8 +181,8 @@ public class RecommentFragment extends Fragment {
 
 					Logger.d("lastLecureID"+lastLecureID);
 
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-
+					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
 					Logger.json(response);
 
 					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
@@ -205,12 +205,11 @@ public class RecommentFragment extends Fragment {
 		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 
 		Logger.d(mAdapter.getCount());
-		if(lectureDBList.size()<1){
+		if(lectureDBList.isEmpty()){
 			LectureRequest();
 			return;
 		}
 		lecturelist.addAll(0,lectureDBList);
-
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
 	}

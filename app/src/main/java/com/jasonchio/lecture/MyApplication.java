@@ -1,6 +1,7 @@
 package com.jasonchio.lecture;
 
 import android.app.Application;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.jasonchio.lecture.greendao.DaoMaster;
 import com.jasonchio.lecture.greendao.DaoSession;
@@ -41,9 +42,18 @@ public class MyApplication extends Application{
 	public void onCreate() {
 		super.onCreate();
 
-		DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture-db");
+		/*DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture-db");
 		Database db = helper.getWritableDb();
-		daoSession = new DaoMaster(db).newSession();
+		daoSession = new DaoMaster(db).newSession();*/
+
+		//创建数据库lecture.db"
+		DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture", null);
+		//获取可写数据库
+		SQLiteDatabase db = helper.getWritableDatabase();
+		//获取数据库对象
+		DaoMaster daoMaster = new DaoMaster(db);
+		//获取Dao对象管理者
+		daoSession = daoMaster.newSession();
 	}
 
 	public DaoSession getDaoSession() {

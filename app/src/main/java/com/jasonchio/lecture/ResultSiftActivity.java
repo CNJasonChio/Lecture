@@ -256,8 +256,8 @@ public class ResultSiftActivity extends BaseActivity {
 					* 从数据库中查找关键词
 					* 将搜索到的讲座用临时数据库保存
 					* */
-					response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_PORT,searchStr);
-
+					//response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_PORT,searchStr);
+					response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_COM,searchStr);
 					Logger.json(response);
 
 					lectureSearchResult= Utility.handleLectureSearchResponse(response,mInterLecDao,mLectureDao);
@@ -282,8 +282,8 @@ public class ResultSiftActivity extends BaseActivity {
 
 					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
 
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-
+					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 
 					handler.sendEmptyMessage(2);

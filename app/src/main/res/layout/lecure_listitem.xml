@@ -96,7 +96,7 @@
            <ImageView
                android:layout_width="12dp"
                android:layout_height="12dp"
-               android:src="@drawable/ic_lecture_likes"
+               android:id="@+id/lecture_wanted_image"
                android:layout_marginRight="10dp"/>
        </LinearLayout>
 

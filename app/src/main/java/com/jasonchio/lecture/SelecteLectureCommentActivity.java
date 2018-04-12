@@ -12,6 +12,7 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.MyWantedResult;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
@@ -46,6 +47,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 	int lectureRequestResult=-1;
 
 	int mywantedResult=-1;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -69,7 +71,10 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 							showWantedLecture();
 						} else if (mywantedResult == 1) {
 							Toasty.error(SelecteLectureCommentActivity.this, "数据库无更新").show();
-						} else {
+						} else if(mywantedResult==3){
+							Toasty.error(SelecteLectureCommentActivity.this, "仅能评论“我的想看”里的讲座,先去找找想看的讲座吧！").show();
+						}
+						else {
 							Toasty.error(SelecteLectureCommentActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -90,7 +95,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				LectureDB lecture=lecturelist.get(position);
 				Intent intent=new Intent(SelecteLectureCommentActivity.this,AddCommentActivity.class);
-				intent.putExtra("lecture_id",lecture.getLectureTitle());
+				intent.putExtra("lecture_id",(int) lecture.getLectureId());
 				startActivity(intent);
 				finish();
 			}
@@ -139,7 +144,8 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,4);
+					//response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,ConstantClass.userOnline);
+					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_COM,ConstantClass.userOnline);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					mywantedResult= Utility.handleWantedLectureResponse(response,mUserDao);
@@ -159,11 +165,6 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 	private void LectureRequest() {
 
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -171,8 +172,9 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 					long lastLecureID= Utility.lastLetureinDB(mLectureDao);
 
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
 
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 
 					handler.sendEmptyMessage(2);
@@ -190,10 +192,15 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);
 
+		if(temp==null || temp.length()==0){
+			MywantedRequest();
+			return;
+		}
+
 		String[] wantedLecture = Utility.getStrings(temp);
 
 		if(wantedLecture.length==0){
-			MywantedRequest();
+			Toasty.error(SelecteLectureCommentActivity.this,"解析用户想看的讲座失败，请联系开发者").show();
 			return;
 		}else{
 			for(int i=0;i<wantedLecture.length;i++){

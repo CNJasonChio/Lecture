@@ -48,10 +48,12 @@ public class LibraryDB{
 
 	double libraryLongitude;    //图书馆经度
 
-	@Generated(hash = 833783416)
+	int isFocused;
+
+	@Generated(hash = 923803696)
 	public LibraryDB(long libraryID, String libraryName, String libraryContent,
 			String libraryUrl, String libraryImageUrl, double libraryLatitude,
-			double libraryLongitude) {
+			double libraryLongitude, int isFocused) {
 		this.libraryID = libraryID;
 		this.libraryName = libraryName;
 		this.libraryContent = libraryContent;
@@ -59,6 +61,7 @@ public class LibraryDB{
 		this.libraryImageUrl = libraryImageUrl;
 		this.libraryLatitude = libraryLatitude;
 		this.libraryLongitude = libraryLongitude;
+		this.isFocused = isFocused;
 	}
 
 	@Generated(hash = 1958976301)
@@ -121,6 +124,11 @@ public class LibraryDB{
 		this.libraryLongitude = libraryLongitude;
 	}
 
+	public int getIsFocused() {
+		return this.isFocused;
+	}
 
-
+	public void setIsFocused(int isFocused) {
+		this.isFocused = isFocused;
+	}
 }

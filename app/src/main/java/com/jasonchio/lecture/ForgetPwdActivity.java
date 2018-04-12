@@ -292,7 +292,8 @@ public class ForgetPwdActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_PORT, phone, password);
+					//response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_PORT, phone, password);
+					response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_COM, phone, password);
 					//解析和处理服务器返回的数据
 					findPwdResult = Utility.handleFindPwdRespose(response);
 					handler.sendEmptyMessage(-7);

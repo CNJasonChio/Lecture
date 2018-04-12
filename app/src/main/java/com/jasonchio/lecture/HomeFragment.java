@@ -228,7 +228,8 @@ public class HomeFragment extends Fragment {
 			public void run() {
 				try {
 
-					response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_PORT, ConstantClass.userOnline, longtituide, latituide);
+					//response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_PORT, ConstantClass.userOnline, longtituide, latituide);
+					response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_COM, ConstantClass.userOnline, longtituide, latituide);
 
 					Logger.json(response);
 

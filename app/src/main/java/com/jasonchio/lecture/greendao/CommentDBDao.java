@@ -24,10 +24,12 @@ public class CommentDBDao extends AbstractDao<CommentDB, Long> {
     public static class Properties {
         public final static Property CommentId = new Property(0, long.class, "commentId", true, "_id");
         public final static Property CommentuserName = new Property(1, String.class, "commentuserName", false, "COMMENTUSER_NAME");
-        public final static Property CommentlecureId = new Property(2, int.class, "commentlecureId", false, "COMMENTLECURE_ID");
-        public final static Property CommentContent = new Property(3, String.class, "commentContent", false, "COMMENT_CONTENT");
-        public final static Property CommentTime = new Property(4, String.class, "commentTime", false, "COMMENT_TIME");
-        public final static Property CommentLikers = new Property(5, int.class, "commentLikers", false, "COMMENT_LIKERS");
+        public final static Property UserHead = new Property(2, String.class, "userHead", false, "USER_HEAD");
+        public final static Property CommentlecureId = new Property(3, long.class, "commentlecureId", false, "COMMENTLECURE_ID");
+        public final static Property CommentContent = new Property(4, String.class, "commentContent", false, "COMMENT_CONTENT");
+        public final static Property CommentTime = new Property(5, String.class, "commentTime", false, "COMMENT_TIME");
+        public final static Property CommentLikers = new Property(6, int.class, "commentLikers", false, "COMMENT_LIKERS");
+        public final static Property IsLike = new Property(7, int.class, "isLike", false, "IS_LIKE");
     }
 
 
@@ -45,10 +47,12 @@ public class CommentDBDao extends AbstractDao<CommentDB, Long> {
         db.execSQL("CREATE TABLE " + constraint + "\"COMMENT_DB\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY NOT NULL ," + // 0: commentId
                 "\"COMMENTUSER_NAME\" TEXT," + // 1: commentuserName
-                "\"COMMENTLECURE_ID\" INTEGER NOT NULL ," + // 2: commentlecureId
-                "\"COMMENT_CONTENT\" TEXT," + // 3: commentContent
-                "\"COMMENT_TIME\" TEXT," + // 4: commentTime
-                "\"COMMENT_LIKERS\" INTEGER NOT NULL );"); // 5: commentLikers
+                "\"USER_HEAD\" TEXT," + // 2: userHead
+                "\"COMMENTLECURE_ID\" INTEGER NOT NULL ," + // 3: commentlecureId
+                "\"COMMENT_CONTENT\" TEXT," + // 4: commentContent
+                "\"COMMENT_TIME\" TEXT," + // 5: commentTime
+                "\"COMMENT_LIKERS\" INTEGER NOT NULL ," + // 6: commentLikers
+                "\"IS_LIKE\" INTEGER NOT NULL );"); // 7: isLike
     }
 
     /** Drops the underlying database table. */
@@ -66,18 +70,24 @@ public class CommentDBDao extends AbstractDao<CommentDB, Long> {
         if (commentuserName != null) {
             stmt.bindString(2, commentuserName);
         }
-        stmt.bindLong(3, entity.getCommentlecureId());
+ 
+        String userHead = entity.getUserHead();
+        if (userHead != null) {
+            stmt.bindString(3, userHead);
+        }
+        stmt.bindLong(4, entity.getCommentlecureId());
  
         String commentContent = entity.getCommentContent();
         if (commentContent != null) {
-            stmt.bindString(4, commentContent);
+            stmt.bindString(5, commentContent);
         }
  
         String commentTime = entity.getCommentTime();
         if (commentTime != null) {
-            stmt.bindString(5, commentTime);
+            stmt.bindString(6, commentTime);
         }
-        stmt.bindLong(6, entity.getCommentLikers());
+        stmt.bindLong(7, entity.getCommentLikers());
+        stmt.bindLong(8, entity.getIsLike());
     }
 
     @Override
@@ -89,18 +99,24 @@ public class CommentDBDao extends AbstractDao<CommentDB, Long> {
         if (commentuserName != null) {
             stmt.bindString(2, commentuserName);
         }
-        stmt.bindLong(3, entity.getCommentlecureId());
+ 
+        String userHead = entity.getUserHead();
+        if (userHead != null) {
+            stmt.bindString(3, userHead);
+        }
+        stmt.bindLong(4, entity.getCommentlecureId());
  
         String commentContent = entity.getCommentContent();
         if (commentContent != null) {
-            stmt.bindString(4, commentContent);
+            stmt.bindString(5, commentContent);
         }
  
         String commentTime = entity.getCommentTime();
         if (commentTime != null) {
-            stmt.bindString(5, commentTime);
+            stmt.bindString(6, commentTime);
         }
-        stmt.bindLong(6, entity.getCommentLikers());
+        stmt.bindLong(7, entity.getCommentLikers());
+        stmt.bindLong(8, entity.getIsLike());
     }
 
     @Override
@@ -113,10 +129,12 @@ public class CommentDBDao extends AbstractDao<CommentDB, Long> {
         CommentDB entity = new CommentDB( //
             cursor.getLong(offset + 0), // commentId
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // commentuserName
-            cursor.getInt(offset + 2), // commentlecureId
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // commentContent
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // commentTime
-            cursor.getInt(offset + 5) // commentLikers
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // userHead
+            cursor.getLong(offset + 3), // commentlecureId
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // commentContent
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // commentTime
+            cursor.getInt(offset + 6), // commentLikers
+            cursor.getInt(offset + 7) // isLike
         );
         return entity;
     }
@@ -125,10 +143,12 @@ public class CommentDBDao extends AbstractDao<CommentDB, Long> {
     public void readEntity(Cursor cursor, CommentDB entity, int offset) {
         entity.setCommentId(cursor.getLong(offset + 0));
         entity.setCommentuserName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setCommentlecureId(cursor.getInt(offset + 2));
-        entity.setCommentContent(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setCommentTime(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setCommentLikers(cursor.getInt(offset + 5));
+        entity.setUserHead(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setCommentlecureId(cursor.getLong(offset + 3));
+        entity.setCommentContent(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setCommentTime(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setCommentLikers(cursor.getInt(offset + 6));
+        entity.setIsLike(cursor.getInt(offset + 7));
      }
     
     @Override

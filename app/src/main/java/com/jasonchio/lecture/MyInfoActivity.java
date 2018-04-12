@@ -422,7 +422,7 @@ public class MyInfoActivity extends BaseActivity {
 					if (cutphotointent != null) {
 						startActivityForResult(cutphotointent, PHOTO_ALREADY);
 					} else {
-						Toast.makeText(MyInfoActivity.this, "cut for photo intent is null", Toast.LENGTH_SHORT).show();
+						Toasty.error(MyInfoActivity.this,"没有裁剪照片的应用").show();
 					}
 
 					break;
@@ -434,7 +434,7 @@ public class MyInfoActivity extends BaseActivity {
 					if (cutcamreaintent != null) {
 						startActivityForResult(cutcamreaintent, PHOTO_ALREADY);
 					} else {
-						Toast.makeText(MyInfoActivity.this, "cut for camrea intent is null", Toast.LENGTH_SHORT).show();
+						Toasty.error(MyInfoActivity.this,"没有裁剪照片的应用").show();
 					}
 
 					break;
@@ -599,8 +599,8 @@ public class MyInfoActivity extends BaseActivity {
 			public void run() {
 				try {
 
-					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,ConstantClass.userOnline );
-
+					//response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,ConstantClass.userOnline );
+					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_COM,ConstantClass.userOnline );
 					Logger.json(response);
 
 					myinfoRequestResult= Utility.handleUserInfoResponse(response,mUserDao);
@@ -629,7 +629,8 @@ public class MyInfoActivity extends BaseActivity {
 					userBirthday=birthdayText.getText().toString();
 					userPhone=phoneText.getText().toString();
 
-					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
+					//response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
+					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_COM,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
 
 					Logger.json(response);
 
@@ -663,7 +664,8 @@ public class MyInfoActivity extends BaseActivity {
 			public void run() {
 				try {
 
-					response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_PORT,ConstantClass.userOnline,bitmap,size);
+					//response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_PORT,ConstantClass.userOnline,bitmap,size);
+					response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_COM,ConstantClass.userOnline,bitmap,size);
 
 					Logger.json(response);
 

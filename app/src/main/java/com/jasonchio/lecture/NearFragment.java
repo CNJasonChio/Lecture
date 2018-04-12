@@ -3,6 +3,7 @@ package com.jasonchio.lecture;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,8 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.dmoral.toasty.Toasty;
 
 /**
  * /**
@@ -51,8 +54,7 @@ import java.util.List;
  * Created by zhaoyaobang on 2018/3/7.
  */
 
-public class
-NearFragment extends Fragment{
+public class NearFragment extends Fragment{
 
 	private View rootview;
 
@@ -82,7 +84,6 @@ NearFragment extends Fragment{
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if(rootview == null){
 			rootview=inflater.inflate(R.layout.fragment_near,null);
-			Toast.makeText(getActivity(),"FragmentFocuse==onCreateView",Toast.LENGTH_SHORT ).show();
 		}
 		ViewGroup parent=(ViewGroup)rootview.getParent();
 		if(parent!=null){
@@ -131,6 +132,25 @@ NearFragment extends Fragment{
 			}
 		});
 
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (lectureRequestResult == 0) {
+							Toasty.success(getContext(), "获取讲座成功").show();
+							showLectureInfoToTop();
+						} else if (lectureRequestResult == 1) {
+							Toasty.error(getContext(), "讲座信息暂无更新").show();
+						} else {
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
+
 		autoRefresh();
 
 		return rootview;
@@ -161,8 +181,8 @@ NearFragment extends Fragment{
 
 					Logger.d("lastLecureID"+lastLecureID);
 
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-
+					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
 					Logger.json(response);
 
 					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
@@ -190,7 +210,6 @@ NearFragment extends Fragment{
 			return;
 		}
 		lecturelist.addAll(0,lectureDBList);
-
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
 	}

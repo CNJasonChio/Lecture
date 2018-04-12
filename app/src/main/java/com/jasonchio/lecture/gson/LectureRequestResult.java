@@ -109,6 +109,7 @@ public class LectureRequestResult {
 	public static class LectureBean {
 		/**
 		 * lecture_id :
+		 * user_want_lecture :
 		 * lecture_title :
 		 * lecture_location :
 		 * lecture_time :
@@ -118,6 +119,7 @@ public class LectureRequestResult {
 		 */
 
 		private int lecture_id;
+		private int user_want_lecture;
 		private String lecture_title;
 		private String lecture_location;
 		private String lecture_time;
@@ -125,6 +127,7 @@ public class LectureRequestResult {
 		private String lecture_url;
 		private int lecture_fans_amount;
 		private String lecture_information;
+		private String lecture_picture;
 
 		public static LectureBean objectFromData(String str) {
 
@@ -232,6 +235,22 @@ public class LectureRequestResult {
 
 		public void setLecture_information(String lecture_information) {
 			this.lecture_information = lecture_information;
+		}
+
+		public int getUser_want_lecture() {
+			return user_want_lecture;
+		}
+
+		public void setUser_want_lecture(int user_want_lecture) {
+			this.user_want_lecture = user_want_lecture;
+		}
+
+		public String getLecture_picture() {
+			return lecture_picture;
+		}
+
+		public void setLecture_picture(String lecture_pic) {
+			this.lecture_picture = lecture_picture;
 		}
 	}
 }

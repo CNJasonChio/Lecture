@@ -38,18 +38,18 @@ import java.util.List;
 
 public class FocuseLibraryAdapter extends BaseAdapter implements View.OnClickListener {
 
-	private List<LibraryDB> libraryDBList;
+	private List<String> libraryList;
 	private Context context;
 	private FocuseLibraryAdapter.InnerItemOnclickListener listener;
 
-	public FocuseLibraryAdapter(List<LibraryDB> list,Context context){
-		this.libraryDBList=list;
+	public FocuseLibraryAdapter(List<String> list,Context context){
+		this.libraryList =list;
 		this.context=context;
 	}
 
 	@Override
 	public int getCount() {
-		return libraryDBList.size();
+		return libraryList.size();
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class FocuseLibraryAdapter extends BaseAdapter implements View.OnClickLis
 	@Override
 	public View getView(int position, View view, ViewGroup parent) {
 		final FocuseLibraryAdapter.ViewHolder viewHolder;
-		final LibraryDB library=libraryDBList.get(position);
+		final String libraryName= libraryList.get(position);
 
 		if (view == null) {
 			viewHolder = new FocuseLibraryAdapter.ViewHolder();
@@ -82,7 +82,7 @@ public class FocuseLibraryAdapter extends BaseAdapter implements View.OnClickLis
 		viewHolder.myFocuseLibrary.setOnClickListener(this);
 		viewHolder.myFocuseLibrary.setTag(position);
 
-		viewHolder.myFocuseLibrary.setText(library.getLibraryName());
+		viewHolder.myFocuseLibrary.setText(libraryName);
 
 		return view;
 	}

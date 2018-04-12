@@ -52,10 +52,12 @@ public class LectureDB {
 
 	String lectureImage;    //讲座图片
 
-	@Generated(hash = 1637305874)
+	int isWanted;
+
+	@Generated(hash = 1001263479)
 	public LectureDB(long lectureId, String lectureTitle, String lectureLocation,
 			String lectureTime, String lecutreSource, String lectureContent,
-			String lectureUrl, int lecutreLikers, String lectureImage) {
+			String lectureUrl, int lecutreLikers, String lectureImage, int isWanted) {
 		this.lectureId = lectureId;
 		this.lectureTitle = lectureTitle;
 		this.lectureLocation = lectureLocation;
@@ -65,6 +67,7 @@ public class LectureDB {
 		this.lectureUrl = lectureUrl;
 		this.lecutreLikers = lecutreLikers;
 		this.lectureImage = lectureImage;
+		this.isWanted = isWanted;
 	}
 
 	@Generated(hash = 1965277576)
@@ -143,4 +146,11 @@ public class LectureDB {
 		this.lectureImage = lectureImage;
 	}
 
+	public int getIsWanted() {
+		return this.isWanted;
+	}
+
+	public void setIsWanted(int isWanted) {
+		this.isWanted = isWanted;
+	}
 }

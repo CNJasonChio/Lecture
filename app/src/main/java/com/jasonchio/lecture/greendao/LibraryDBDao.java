@@ -29,6 +29,7 @@ public class LibraryDBDao extends AbstractDao<LibraryDB, Long> {
         public final static Property LibraryImageUrl = new Property(4, String.class, "libraryImageUrl", false, "LIBRARY_IMAGE_URL");
         public final static Property LibraryLatitude = new Property(5, double.class, "libraryLatitude", false, "LIBRARY_LATITUDE");
         public final static Property LibraryLongitude = new Property(6, double.class, "libraryLongitude", false, "LIBRARY_LONGITUDE");
+        public final static Property IsFocused = new Property(7, int.class, "isFocused", false, "IS_FOCUSED");
     }
 
 
@@ -50,7 +51,8 @@ public class LibraryDBDao extends AbstractDao<LibraryDB, Long> {
                 "\"LIBRARY_URL\" TEXT," + // 3: libraryUrl
                 "\"LIBRARY_IMAGE_URL\" TEXT," + // 4: libraryImageUrl
                 "\"LIBRARY_LATITUDE\" REAL NOT NULL ," + // 5: libraryLatitude
-                "\"LIBRARY_LONGITUDE\" REAL NOT NULL );"); // 6: libraryLongitude
+                "\"LIBRARY_LONGITUDE\" REAL NOT NULL ," + // 6: libraryLongitude
+                "\"IS_FOCUSED\" INTEGER NOT NULL );"); // 7: isFocused
     }
 
     /** Drops the underlying database table. */
@@ -85,6 +87,7 @@ public class LibraryDBDao extends AbstractDao<LibraryDB, Long> {
         }
         stmt.bindDouble(6, entity.getLibraryLatitude());
         stmt.bindDouble(7, entity.getLibraryLongitude());
+        stmt.bindLong(8, entity.getIsFocused());
     }
 
     @Override
@@ -113,6 +116,7 @@ public class LibraryDBDao extends AbstractDao<LibraryDB, Long> {
         }
         stmt.bindDouble(6, entity.getLibraryLatitude());
         stmt.bindDouble(7, entity.getLibraryLongitude());
+        stmt.bindLong(8, entity.getIsFocused());
     }
 
     @Override
@@ -129,7 +133,8 @@ public class LibraryDBDao extends AbstractDao<LibraryDB, Long> {
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // libraryUrl
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // libraryImageUrl
             cursor.getDouble(offset + 5), // libraryLatitude
-            cursor.getDouble(offset + 6) // libraryLongitude
+            cursor.getDouble(offset + 6), // libraryLongitude
+            cursor.getInt(offset + 7) // isFocused
         );
         return entity;
     }
@@ -143,6 +148,7 @@ public class LibraryDBDao extends AbstractDao<LibraryDB, Long> {
         entity.setLibraryImageUrl(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setLibraryLatitude(cursor.getDouble(offset + 5));
         entity.setLibraryLongitude(cursor.getDouble(offset + 6));
+        entity.setIsFocused(cursor.getInt(offset + 7));
      }
     
     @Override
