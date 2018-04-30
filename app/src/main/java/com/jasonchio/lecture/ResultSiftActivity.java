@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,13 +15,17 @@ import com.jasonchio.lecture.greendao.InterimLectureDB;
 import com.jasonchio.lecture.greendao.InterimLectureDBDao;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ResultSift.DropDownMenu;
 import com.jasonchio.lecture.util.ResultSift.ListDropDownAdapter;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+
+import org.greenrobot.greendao.query.Query;
 import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +41,7 @@ public class ResultSiftActivity extends BaseActivity {
 	private DropDownMenu mDropDownMenu;//自定义VIew类的对象
 	private TitleLayout titleLayout;
 	private Button titleFirstButton;
-	private Button titleSecondButton;
+
 	private ListDropDownAdapter aboutMeAdapter; //与我相关显示的适配器
 	private ListDropDownAdapter areaAdapter;    //地区显示的适配器
 
@@ -53,6 +58,11 @@ public class ResultSiftActivity extends BaseActivity {
 
 	int lectureRequestResult;
 
+	int myFocuseLibRequestResult;
+	int userPosition;
+
+	int locationPosition;
+
 	LectureAdapter mAdapter;
 
 	List<LectureDB> lecturelist = new ArrayList<>();
@@ -64,6 +74,8 @@ public class ResultSiftActivity extends BaseActivity {
 	LectureDBDao mLectureDao;
 
 	InterimLectureDBDao mInterLecDao;
+
+	Dialog searchLoadDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,7 +92,6 @@ public class ResultSiftActivity extends BaseActivity {
 
 		titleFirstButton.setOnClickListener(this);
 		initData();//初始化 数据
-		initEvent();// 初始化点击事件
 
 		handler=new Handler(new Handler.Callback() {
 			@Override
@@ -88,24 +99,49 @@ public class ResultSiftActivity extends BaseActivity {
 				switch (msg.what){
 					case 1:
 						if (lectureSearchResult == 0) {
+							DialogUtils.closeDialog(searchLoadDialog);
 							Toasty.success(ResultSiftActivity.this, "查找讲座成功").show();
 							showLectureInfoToTop();
 						} else if (lectureSearchResult == 1) {
+							DialogUtils.closeDialog(searchLoadDialog);
 							Toasty.error(ResultSiftActivity.this, "无符合条件的讲座").show();
 						} else if(lectureSearchResult==3){
 							LectureRequest();
 						}else {
+							DialogUtils.closeDialog(searchLoadDialog);
 							Toasty.error(ResultSiftActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
 					case 2:
 						if(lectureRequestResult==0){
+							DialogUtils.closeDialog(searchLoadDialog);
 							Utility.handleLectureSearchResponse(response,mInterLecDao,mLectureDao);
 						}
+					case 3:
+						showSiftLecture();
+						break;
+					case 4:
+						if (myFocuseLibRequestResult == 0) {
+							showSiftLecture();
+						} else if (myFocuseLibRequestResult == 1) {
+							Toasty.error(ResultSiftActivity.this, "数据库无更新").show();
+						} else if (myFocuseLibRequestResult == 3) {
+							Toasty.info(ResultSiftActivity.this, "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
+						} else {
+							Toasty.error(ResultSiftActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 5:
+
+
 				}
 				return true;
 			}
 		});
+
+		initEvent();// 初始化点击事件
+
+		searchLoadDialog= DialogUtils.createLoadingDialog(ResultSiftActivity.this,"正在搜索");
 
 		searchLectureRequest();
 
@@ -138,7 +174,7 @@ public class ResultSiftActivity extends BaseActivity {
 		//BaseActivity方法，隐藏系统标题栏
 		HideSysTitle();
 
-		titleLayout.setTitle("搜索结果");
+		titleLayout.setTitle("搜索："+searchStr);
 
 		titleLayout.setSecondButtonVisible(View.GONE);
 
@@ -163,7 +199,6 @@ public class ResultSiftActivity extends BaseActivity {
 
 		titleLayout=(TitleLayout)findViewById(R.id.result_sift_title_layout);
 		titleFirstButton=titleLayout.getFirstButton();
-		titleSecondButton=titleLayout.getSecondButton();
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mUserDao=daoSession.getUserDBDao();
@@ -184,15 +219,16 @@ public class ResultSiftActivity extends BaseActivity {
 		//init dropdownview
 		mDropDownMenu.setDropDownMenu(Arrays.asList(headers), popupViews, listView);
 
-		mAdapter = new LectureAdapter(ResultSiftActivity.this, R.layout.lecure_listitem, lecturelist);
+		mAdapter = new LectureAdapter(ResultSiftActivity.this,listView,lecturelist,mLectureDao);
 
 		listView.setAdapter(mAdapter);
 	}
 
 	/**
-	 * 设置四个条件选择的点击事件
+	 * 设置两个条件选择的点击事件
 	 */
-	private void initEvent() {
+
+	void initEvent() {
 		//add item click event
 
 		aboutMeView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -200,8 +236,8 @@ public class ResultSiftActivity extends BaseActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				aboutMeAdapter.setCheckItem(position);
 				mDropDownMenu.setTabText(position == 0 ? headers[0] : aboutUser[position]);
-
 				mDropDownMenu.closeMenu();
+				userPosition=position;
 			}
 		});
 
@@ -210,11 +246,12 @@ public class ResultSiftActivity extends BaseActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				areaAdapter.setCheckItem(position);
 				mDropDownMenu.setTabText(position == 0 ? headers[1] : area[position]);
-				//textView.append(position == 0 ?headers[1] : area[position]+"\n");
 				mDropDownMenu.closeMenu();
+				locationPosition=position;
 			}
 		});
 
+		handler.sendEmptyMessage(3);
 	}
 
 	/**
@@ -242,22 +279,14 @@ public class ResultSiftActivity extends BaseActivity {
 
 	private void searchLectureRequest(){
 
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 
-					/*
-					* 从数据库中查找关键词
-					* 将搜索到的讲座用临时数据库保存
-					* */
 					//response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_PORT,searchStr);
 					response = HttpUtil.SearchLectureRequest(ConstantClass.ADDRESS, ConstantClass.SEARCH_LECTURE_REQUEST_COM,searchStr);
+
 					Logger.json(response);
 
 					lectureSearchResult= Utility.handleLectureSearchResponse(response,mInterLecDao,mLectureDao);
@@ -284,6 +313,7 @@ public class ResultSiftActivity extends BaseActivity {
 
 					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
 					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 
 					handler.sendEmptyMessage(2);
@@ -301,13 +331,11 @@ public class ResultSiftActivity extends BaseActivity {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-
 		List<InterimLectureDB> lectureDBList=mInterLecDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(InterimLectureDBDao.Properties.LectureId).build().list();
 
 		List<LectureDB> lectureDBS=new ArrayList<>();
 
 		if(lectureDBList.size()<1){
-			searchLectureRequest();
 			return;
 		}else{
 			for(InterimLectureDB interimLectureDB:lectureDBList){
@@ -329,5 +357,106 @@ public class ResultSiftActivity extends BaseActivity {
 
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
+		}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		mInterLecDao.deleteAll();
+	}
+
+	private void showSiftLecture(){
+
+		List<InterimLectureDB> lectureDBList=new ArrayList <>();
+		UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+
+		switch (userPosition){
+			case 0:
+				lectureDBList=mInterLecDao.loadAll();
+				break;
+			case 1:
+				if(userDB.getUserSchool()==null){
+					Toasty.error(ResultSiftActivity.this,"你还没有设置你的学校呢").show();
+				}else{
+					lectureDBList=mInterLecDao.queryBuilder().where(InterimLectureDBDao.Properties.LecutreSource.like(userDB.getUserSchool())).build().list();
+				}
+				break;
+			case 2:
+				String []userFocuse=Utility.getStrings(Utility.getUserFocuse(ConstantClass.userOnline,mUserDao));
+				if(userFocuse==null || userFocuse.length==0){
+					MyFocuseRequest();
+				}else{
+					for(String focuse:userFocuse){
+						List<InterimLectureDB> focuseLibLecture=mInterLecDao.queryBuilder().where(InterimLectureDBDao.Properties.LecutreSource.eq(focuse)).build().list();
+						if(focuseLibLecture==null || focuseLibLecture.isEmpty()){
+							continue;
+						}else{
+							lectureDBList.addAll(focuseLibLecture);
+						}
+					}
+				}
+				break;
+			case 3:
+				lectureDBList=mInterLecDao.loadAll();
+				break;
+				default:
+		}
+
+		switch (locationPosition){
+			case 0:
+				break;
+
+		}
+
+		if(lectureDBList.isEmpty()){
+			Toasty.error(ResultSiftActivity.this,"无符合条件的讲座");
+		}else{
+			List<LectureDB> lectureDBS=new ArrayList<>();
+
+			for(InterimLectureDB interimLectureDB:lectureDBList){
+				LectureDB lectureDB=new LectureDB();
+				lectureDB.setLectureContent(interimLectureDB.getLectureContent());
+				lectureDB.setLecutreLikers(interimLectureDB.getLecutreLikers());
+				lectureDB.setLecutreSource(interimLectureDB.getLecutreSource());
+				lectureDB.setLectureTime(interimLectureDB.getLectureTime());
+				lectureDB.setLectureLocation(interimLectureDB.getLectureLocation());
+				lectureDB.setLectureTitle(interimLectureDB.getLectureTitle());
+				lectureDB.setLectureId(interimLectureDB.getLectureId());
+				lectureDB.setLectureImage(interimLectureDB.getLectureImage());
+				lectureDB.setLectureUrl(interimLectureDB.getLectureUrl());
+				lectureDBS.add(lectureDB);
+			}
+			lecturelist.clear();
+			lecturelist.addAll(0,lectureDBS);
+			listView.setSelection(0);
+			mAdapter.notifyDataSetChanged();
+		}
+
+
+	}
+
+	private void MyFocuseRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					//response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,ConstantClass.userOnline);
+					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_COM, ConstantClass.userOnline);
+
+					Logger.json(response);
+					//解析和处理服务器返回的数据
+					myFocuseLibRequestResult = Utility.handleFocuseLibraryResponse(response, mUserDao);
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("连接失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

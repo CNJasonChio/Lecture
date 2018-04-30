@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical">
+
+
+    <com.jasonchio.lecture.TitleLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/help_title_layout">
+    </com.jasonchio.lecture.TitleLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:layout_marginTop="13dp"
+        android:background="#BBBBBB">
+    </View>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:id="@+id/help_content_text"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textSize="17sp"
+        android:lineSpacingMultiplier="1.5"/>
+</LinearLayout>

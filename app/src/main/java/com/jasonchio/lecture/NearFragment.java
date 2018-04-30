@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +19,7 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -76,6 +78,7 @@ public class NearFragment extends Fragment{
 
 	String response;
 
+	Dialog requestLoadDialog;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -94,7 +97,7 @@ public class NearFragment extends Fragment{
 
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem,lecturelist);
+		mAdapter = new LectureAdapter(getActivity(), listView,lecturelist,mLectureDao);
 
 		listView.setAdapter(mAdapter);
 
@@ -138,11 +141,14 @@ public class NearFragment extends Fragment{
 				switch (msg.what) {
 					case 1:
 						if (lectureRequestResult == 0) {
+							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.success(getContext(), "获取讲座成功").show();
 							showLectureInfoToTop();
 						} else if (lectureRequestResult == 1) {
+							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.error(getContext(), "讲座信息暂无更新").show();
 						} else {
+							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -206,6 +212,7 @@ public class NearFragment extends Fragment{
 
 		Logger.d(mAdapter.getCount());
 		if(lectureDBList.size()<1){
+			requestLoadDialog= DialogUtils.createLoadingDialog(getContext(),"正在获取讲座");
 			LectureRequest();
 			return;
 		}

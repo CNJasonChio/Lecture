@@ -14,4 +14,6 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <string name="dialog_choose_update_content">发现了新版本</string>
 </resources>

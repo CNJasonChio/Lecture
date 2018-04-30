@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -84,7 +86,7 @@ public class FocuseFragment extends Fragment {
 
 	LectureDBDao mLectureDao;
 
-
+	Dialog requestLoadDialog;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -104,7 +106,7 @@ public class FocuseFragment extends Fragment {
 
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem, lecturelist);
+		mAdapter = new LectureAdapter(getActivity(), listView,lecturelist,mLectureDao);
 
 		listView.setAdapter(mAdapter);
 
@@ -118,11 +120,12 @@ public class FocuseFragment extends Fragment {
 						} else if (myFocuseRequestResult == 1) {
 							Toasty.info(getContext(), "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
 						} else {
-							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+							DialogUtils.closeDialog(requestLoadDialog);
 						}
 						break;
 					case 2:
 						if (lectureRequestResult == 0) {
+							DialogUtils.closeDialog(requestLoadDialog);
 							showLectureInfoToTop();
 						}
 				}
@@ -242,6 +245,7 @@ public class FocuseFragment extends Fragment {
 			List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 			Logger.d("无关注的图书馆");
 			if (lectureDBList == null || lectureDBList.isEmpty()) {
+				requestLoadDialog= DialogUtils.createLoadingDialog(getContext(),"正在获取讲座");
 				LectureRequest();
 				return;
 			} else {
@@ -259,9 +263,6 @@ public class FocuseFragment extends Fragment {
 					continue;
 				} else {
 					lectureDBList.addAll(lectureDBS);
-					for (LectureDB lectureDB : lectureDBS) {
-						Logger.d(lectureDB.getLectureId());
-					}
 				}
 			}
 			if (lectureDBList.isEmpty()) {

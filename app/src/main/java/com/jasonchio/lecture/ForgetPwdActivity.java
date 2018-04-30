@@ -64,6 +64,25 @@ public class ForgetPwdActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+		initEvent();
+
+	}
+
+	protected void initWidget() {
+		titleLayout = (TitleLayout) findViewById(R.id.fgtpwd_title_layout);
+		newpasswordEdit = (EditText) findViewById(R.id.pgtpwd_newpassword_edit);
+		fgtpwdaccountEdit = (EditText) findViewById(R.id.fgtpwd_account_edit);
+		confirmEdit = (EditText) findViewById(R.id.fgtpwd_repassword_edit);
+		backButton = titleLayout.getFirstButton();
+		changepwdButton = (Button) findViewById(R.id.fgtpwd_change_password);
+		sendForpwdVercodeButton = (Button) findViewById(R.id.fgtpwd_send_vercode);
+		vercodeEdit = (EditText) findViewById(R.id.fgtpwd_vercode_edit);
+		pwdCanSee = (ImageView) findViewById(R.id.fgtpwd_pwd_cansee);
+		repwdCanSee = (ImageView) findViewById(R.id.fgtpwd_repwd_cansee);
+	}
+
+	@Override
+	void initEvent() {
 		//标题返回按钮的点击监听
 		backButton.setOnClickListener(this);
 		//设置密码是否可见按钮的点击监听
@@ -144,19 +163,6 @@ public class ForgetPwdActivity extends BaseActivity {
 				}
 			}
 		};
-	}
-
-	protected void initWidget() {
-		titleLayout = (TitleLayout) findViewById(R.id.fgtpwd_title_layout);
-		newpasswordEdit = (EditText) findViewById(R.id.pgtpwd_newpassword_edit);
-		fgtpwdaccountEdit = (EditText) findViewById(R.id.fgtpwd_account_edit);
-		confirmEdit = (EditText) findViewById(R.id.fgtpwd_repassword_edit);
-		backButton = titleLayout.getFirstButton();
-		changepwdButton = (Button) findViewById(R.id.fgtpwd_change_password);
-		sendForpwdVercodeButton = (Button) findViewById(R.id.fgtpwd_send_vercode);
-		vercodeEdit = (EditText) findViewById(R.id.fgtpwd_vercode_edit);
-		pwdCanSee = (ImageView) findViewById(R.id.fgtpwd_pwd_cansee);
-		repwdCanSee = (ImageView) findViewById(R.id.fgtpwd_repwd_cansee);
 	}
 
 	protected void initView() {

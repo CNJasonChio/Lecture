@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,10 +16,18 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
+
+import org.json.JSONException;
 
 import java.io.IOException;
 
+import es.dmoral.toasty.Toasty;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -25,6 +35,21 @@ import okhttp3.Response;
 public class WelcomeActivity extends BaseActivity {
 
 	ImageView welcomeImage;
+
+	SharedPreferences preferences;
+
+	Handler handler;
+
+	String response;
+	String userPhone;
+	String userPwd;
+
+	int loginResult = -1;
+
+	boolean isRemPwd=false;
+
+	DaoSession mDaoSession ;
+	UserDBDao mUserDao;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36,6 +61,8 @@ public class WelcomeActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+		initEvent();
+
 		//渐变背景图片
 		AlphaAnimation aa = new AlphaAnimation(0.3f, 1.0f);
 		aa.setDuration(2000);//设置动画持续时间
@@ -43,7 +70,7 @@ public class WelcomeActivity extends BaseActivity {
 		aa.setAnimationListener(new Animation.AnimationListener() {
 			@Override
 			public void onAnimationEnd(Animation arg0) {
-				toMainActivity();
+				checkSharePreference();
 			}
 
 			@Override
@@ -81,13 +108,20 @@ public class WelcomeActivity extends BaseActivity {
 //		});
 //	}
 
-	//从登陆界面跳转到主界面LoginActivity
 
-	private void toMainActivity() {
-		Intent intent = new Intent(this, LoginActivity.class);
-		startActivity(intent);
-		finish();
+	private void checkSharePreference(){
+		isRemPwd=preferences.getBoolean("remember_password",false);
+		if(isRemPwd){
+			userPhone=preferences.getString("account","");
+			userPwd=preferences.getString("password","");
+			loginRequest();
+		}else {
+			Intent intent=new Intent(WelcomeActivity.this,LoginActivity.class);
+			startActivity(intent);
+			finish();
+		}
 	}
+
 
 	@Override
 	void initView() {
@@ -107,10 +141,62 @@ public class WelcomeActivity extends BaseActivity {
 	@Override
 	void initWidget() {
 		welcomeImage=(ImageView) findViewById(R.id.welcome_image);
+		preferences=PreferenceManager.getDefaultSharedPreferences(this);
+		mDaoSession = ((MyApplication)getApplication()).getDaoSession();
+		mUserDao = mDaoSession.getUserDBDao();
+		isRemPwd=preferences.getBoolean("rememeber_password",false);
+	}
+
+	@Override
+	void initEvent() {
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (loginResult == 0) {
+							Toasty.success(WelcomeActivity.this, "登录成功").show();
+							Intent intent = new Intent(WelcomeActivity.this, MainPageActivity.class);
+							startActivity(intent);
+							finish();
+						} else if (loginResult == 1) {
+							Toasty.error(WelcomeActivity.this, "密码已过期，请重新登录").show();
+							Intent intent=new Intent(WelcomeActivity.this,LoginActivity.class);
+							startActivity(intent);
+							finish();
+						} else {
+							Toasty.error(WelcomeActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
 	public void onClick(View v) {
 
+	}
+
+	private void loginRequest() {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone, userPwd);
+					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, userPwd);
+					loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

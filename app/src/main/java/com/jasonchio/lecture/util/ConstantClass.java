@@ -104,4 +104,9 @@ public class ConstantClass {
 	public static final int LIKE_COMMENT_COM=17;
 
 	public static final int CHANGE_HEAD_COM=18;
+
+	public static final int RECOMMENT_COM=19;
+
+	public static final int UPDATE_COM=20;
+
 }

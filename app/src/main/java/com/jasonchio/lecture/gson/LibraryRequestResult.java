@@ -56,19 +56,21 @@ public class LibraryRequestResult {
 		 * library_id : 1
 		 * library_name : 武汉理工大学图书馆
 		 * library_picture_url : null
-		 * lecture_information : null
-		 * lecture_address_url : null
-		 * lecture_longtitude : null
-		 * lecture_latitude : null
+		 * library_information : null
+		 * library_address_url : null
+		 * library_longtitude : null
+		 * library_latitude : null
+		 * user_focus_lib :
 		 */
 
 		private int library_id;
 		private String library_name;
 		private String library_picture_url;
-		private String lecture_information;
-		private String lecture_address_url;
-		private double lecture_longtitude;
-		private double lecture_latitude;
+		private String library_information;
+		private String library_address_url;
+		private double library_longtitude;
+		private double library_latitude;
+		private int user_focus_lib;
 
 		public int getLibrary_id() {
 			return library_id;
@@ -94,36 +96,44 @@ public class LibraryRequestResult {
 			this.library_picture_url = library_picture_url;
 		}
 
-		public String getLecture_information() {
-			return lecture_information;
+		public String getLibrary_information() {
+			return library_information;
 		}
 
-		public void setLecture_information(String lecture_information) {
-			this.lecture_information = lecture_information;
+		public void setLibrary_information(String library_information) {
+			this.library_information = library_information;
 		}
 
-		public String getLecture_address_url() {
-			return lecture_address_url;
+		public String getLibrary_address_url() {
+			return library_address_url;
 		}
 
-		public void setLecture_address_url(String lecture_address_url) {
-			this.lecture_address_url = lecture_address_url;
+		public void setLibrary_address_url(String library_address_url) {
+			this.library_address_url = library_address_url;
 		}
 
-		public double getLecture_longtitude() {
-			return lecture_longtitude;
+		public double getLibrary_longtitude() {
+			return library_longtitude;
 		}
 
-		public void setLecture_longtitude(double lecture_longtitude) {
-			this.lecture_longtitude = lecture_longtitude;
+		public void setLibrary_longtitude(double library_longtitude) {
+			this.library_longtitude = library_longtitude;
 		}
 
-		public double getLecture_latitude() {
-			return lecture_latitude;
+		public double getLibrary_latitude() {
+			return library_latitude;
 		}
 
-		public void setLecture_latitude(double lecture_latitude) {
-			this.lecture_latitude = lecture_latitude;
+		public void setLibrary_latitude(double library_latitude) {
+			this.library_latitude = library_latitude;
+		}
+
+		public int getUser_focus_lib() {
+			return user_focus_lib;
+		}
+
+		public void setUser_focus_lib(int user_focus_lib) {
+			this.user_focus_lib = user_focus_lib;
 		}
 	}
 }

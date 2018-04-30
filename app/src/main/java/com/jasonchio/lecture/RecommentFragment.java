@@ -1,10 +1,12 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
@@ -75,6 +78,7 @@ public class RecommentFragment extends Fragment {
 
 	LectureDBDao mLectureDao;
 
+	Dialog requestLoadDialog;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -93,7 +97,7 @@ public class RecommentFragment extends Fragment {
 
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(getActivity(), R.layout.lecure_listitem, lecturelist);
+		mAdapter = new LectureAdapter(getActivity(),listView,lecturelist,mLectureDao);
 
 		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
 		mLectureDao=daoSession.getLectureDBDao();
@@ -106,12 +110,19 @@ public class RecommentFragment extends Fragment {
 				switch (msg.what) {
 					case 1:
 						if (lectureRequestResult == 0) {
+
 							Toasty.success(getContext(), "获取讲座成功").show();
+
+							mAdapter.notifyDataSetChanged();
+
+							DialogUtils.closeDialog(requestLoadDialog);
+
 							showLectureInfoToTop();
-							mLectureDao=daoSession.getLectureDBDao();
 						} else if (lectureRequestResult == 1) {
+							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.error(getContext(), "讲座信息暂无更新").show();
 						} else {
+							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -153,6 +164,8 @@ public class RecommentFragment extends Fragment {
 
 		autoRefresh();
 
+		RecommentLectureRequest();
+
 		return rootview;
 	}
 
@@ -167,11 +180,6 @@ public class RecommentFragment extends Fragment {
 
 	private void LectureRequest() {
 
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -183,9 +191,11 @@ public class RecommentFragment extends Fragment {
 
 					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
 					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+
 					Logger.json(response);
 
 					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
+
 
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
@@ -202,10 +212,12 @@ public class RecommentFragment extends Fragment {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 
 		Logger.d(mAdapter.getCount());
 		if(lectureDBList.isEmpty()){
+
+			requestLoadDialog= DialogUtils.createLoadingDialog(getContext(),"正在获取讲座");
 			LectureRequest();
 			return;
 		}
@@ -214,4 +226,35 @@ public class RecommentFragment extends Fragment {
 		mAdapter.notifyDataSetChanged();
 	}
 
+	private void RecommentLectureRequest(){
+
+		Logger.d("开始获取推荐的讲座");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
+
+					Logger.d("lastLecureID"+lastLecureID);
+
+					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					response = HttpUtil.RecommentRequest(ConstantClass.ADDRESS, ConstantClass.RECOMMENT_COM, ConstantClass.userOnline);
+
+					Logger.json(response);
+
+					//lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
+
+
+					//handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
 }

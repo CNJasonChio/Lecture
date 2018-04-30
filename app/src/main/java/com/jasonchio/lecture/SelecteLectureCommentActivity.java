@@ -59,6 +59,34 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 		showWantedLecture();
 
+		initEvent();
+
+	}
+
+	@Override
+	void initView() {
+		//BaseActivity方法，隐藏系统标题栏
+		HideSysTitle();
+
+		titleLayout.setSecondButtonVisible(View.GONE);
+		titleLayout.setTitle("请选择要评论的讲座");
+		listView.setAdapter(mAdapter);
+	}
+
+	@Override
+	void initWidget() {
+		titleLayout=(TitleLayout)findViewById(R.id.select_lecture_title_layout);
+		titleFirstButton=titleLayout.getFirstButton();
+		listView=(ListView)findViewById(R.id.select_lecture_list);
+		mAdapter=new LectureAdapter(SelecteLectureCommentActivity.this,listView,lecturelist,mLectureDao);
+
+		daoSession=((MyApplication)getApplication()).getDaoSession();
+		mLectureDao=daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initEvent() {
 		titleFirstButton.setOnClickListener(this);
 
 
@@ -89,7 +117,6 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 			}
 		});
 
-
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -100,30 +127,6 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 				finish();
 			}
 		});
-
-
-	}
-
-	@Override
-	void initView() {
-		//BaseActivity方法，隐藏系统标题栏
-		HideSysTitle();
-
-		titleLayout.setSecondButtonVisible(View.GONE);
-		titleLayout.setTitle("请选择要评论的讲座");
-		listView.setAdapter(mAdapter);
-	}
-
-	@Override
-	void initWidget() {
-		titleLayout=(TitleLayout)findViewById(R.id.select_lecture_title_layout);
-		titleFirstButton=titleLayout.getFirstButton();
-		listView=(ListView)findViewById(R.id.select_lecture_list);
-		mAdapter=new LectureAdapter(SelecteLectureCommentActivity.this,R.layout.lecure_listitem,lecturelist);
-
-		daoSession=((MyApplication)getApplication()).getDaoSession();
-		mLectureDao=daoSession.getLectureDBDao();
-		mUserDao=daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -162,7 +165,6 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 		}).start();
 	}
 
-
 	private void LectureRequest() {
 
 		new Thread(new Runnable() {
@@ -188,6 +190,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 			}
 		}).start();
 	}
+
 	private void showWantedLecture() {
 
 		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);

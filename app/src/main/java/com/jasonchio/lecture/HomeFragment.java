@@ -1,14 +1,21 @@
 package com.jasonchio.lecture;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -21,14 +28,23 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
+import com.jasonchio.lecture.util.ActivityCollector;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.Permission;
+import com.yanzhenjie.permission.Rationale;
+import com.yanzhenjie.permission.RequestExecutor;
+import com.yanzhenjie.permission.SettingService;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
@@ -81,7 +97,11 @@ public class HomeFragment extends Fragment {
 
 	int sendPositionResult=0;
 
+	Rationale mRationale;
+
 	String response;
+
+	Dialog positionLoadDialog;
 
 	public void onCreate(Bundle savedInstanceState) {
 
@@ -102,11 +122,8 @@ public class HomeFragment extends Fragment {
 					case 1:
 						if (sendPositionResult == 0) {
 							Toasty.success(getContext(), "定位成功").show();
-
-						} else if (sendPositionResult == 1) {
-							Toasty.error(getContext(), "数据库无更新").show();
 						} else {
-							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+							Toasty.error(getContext(), "定位失败，请稍候再试或联系开发者").show();
 						}
 						break;
 				}
@@ -114,8 +131,11 @@ public class HomeFragment extends Fragment {
 			}
 		});
 
-		getPosition();
-
+		if(ContextCompat.checkSelfPermission(getContext(),Manifest.permission_group.LOCATION)!= PackageManager.PERMISSION_GRANTED){
+			askforPermisson();
+		}else{
+			getPosition();
+		}
 		return view;
 	}
 
@@ -139,7 +159,12 @@ public class HomeFragment extends Fragment {
 		titleFirstButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				getPosition();
+				if(ContextCompat.checkSelfPermission(getContext(),Manifest.permission_group.LOCATION)!= PackageManager.PERMISSION_GRANTED){
+					askforPermisson();
+				}else{
+					getPosition();
+				}
+
 			}
 		});
 		displayMetrics = getResources().getDisplayMetrics();
@@ -170,7 +195,6 @@ public class HomeFragment extends Fragment {
 		// 取消点击Tab时的背景色
 		tabStrip.setTabBackground(0);
 	}
-
 
 	private class MyPagerAdapter extends FragmentStatePagerAdapter {
 		public MyPagerAdapter(FragmentManager fm) {
@@ -269,5 +293,77 @@ public class HomeFragment extends Fragment {
 		if(locationClient!=null){
 			locationClient.stop();
 		}
+	}
+
+	private void askforPermisson(){
+		AndPermission.with(this)
+				.permission(Permission.Group.LOCATION)
+				.rationale(mRationale)
+				.onGranted(new Action() {
+					@Override
+					public void onAction(List<String> permissions) {
+						getPosition();
+					}
+				})
+				.onDenied(new Action() {
+
+					@Override
+					public void onAction(List <String> permissions) {
+						Toasty.error(getContext(),"获取定位权限失败");
+						if (AndPermission.hasAlwaysDeniedPermission(getContext(), permissions)) {
+							// 这里使用一个Dialog展示没有这些权限应用程序无法继续运行，询问用户是否去设置中授权。
+							final SettingService settingService = AndPermission.permissionSetting(getContext());
+							android.support.v7.app.AlertDialog.Builder builder=new android.support.v7.app.AlertDialog.Builder(getContext());
+							builder.setTitle("权限请求");
+							builder.setMessage("小的需要您的定位权限来为您推荐附近的讲座，不然小主可能跑很远才能看到想看的讲座");
+							builder.setCancelable(true);
+							builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									// 如果用户同意去设置：
+									settingService.execute();
+								}
+							});
+							builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									// 如果用户不同意去设置：
+									settingService.cancel();
+								}
+							});
+							builder.show();
+						}
+
+					}
+				})
+				.start();
+
+		mRationale = new Rationale() {
+			@Override
+			public void showRationale(Context context, List<String> permissions,
+			                          final RequestExecutor executor) {
+				// 这里使用一个Dialog询问用户是否继续授权。
+				android.support.v7.app.AlertDialog.Builder builder=new android.support.v7.app.AlertDialog.Builder(getContext());
+				builder.setTitle("权限请求");
+				builder.setMessage("小的需要您的定位权限来为您推荐附近的讲座，不然小主可能跑很远才能看到想看的讲座");
+				builder.setCancelable(true);
+				builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// 如果用户继续：
+						executor.execute();
+					}
+				});
+				builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// 如果用户中断：
+						executor.cancel();
+					}
+				});
+				builder.show();
+
+			}
+		};
 	}
 }

@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -10,11 +11,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LibraryDB;
 import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -53,6 +57,7 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	UserDBDao mUserDao;
 
+	Dialog libraryDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -60,39 +65,16 @@ public class LibraryDetailActivity extends BaseActivity {
 
 		Intent intent=getIntent();
 		libName=intent.getStringExtra("library_name");
-
 		//初始化控件
 		initWidget();
-		//判断用户是否关注了该图书馆
-		libraryIsFocused();
+
+
 		//初始化视图
 		initView();
 
+		initEvent();
 
-		titleFirstButton.setOnClickListener(this);
-
-		titleSecondButton.setOnClickListener(this);
-
-		libraryOriginal.setOnClickListener(this);
-
-		handler = new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what) {
-					case 1:
-						if (libraryRequestResult == 0) {
-							Toasty.success(LibraryDetailActivity.this, "获取图书馆详情成功").show();
-							initLibrary(libName);
-						} else if (libraryRequestResult == 1) {
-							Toasty.error(LibraryDetailActivity.this, "暂无图书馆信息").show();
-						} else {
-							Toasty.error(LibraryDetailActivity.this, "服务器出错，请稍候再试").show();
-						}
-						break;
-				}
-				return true;
-			}
-		});
+		initLibrary(libName);
 	}
 
 	@Override
@@ -141,6 +123,43 @@ public class LibraryDetailActivity extends BaseActivity {
 		mLibraryDao=daoSession.getLibraryDBDao();
 		mUserDao=daoSession.getUserDBDao();
 	}
+
+	@Override
+	void initEvent() {
+		titleFirstButton.setOnClickListener(this);
+
+		titleSecondButton.setOnClickListener(this);
+
+		libraryOriginal.setOnClickListener(this);
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (libraryRequestResult == 0) {
+							//DialogUtils.closeDialog(libraryDialog);
+							Toasty.success(LibraryDetailActivity.this, "获取图书馆详情成功").show();
+							initLibrary(libName);
+						} else if (libraryRequestResult == 1) {
+							DialogUtils.closeDialog(libraryDialog);
+							Toasty.error(LibraryDetailActivity.this, "暂无图书馆信息").show();
+						} else if(libraryRequestResult==5){
+							DialogUtils.closeDialog(libraryDialog);
+							Toasty.error(LibraryDetailActivity.this, "获取成功jin").show();
+						}else if(libraryRequestResult==4){
+							initLibrary(libName);
+						}else{
+							DialogUtils.closeDialog(libraryDialog);
+							Toasty.error(LibraryDetailActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
+	}
+
 	protected void initView(){
 
 		HideSysTitle();
@@ -184,6 +203,8 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	private void LibraryRequest() {
 
+		libraryDialog= DialogUtils.createLoadingDialog(LibraryDetailActivity.this,"正在加载");
+
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -207,25 +228,28 @@ public class LibraryDetailActivity extends BaseActivity {
 	}
 
 	private void initLibrary(String libName){
-		/*
-		* 现在数据库里查找，没有就向服务器请求
-		* */
 
 		LibraryDB library=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
 		if(library!=null){
 			//libraryImage=(ImageView)findViewById(R.id.library_photo_image);
 			libraryName.setText(library.getLibraryName());
-			libraryContent.setText(library.getLibraryContent());
+			if(library.getLibraryContent()==null){
+				libraryContent.setText("暂无介绍");
+			}else{
+				libraryContent.setText(library.getLibraryContent());
+			}
+
 			original=library.getLibraryUrl();
+			isFocuse=library.getIsFocused();
+			if(library.getLibraryImageUrl()==null){
+				libraryImage.setImageResource(R.drawable.ic_nopicture);
+			}else{
+				Glide.with(LibraryDetailActivity.this).load(library.getLibraryImageUrl()).into(libraryImage);
+			}
 		}else{
 			LibraryRequest();
 		}
 
 	}
 
-	private void libraryIsFocused(){
-		LibraryDB libraryDB=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
-
-		isFocuse=libraryDB.getIsFocused();
-	}
 }

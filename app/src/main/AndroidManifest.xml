@@ -9,15 +9,15 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BAIDU_LOCATION_SERVICE" />
 
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
         android:hardwareAccelerated="false"
-        android:icon="@mipmap/ic_logo"
+        android:icon="@drawable/ic_logo"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -39,7 +39,7 @@
             android:value="840fd527c49803984ae21b7da5fa57f7" />
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="wfowClDRGg8R3VeItIYpX1SyvNUmD5G0"/>
+            android:value="wfowClDRGg8R3VeItIYpX1SyvNUmD5G0" />
 
         <activity android:name=".SigninWithPhoneActivity" />
         <activity android:name=".MainPageActivity" />
@@ -60,22 +60,32 @@
         <activity android:name=".ResultSiftActivity" />
         <activity android:name=".SettingActivity" />
         <activity android:name=".SelecteLectureCommentActivity" />
-        <activity android:name=".AddCommentActivity"></activity>
+        <activity android:name=".AddCommentActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.jasonchio.lecture.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <!--提供共享路径-->
+
+            <!-- 提供共享路径 -->
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"/>
+                android:resource="@xml/file_paths" />
         </provider>
+
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote" >
-        </service>
+            android:process=":remote" />
+
+        <activity android:name=".HelpActivity" />
+        <activity android:name=".UpdateLogActivity" />
+        <activity android:name=".AboutActivity"></activity>
+
+        <service
+            android:name="com.jasonchio.lecture.service.DownloadApkService"
+            android:exported="true" />
     </application>
+
 </manifest>

@@ -29,11 +29,10 @@
         <com.jasonchio.lecture.util.CircleImageView
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:id="@+id/me_userhead"
+            android:id="@+id/me_userhead_image"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:src="@drawable/test_oliver"/>
+            android:layout_marginBottom="5dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -42,7 +41,7 @@
             android:layout_gravity="center_vertical"
             android:textSize="16sp"
             android:textColor="#101010"
-            android:text="讲座萌新"/>
+            android:id="@+id/me_username_text"/>
     </LinearLayout>
 
     <View

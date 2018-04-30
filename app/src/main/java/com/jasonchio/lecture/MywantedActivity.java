@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +19,7 @@ import com.jasonchio.lecture.greendao.LibraryDB;
 import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -54,6 +56,7 @@ public class MywantedActivity extends BaseActivity {
 
 	Handler handler;
 
+	Dialog mywantedLoadDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -64,22 +67,12 @@ public class MywantedActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
-		titleFirstButton.setOnClickListener(this);
-
-		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				LectureDB lecture=lecturelist.get(position);
-				Intent intent=new Intent(MywantedActivity.this,LectureDetailActivity.class);
-				intent.putExtra("lecture_id",(int) lecture.getLectureId());
-				startActivity(intent);
-
-			}
-		});
+		initEvent();
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+				mywantedLoadDialog= DialogUtils.createLoadingDialog(MywantedActivity.this,"正在加载");
 				showWantedLecture();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
@@ -91,33 +84,6 @@ public class MywantedActivity extends BaseActivity {
 			public void onLoadMore() {
 
 				swipeToLoadLayout.setLoadingMore(false);
-			}
-		});
-
-		handler=new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what){
-					case 1:
-						if (mywantedResult == 0) {
-							showWantedLecture();
-						} else if (mywantedResult == 1) {
-							Toasty.error(MywantedActivity.this, "数据库无更新").show();
-						} else if(mywantedResult==3){
-							Toasty.info(MywantedActivity.this,"还没有想看的讲座哟，快去讲座推荐看一看吧！").show();
-							swipeToLoadLayout.setRefreshing(false);
-						}else {
-							Toasty.error(MywantedActivity.this, "服务器出错，请稍候再试").show();
-						}
-						break;
-					case 2:
-						if(lectureRequestResult==0){
-							showWantedLecture();
-						}
-					default:
-						break;
-				}
-				return true;
 			}
 		});
 
@@ -149,12 +115,55 @@ public class MywantedActivity extends BaseActivity {
 		titleFirstButton=titleLayout.getFirstButton();
 		listView = (ListView) findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(MywantedActivity.this, R.layout.lecure_listitem, lecturelist);
+		mAdapter = new LectureAdapter(MywantedActivity.this, listView,lecturelist,mLectureDao);
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 
 		mUserDao=daoSession.getUserDBDao();
 		mLectureDao=daoSession.getLectureDBDao();
+	}
+
+	@Override
+	void initEvent() {
+		titleFirstButton.setOnClickListener(this);
+
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				LectureDB lecture=lecturelist.get(position);
+				Intent intent=new Intent(MywantedActivity.this,LectureDetailActivity.class);
+				intent.putExtra("lecture_id",(int) lecture.getLectureId());
+				startActivity(intent);
+
+			}
+		});
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (mywantedResult == 0) {
+							showWantedLecture();
+						} else if (mywantedResult == 1) {
+							Toasty.error(MywantedActivity.this, "数据库无更新").show();
+						} else if(mywantedResult==3){
+							Toasty.info(MywantedActivity.this,"还没有想看的讲座哟，快去讲座推荐看一看吧！").show();
+							swipeToLoadLayout.setRefreshing(false);
+						}else {
+							Toasty.error(MywantedActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							showWantedLecture();
+						}
+					default:
+						break;
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -253,6 +262,8 @@ public class MywantedActivity extends BaseActivity {
 			listView.setSelection(0);
 
 			mAdapter.notifyDataSetChanged();
+
+			DialogUtils.closeDialog(mywantedLoadDialog);
 		}
 	}
 }

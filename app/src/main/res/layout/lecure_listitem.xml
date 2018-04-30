@@ -28,7 +28,7 @@
             android:layout_width="130dp"
             android:layout_height="100dp"
             android:id="@+id/lecture_source_image"
-            android:scaleType="centerInside"/>
+            android:scaleType="centerCrop"/>
         <View
             android:layout_width="10dp"
             android:layout_height="100dp">

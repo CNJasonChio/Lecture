@@ -37,6 +37,23 @@ public class SearchActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+		initEvent();
+	}
+
+	@Override
+	void initView() {
+		//BaseActivity方法，隐藏系统标题栏
+		HideSysTitle();
+	}
+
+	@Override
+	void initWidget() {
+		searchView = (SearchView) findViewById(R.id.search_view);
+		searchEdit = (EditText) findViewById(R.id.et_search);
+	}
+
+	@Override
+	void initEvent() {
 		searchView.setOnClickSearch(new ICallBack() {
 			@Override
 			public void SearchAciton(String string) {
@@ -56,19 +73,6 @@ public class SearchActivity extends BaseActivity {
 				finish();
 			}
 		});
-
-	}
-
-	@Override
-	void initView() {
-		//BaseActivity方法，隐藏系统标题栏
-		HideSysTitle();
-	}
-
-	@Override
-	void initWidget() {
-		searchView = (SearchView) findViewById(R.id.search_view);
-		searchEdit = (EditText) findViewById(R.id.et_search);
 	}
 
 	@Override

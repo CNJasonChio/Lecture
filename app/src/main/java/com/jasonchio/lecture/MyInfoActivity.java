@@ -1,6 +1,7 @@
 package com.jasonchio.lecture;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -35,6 +36,7 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
@@ -114,6 +116,7 @@ public class MyInfoActivity extends BaseActivity {
 
 	Handler handler;
 
+	Dialog myinfoLoadDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -124,43 +127,11 @@ public class MyInfoActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+
 		MyinfoRequest();
 
-		photoLayout.setOnClickListener(this);
-		nameLayout.setOnClickListener(this);
-		sexLayout.setOnClickListener(this);
-		schoolLayout.setOnClickListener(this);
-		birthdayLayout.setOnClickListener(this);
-		titleFirstButton.setOnClickListener(this);
+		initEvent();
 
-		handler=new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what){
-					case 1:
-						if ( myinfoRequestResult == 0) {
-							showMyinfo();
-						} else {
-							Toasty.error(MyInfoActivity.this, "获取用户信息失败，请稍候再试").show();
-						}
-						break;
-					case 2:
-						if(changeInfoResult==0){
-							Toasty.success(MyInfoActivity.this,"修改成功").show();
-						}else {
-							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
-						}
-						break;
-					case 3:
-						if(changeUserHeadResult==0){
-							Toasty.success(MyInfoActivity.this,"修改成功").show();
-						}else{
-							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
-						}
-				}
-				return true;
-			}
-		});
 	}
 
 	@Override
@@ -193,6 +164,51 @@ public class MyInfoActivity extends BaseActivity {
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mUserDao=daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initEvent() {
+		photoLayout.setOnClickListener(this);
+		nameLayout.setOnClickListener(this);
+		sexLayout.setOnClickListener(this);
+		schoolLayout.setOnClickListener(this);
+		birthdayLayout.setOnClickListener(this);
+		titleFirstButton.setOnClickListener(this);
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if ( myinfoRequestResult == 0) {
+							DialogUtils.closeDialog(myinfoLoadDialog);
+							showMyinfo();
+						} else {
+							DialogUtils.closeDialog(myinfoLoadDialog);
+							Toasty.error(MyInfoActivity.this, "获取用户信息失败，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(changeInfoResult==0){
+							DialogUtils.closeDialog(myinfoLoadDialog);
+							Toasty.success(MyInfoActivity.this,"修改成功").show();
+						}else {
+							DialogUtils.closeDialog(myinfoLoadDialog);
+							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
+						}
+						break;
+					case 3:
+						if(changeUserHeadResult==0){
+							DialogUtils.closeDialog(myinfoLoadDialog);
+							Toasty.success(MyInfoActivity.this,"修改成功").show();
+						}else{
+							DialogUtils.closeDialog(myinfoLoadDialog);
+							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
+						}
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -247,6 +263,7 @@ public class MyInfoActivity extends BaseActivity {
 			String days;
 			days = new StringBuffer().append(mYear).append("年").append(mMonth).append("月").append(mDay).append("日").toString();
 			birthdayText.setText(days);
+			myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
 			ChangeMyinfoRequest();
 		}
 	};
@@ -267,6 +284,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				schoolText.setText(userInput.getText());
+				myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
 				ChangeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -298,6 +316,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				phoneText.setText(userInput.getText());
+				myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
 				ChangeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -329,6 +348,7 @@ public class MyInfoActivity extends BaseActivity {
 			public void onClick(DialogInterface dialog, int id) {
 				// 获取edittext的内容,显示到textview
 				nameText.setText(userInput.getText());
+				myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
 				ChangeMyinfoRequest();
 			}
 		}).setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -353,6 +373,7 @@ public class MyInfoActivity extends BaseActivity {
 				// showToast(which+"");
 				sexText.setText(sexArray[which]);
 				dialog.dismiss();// 随便点击一个item消失对话框，不用点击确认取消
+				myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
 				ChangeMyinfoRequest();
 			}
 		});
@@ -445,7 +466,7 @@ public class MyInfoActivity extends BaseActivity {
 								getContentResolver().openInputStream(finalUri));
 						photoImage.setImageBitmap(bitmap);
 
-
+						myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
 						changeUserHead(bitmap,Utility.getBitmapSize(bitmap));
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
@@ -653,12 +674,6 @@ public class MyInfoActivity extends BaseActivity {
 	}
 
 	private void changeUserHead(final Bitmap bitmap, final int size){
-
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-
-		// * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -669,7 +684,7 @@ public class MyInfoActivity extends BaseActivity {
 
 					Logger.json(response);
 
-					changeUserHeadResult= Utility.handleChangeUserHeadResponse(response,mUserDao);
+					//changeUserHeadResult= Utility.handleChangeUserHeadResponse(response,mUserDao);
 
 					handler.sendEmptyMessage(3);
 				} catch (IOException e) {

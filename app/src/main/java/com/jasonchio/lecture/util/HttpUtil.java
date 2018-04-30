@@ -2,6 +2,7 @@ package com.jasonchio.lecture.util;
 
 
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.util.Log;
 
 import com.orhanobut.logger.Logger;
@@ -1140,7 +1141,7 @@ public class HttpUtil {
 
 		//向服务器发送的json数据
 		JSONObject sendJson = new JSONObject();
-		sendJson.put("commond",com);
+		sendJson.put("commond", com);
 		sendJson.put("userPhone", userPhone);
 		sendJson.put("userPwd", userPwd);
 
@@ -1204,7 +1205,7 @@ public class HttpUtil {
 
 		//向服务器发送的json数据
 		JSONObject sendJson = new JSONObject();
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userPhone", userPhone);
 		sendJson.put("newPwd", newPwd);
 
@@ -1266,7 +1267,7 @@ public class HttpUtil {
 		JSONObject sendJson = new JSONObject();
 
 		String response;
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userPhone", userPhone);
 		sendJson.put("userPwd", userPwd);
 
@@ -1320,7 +1321,7 @@ public class HttpUtil {
 	}
 
 	//请求讲座数据
-	public static String LectureRequest(String address, int com,long userID, long lectureID) throws IOException, JSONException {
+	public static String LectureRequest(String address, int com, long userID, long lectureID) throws IOException, JSONException {
 
 		Logger.d("LectureRequset started");
 
@@ -1329,8 +1330,8 @@ public class HttpUtil {
 		Socket socket;
 
 		JSONObject sendJson = new JSONObject();
-		sendJson.put("command",com);
-		sendJson.put("userID",userID);
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
 		sendJson.put("lectureID", lectureID);
 
 		String test = sendJson.toString();
@@ -1382,7 +1383,7 @@ public class HttpUtil {
 	}
 
 	//请求评论信息
-	public static String CommentRequest(String address, int com,long userID,long commentID) throws IOException, JSONException {
+	public static String CommentRequest(String address, int com, long userID, long commentID) throws IOException, JSONException {
 
 		Logger.d("CommentRequset started");
 
@@ -1392,8 +1393,8 @@ public class HttpUtil {
 
 		JSONObject sendJson = new JSONObject();
 
-		sendJson.put("command",com);
-		sendJson.put("userID",userID);
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
 		sendJson.put("commentID", commentID);
 
 		String test = sendJson.toString();
@@ -1445,7 +1446,7 @@ public class HttpUtil {
 	}
 
 	//请求用户信息
-	public static String UserInfoRequest(String address, int com,long userID) throws IOException, JSONException {
+	public static String UserInfoRequest(String address, int com, long userID) throws IOException, JSONException {
 
 		Logger.d("UserInfoRequest started");
 
@@ -1453,7 +1454,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userID);
 
 		String test = sendJson.toString();
@@ -1503,7 +1504,7 @@ public class HttpUtil {
 	}
 
 	//修改用户个人信息
-	public static String changeUserInfo(String address, int com,long userID, String userName, String userPhone, String userSex, String userSchool, String userBirthday) throws IOException, JSONException {
+	public static String changeUserInfo(String address, int com, long userID, String userName, String userPhone, String userSex, String userSchool, String userBirthday) throws IOException, JSONException {
 
 		Logger.d("changeUserInfo");
 
@@ -1511,8 +1512,8 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
-		sendJson.put("userID",userID);
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
 		sendJson.put("userName", userName);
 		sendJson.put("userPhone", userPhone);
 		sendJson.put("userSex", userSex);
@@ -1576,7 +1577,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("searchKey", searchKey);
 
 		String test = sendJson.toString();
@@ -1634,7 +1635,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userId);
 
 		String test = sendJson.toString();
@@ -1692,7 +1693,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userId);
 
 		String test = sendJson.toString();
@@ -1750,7 +1751,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userId);
 
 		String test = sendJson.toString();
@@ -1809,7 +1810,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userId);
 		sendJson.put("lectureID", lectureId);
 		sendJson.put("iswanted", iswanted);
@@ -1870,7 +1871,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userId);
 		sendJson.put("libraryName", libraryName);
 		sendJson.put("isfocused", isfocused);
@@ -1891,7 +1892,7 @@ public class HttpUtil {
 			//创建Socket对象 & 指定服务端的IP及端口号
 			socket = new Socket(address, 2001);
 			//创建输出流对象outputStream
-			Logger.d( "开始给服务器发送数据");
+			Logger.d("开始给服务器发送数据");
 			outputStream = socket.getOutputStream();
 			//写入要发送给服务器的数据
 			outputStream.write(test.getBytes());
@@ -1899,7 +1900,7 @@ public class HttpUtil {
 			outputStream.flush();
 			//关闭输出流
 			socket.shutdownOutput();
-			Logger.d( "给服务器发送数据完毕");
+			Logger.d("给服务器发送数据完毕");
 			//接收服务器返回的数据
 			//创建输入流对象InputStream
 			inputStream = socket.getInputStream();
@@ -1924,15 +1925,15 @@ public class HttpUtil {
 	}
 
 	//请求图书馆信息
-	public static String LibraryRequest(String address, int com, long userID,String libraryName) throws JSONException, IOException {
+	public static String LibraryRequest(String address, int com, long userID, String libraryName) throws JSONException, IOException {
 
 		Logger.d("LibraryRequest");
 		JSONObject sendJson = new JSONObject();
 
 		String response;
 
-		sendJson.put("command",com);
-		sendJson.put("userID",userID);
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
 		sendJson.put("libraryName", libraryName);
 
 		String test = sendJson.toString();
@@ -1990,7 +1991,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("userID", userId);
 		sendJson.put("userLongtitude", userLongtitude);
 		sendJson.put("userLatitude", userLatitude);
@@ -2051,7 +2052,7 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("commentContent", commentContent);
 		sendJson.put("userID", userId);
 		sendJson.put("lectureID", lectureId);
@@ -2104,7 +2105,7 @@ public class HttpUtil {
 	}
 
 	//给评论点赞
-	public static String LikeThisComment(String address, int com, long commentId, long userID,int islike) throws IOException, JSONException {
+	public static String LikeThisComment(String address, int com, long commentId, long userID, int islike) throws IOException, JSONException {
 
 		Logger.d("LikeThisComment");
 
@@ -2112,10 +2113,10 @@ public class HttpUtil {
 
 		String response;
 
-		sendJson.put("command",com);
+		sendJson.put("command", com);
 		sendJson.put("commentID", commentId);
-		sendJson.put("islike",islike);
-		sendJson.put("userID",userID);
+		sendJson.put("islike", islike);
+		sendJson.put("userID", userID);
 
 		String test = sendJson.toString();
 
@@ -2164,24 +2165,25 @@ public class HttpUtil {
 	}
 
 	//修改用户头像
-	public static String changeUserHead(String address, int com,long userID,Bitmap userHead,int size) throws IOException, JSONException {
+	public static String changeUserHead(String address, int com, long userID, Bitmap userHead, int size) throws IOException, JSONException {
 
 		Logger.d("changeUserInfo");
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
-		userHead.compress(Bitmap.CompressFormat.PNG,100,bout);
+		userHead.compress(Bitmap.CompressFormat.PNG, 100, bout);
 
 		String response;
 
 		JSONObject sendJson = new JSONObject();
 
-		sendJson.put("command",com);
-		sendJson.put("userID",userID);
-		sendJson.put("size",size);
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
+		sendJson.put("size", size);
 
 		String test = sendJson.toString();
 
+		Logger.json(test);
 		Socket socket;
 
 		InputStream inputStream = null;
@@ -2199,7 +2201,6 @@ public class HttpUtil {
 			outputStream = socket.getOutputStream();
 			//写入要发送给服务器的数据
 			outputStream.write(test.getBytes());
-			outputStream.write(bout.toByteArray());
 			//发送数据到服务端
 			outputStream.flush();
 			//关闭输出流
@@ -2211,10 +2212,25 @@ public class HttpUtil {
 			//创建输入流读取器对象 并传入输入流对象
 			reader = new InputStreamReader(inputStream);
 			bufferedReader = new BufferedReader(reader);
+			Logger.d("给服务器发送数据完毕4");
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
+			Logger.d(response);
 			return response;
+
+			/*int state=Utility.handleCommonResponse(response);
+			Logger.d("state"+state);
+			if(state==0){
+				outputStream = socket.getOutputStream();
+				//写入要发送给服务器的数据
+				outputStream.write(bout.toByteArray());
+				//发送数据到服务端
+				outputStream.flush();
+				//关闭输出流
+				socket.shutdownOutput();
+			}
+			return response;*/
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -2227,9 +2243,136 @@ public class HttpUtil {
 		return null;
 	}
 
-	public static void ContentRequest(String address, Callback callback){
-		OkHttpClient client=new OkHttpClient();
-		Request request= new Request.Builder().url(address).build();
+	//正文请求
+	public static void ContentRequest(String address, Handler handler, Callback callback) {
+		OkHttpClient client = new OkHttpClient();
+		Request request = new Request.Builder().url(address).build();
 		client.newCall(request).enqueue(callback);
 	}
+
+	//推荐讲座请求
+	public static String RecommentRequest(String address, int com, long userID) throws JSONException, IOException {
+
+		Logger.d("推荐讲座请求");
+
+		//向服务器发送的json数据
+		JSONObject sendJson = new JSONObject();
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
+
+		//服务器返回的json数据
+		String response;
+
+		//向服务器发送的json数据对应的字符串
+		String jsonStrSend = sendJson.toString();
+		Logger.json(jsonStrSend);
+
+		//创建Socket对象 & 指定服务端的IP及端口号
+		Socket socket = new Socket(address, 2001);
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		try {
+			Logger.d("开始向服务器发送数据");
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(jsonStrSend.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+			Logger.d("向服务器发送数据完毕");
+			//接收服务器返回的数据
+			Logger.d("开始获取服务器数据");
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+			Logger.d("获取服务器数据完毕");
+			return response;
+		} catch (UnknownHostException e) {
+			Logger.e(e, "UnknownHostException");
+		} catch (IOException e) {
+			Logger.e(e, "IOException");
+		} finally {
+			bufferedReader.close();
+			reader.close();
+			inputStream.close();
+			socket.close();
+		}
+		return null;
+	}
+
+	//检查更新
+	public static String UpdateRequest(String address, int com, String version) throws JSONException, IOException {
+
+		Logger.d("UpdateRequest started");
+
+		JSONObject sendJson = new JSONObject();
+
+		String response;
+		sendJson.put("command", com);
+		sendJson.put("version", version);
+
+		String test = sendJson.toString();
+
+		Logger.json(test);
+
+		Socket socket;
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		try {
+			Logger.d("开始发送");
+			//创建Socket对象 & 指定服务端的IP及端口号
+			socket = new Socket(address, 2001);
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+			Logger.d("发送完毕");
+			//接收服务器返回的数据
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+
+			Logger.json(response);
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			Logger.d(e);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			bufferedReader.close();
+			reader.close();
+			inputStream.close();
+		}
+		return null;
+	}
+
 }

@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -66,6 +68,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	Handler handler;
 
+	Dialog myCommentLoadDialog;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -76,13 +80,12 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		//初始化视图
 		initView();
 
-		mAdapter.setOnInnerItemOnClickListener(this);
-		listView.setOnItemClickListener(this);
-		titleFirstButton.setOnClickListener(this);
+		initEvent();
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+				myCommentLoadDialog=DialogUtils.createLoadingDialog(MycommentActivity.this,"正在加载");
 				showCommentInfoToTop();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
@@ -96,35 +99,6 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			}
 		});
 
-
-		handler=new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what){
-					case 1:
-						if ( myCommentRequestResult == 0) {
-							showCommentInfoToTop();
-						} else if ( myCommentRequestResult == 1) {
-							Toasty.error(MycommentActivity.this, "数据库无更新").show();
-						} else if(myCommentRequestResult==3){
-							Toasty.info(MycommentActivity.this, "你还没有点评过讲座呢，先去看个讲座点评一下吧").show();
-						}else {
-							Toasty.error(MycommentActivity.this, "服务器出错，请稍候再试").show();
-						}
-						break;
-					case 2:
-						if(lectureRequestResult==0){
-							showCommentInfoToTop();
-						}
-						break;
-					case 3:
-						if(commentRequestResult==0){
-							showCommentInfoToTop();
-						}
-				}
-				return true;
-			}
-		});
 		autoRefresh();
 
 	}
@@ -160,6 +134,42 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		mCommentDao=daoSession.getCommentDBDao();
 		mLectureDao=daoSession.getLectureDBDao();
 		mUserDao=daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initEvent() {
+		mAdapter.setOnInnerItemOnClickListener(this);
+		listView.setOnItemClickListener(this);
+		titleFirstButton.setOnClickListener(this);
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if ( myCommentRequestResult == 0) {
+							showCommentInfoToTop();
+						} else if ( myCommentRequestResult == 1) {
+							Toasty.error(MycommentActivity.this, "数据库无更新").show();
+						} else if(myCommentRequestResult==3){
+							Toasty.info(MycommentActivity.this, "你还没有点评过讲座呢，先去看个讲座点评一下吧").show();
+						}else {
+							Toasty.error(MycommentActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							showCommentInfoToTop();
+						}
+						break;
+					case 3:
+						if(commentRequestResult==0){
+							showCommentInfoToTop();
+						}
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -340,6 +350,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			}
 			listView.setSelection(0);
 			mAdapter.notifyDataSetChanged();
+
+			DialogUtils.closeDialog(myCommentLoadDialog);
 		}
 
 	}

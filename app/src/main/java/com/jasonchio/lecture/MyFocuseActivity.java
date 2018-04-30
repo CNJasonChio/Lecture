@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import com.jasonchio.lecture.greendao.LibraryDB;
 import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -63,6 +65,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 
 	Handler handler;
 
+	Dialog myFocuseLoadDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,57 +76,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		//初始化视图
 		initView();
 
-		mAdapter.setOnInnerItemOnClickListener(this);
-		listView.setOnItemClickListener(this);
-
-		titleFirstButton.setOnClickListener(this);
-
-		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
-				String libraryName = librarylist.get(position);
-				Intent intent = new Intent(MyFocuseActivity.this, LibraryDetailActivity.class);
-				intent.putExtra("library_name",libraryName);
-				startActivity(intent);
-			}
-		});
-
-		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-				showFocuseLibrary();
-				mAdapter.notifyDataSetChanged();
-				swipeToLoadLayout.setRefreshing(false);
-			}
-		});
-
-		handler = new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what) {
-					case 1:
-						if (myFocuseLibRequestResult == 0) {
-							showFocuseLibrary();
-						} else if (myFocuseLibRequestResult == 1) {
-							Toasty.error(MyFocuseActivity.this, "数据库无更新").show();
-						} else if (myFocuseLibRequestResult == 3) {
-							Toasty.info(MyFocuseActivity.this, "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
-						} else {
-							Toasty.error(MyFocuseActivity.this, "服务器出错，请稍候再试").show();
-						}
-						break;
-					case 2:
-						if (libraryRequestResult == 0) {
-							showFocuseLibrary();
-						} else {
-							Toasty.error(MyFocuseActivity.this, "服务器出错，请联系开发者").show();
-						}
-					default:
-						break;
-				}
-				return true;
-			}
-		});
+		initEvent();
 
 		autoRefresh();
 	}
@@ -171,6 +124,68 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 	}
 
 	@Override
+	void initEvent() {
+		mAdapter.setOnInnerItemOnClickListener(this);
+		listView.setOnItemClickListener(this);
+
+		titleFirstButton.setOnClickListener(this);
+
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+				String libraryName = librarylist.get(position);
+				Intent intent = new Intent(MyFocuseActivity.this, LibraryDetailActivity.class);
+				intent.putExtra("library_name",libraryName);
+				startActivity(intent);
+			}
+		});
+
+		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+
+				myFocuseLoadDialog=DialogUtils.createLoadingDialog(MyFocuseActivity.this,"正在加载");
+				showFocuseLibrary();
+				DialogUtils.closeDialog(myFocuseLoadDialog);
+				mAdapter.notifyDataSetChanged();
+				swipeToLoadLayout.setRefreshing(false);
+			}
+		});
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (myFocuseLibRequestResult == 0) {
+							showFocuseLibrary();
+
+						} else if (myFocuseLibRequestResult == 1) {
+
+							Toasty.error(MyFocuseActivity.this, "数据库无更新").show();
+						} else if (myFocuseLibRequestResult == 3) {
+
+							Toasty.info(MyFocuseActivity.this, "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
+						} else {
+
+							Toasty.error(MyFocuseActivity.this, "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if (libraryRequestResult == 0) {
+							showFocuseLibrary();
+						} else {
+							Toasty.error(MyFocuseActivity.this, "服务器出错，请联系开发者").show();
+						}
+					default:
+						break;
+				}
+				return true;
+			}
+		});
+	}
+
+	@Override
 	public void onClick(View v) {
 			switch (v.getId()){
 				case R.id.title_first_button:
@@ -186,7 +201,6 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		intent.putExtra("library_name", library);
 		startActivity(intent);
 	}
-
 
 	public void itemClick(View v) {
 		int position;
@@ -238,7 +252,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT, ConstantClass.userOnline, libName, 0);
+					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_COM, ConstantClass.userOnline, libName, 0);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					focuseLibChangeResult = Utility.handleFocuseChangeResponse(response,libName,mUserDao,mLibraryDao,0);
@@ -276,6 +290,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
+
 	}
 
 }

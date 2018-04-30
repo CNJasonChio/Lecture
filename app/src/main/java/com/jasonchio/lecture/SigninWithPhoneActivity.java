@@ -65,6 +65,25 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 		//初始化视图
 		initView();
 
+		initEvent();
+	}
+
+	//初始化控件
+	protected void initWidget() {
+		titleLayout = (TitleLayout) findViewById(R.id.signin_title_layout);
+		verCodeEdit = (EditText) findViewById(R.id.signin_vercode_edit);
+		phoneEdit = (EditText) findViewById(R.id.signin_account_edit);
+		sendCodeButton = (Button) findViewById(R.id.signin_send_vercode);
+		signInButton = (Button) findViewById(R.id.signin);
+		titleFirstButton = titleLayout.getFirstButton();
+		passwordEdit = (EditText) findViewById(R.id.signin_newpassword_edit);
+		confirmPwdEdit = (EditText) findViewById(R.id.signin_repassword_edit);
+		pwdCanSee = (ImageView) findViewById(R.id.signin_pwd_cansee);
+		repwdCanSee = (ImageView) findViewById(R.id.signin_repwd_cansee);
+	}
+
+	@Override
+	void initEvent() {
 		//设置标题返回按钮的点击监听
 		titleFirstButton.setOnClickListener(this);
 		//设置密码是否可见按钮的点击监听
@@ -147,20 +166,6 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 				}
 			}
 		};
-	}
-
-	//初始化控件
-	protected void initWidget() {
-		titleLayout = (TitleLayout) findViewById(R.id.signin_title_layout);
-		verCodeEdit = (EditText) findViewById(R.id.signin_vercode_edit);
-		phoneEdit = (EditText) findViewById(R.id.signin_account_edit);
-		sendCodeButton = (Button) findViewById(R.id.signin_send_vercode);
-		signInButton = (Button) findViewById(R.id.signin);
-		titleFirstButton = titleLayout.getFirstButton();
-		passwordEdit = (EditText) findViewById(R.id.signin_newpassword_edit);
-		confirmPwdEdit = (EditText) findViewById(R.id.signin_repassword_edit);
-		pwdCanSee = (ImageView) findViewById(R.id.signin_pwd_cansee);
-		repwdCanSee = (ImageView) findViewById(R.id.signin_repwd_cansee);
 	}
 
 	//初始化视图

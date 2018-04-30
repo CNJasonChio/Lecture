@@ -90,7 +90,6 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/lecture_detail_content_text"
                 android:textColor="#101010"
-                android:textSize="13sp"
                 android:layout_marginTop="15dp"
                 android:layout_marginLeft="13dp"
                 android:layout_marginRight="13dp"/>

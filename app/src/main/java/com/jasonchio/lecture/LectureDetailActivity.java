@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
@@ -62,22 +63,12 @@ public class LectureDetailActivity extends BaseActivity {
 
 		//初始化控件
 		initWidget();
-		//判断用户是否添加该讲座到“我的想看”
-		lectureIsWanted();
-
 		//初始化视图
 		initView();
 
-		initLectureDetail();
+		initEvent();
 
-		//设置标题栏返回按钮点击监听事件
-		titleFirstButton.setOnClickListener(this);
-		//设置标题栏添加我想看按钮点击监听事件
-		titleSecondButton.setOnClickListener(this);
-		//设置讲座详情页查看原文按钮点击监听事件
-		lectureOriginal.setOnClickListener(this);
-		//设置讲座详情页的发布图书馆按钮点击监听事件
-		lectureSource.setOnClickListener(this);
+		initLectureDetail();
 	}
 
 	protected void initWidget(){
@@ -95,6 +86,19 @@ public class LectureDetailActivity extends BaseActivity {
 		mLectureDao=daoSession.getLectureDBDao();
 		mUserDao=daoSession.getUserDBDao();
 	}
+
+	@Override
+	void initEvent() {
+		//设置标题栏返回按钮点击监听事件
+		titleFirstButton.setOnClickListener(this);
+		//设置标题栏添加我想看按钮点击监听事件
+		titleSecondButton.setOnClickListener(this);
+		//设置讲座详情页查看原文按钮点击监听事件
+		lectureOriginal.setOnClickListener(this);
+		//设置讲座详情页的发布图书馆按钮点击监听事件
+		lectureSource.setOnClickListener(this);
+	}
+
 	protected void initView(){
 
 		//隐藏系统标题栏
@@ -143,6 +147,7 @@ public class LectureDetailActivity extends BaseActivity {
 				}else{
 					Intent intent=new Intent(LectureDetailActivity.this,LibraryDetailActivity.class);
 					intent.putExtra("library_name",source);
+					Logger.d(source);
 					startActivity(intent);
 				}
 				break;
@@ -189,14 +194,11 @@ public class LectureDetailActivity extends BaseActivity {
 			lectureContent.setText(lecture.getLectureContent());
 			source=lecture.getLecutreSource();
 			original=lecture.getLectureUrl();
+			isWanted=lecture.getIsWanted();
 		} else{
 			Toasty.error(LectureDetailActivity.this,"加载讲座信息出错");
 			finish();
 		}
 	}
 
-	private void lectureIsWanted(){
-		LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureId)).build().unique();
-		isWanted=lecture.getIsWanted();
-	}
 }

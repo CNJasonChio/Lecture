@@ -12,12 +12,12 @@
 
     </com.jasonchio.lecture.TitleLayout>
 
-    <View
+<!--    <View
         android:layout_width="match_parent"
         android:layout_height="2dip"
         android:background="#BBBBBB"
         android:layout_marginTop="10dp">
-    </View>
+    </View>-->
 
     <com.jasonchio.lecture.util.ResultSift.DropDownMenu
         android:layout_marginTop="5dp"

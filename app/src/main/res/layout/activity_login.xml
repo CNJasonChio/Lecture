@@ -32,7 +32,7 @@
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:orientation="horizontal"
-        andorid:layout_marginTop="10dp"
+        andorid:layout_marginTop="8dp"
         andorid:id="@+id/login_account_layout"
         andorid:layout_below="@id/login_logo_layout">
 
@@ -123,15 +123,26 @@
         andorid:id="@+id/login_findpwd_sigin_layout"
         andorid:layout_below="@id/login_view2">
 
+        <CheckBox
+            andorid:layout_width="wrap_content"
+            andorid:layout_height="wrap_content"
+            andorid:id="@+id/login_remember_pwd_checkbox"
+            andorid:text="记住密码"
+            andorid:checked="false"
+            andorid:textSize="14sp"
+            andorid:layout_marginStart="13dp"/>
+
         <TextView
             andorid:layout_width="wrap_content"
             andorid:layout_height="wrap_content"
-            andorid:layout_marginStart="30dp"
             andorid:textColor="#6A6A6A"
             andorid:textSize="14sp"
             andorid:text="忘记密码？"
             andorid:id="@+id/login_fgtpwd_text"
-            andorid:clickable="true"/>
+            andorid:clickable="true"
+            andorid:layout_toLeftOf="@+id/login_signin_text"
+            andorid:layout_marginRight="20dp"
+            andorid:layout_centerVertical="true"/>
 
         <TextView
             andorid:layout_width="wrap_content"
@@ -142,7 +153,8 @@
             andorid:textSize="14sp"
             andorid:layout_marginEnd="30dp"
             andorid:id="@+id/login_signin_text"
-            andorid:clickable="true"/>
+            andorid:clickable="true"
+            andorid:layout_centerVertical="true"/>
     </RelativeLayout>
 
     <Button

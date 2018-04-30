@@ -10,7 +10,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.TextView;
+import com.bumptech.glide.Glide;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.UserDB;
+import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.util.CircleImageView;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.orhanobut.logger.Logger;
 
 /**
  * /**
@@ -46,7 +53,10 @@ public class  MeFragment extends Fragment{
 	RelativeLayout myfocuseLayout;
 	RelativeLayout mycommentLayout;
 	Button titleFirstButton;
-
+	TextView userName;
+	CircleImageView userheadImage;
+	DaoSession daoSession;
+	UserDBDao mUserDao;
 
 	private View rootview;
 	@Override
@@ -66,12 +76,31 @@ public class  MeFragment extends Fragment{
 		mywantedLayout=(RelativeLayout)rootview.findViewById(R.id.me_mywanted_layout);
 		myfocuseLayout=(RelativeLayout)rootview.findViewById(R.id.me_myfocuse_layout);
 		mycommentLayout=(RelativeLayout)rootview.findViewById(R.id.me_mycomment_layout);
+		userName=(TextView)rootview.findViewById(R.id.me_username_text);
+		userheadImage=(CircleImageView)rootview.findViewById(R.id.me_userhead_image);
 		titleFirstButton=titleLayout.getFirstButton();
+		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
+		mUserDao=daoSession.getUserDBDao();
 
 		titleLayout.setTitle("我的资料");
 		titleLayout.setFirstButtonBackground(R.drawable.ic_title_settings);
 		titleLayout.setSecondButtonVisible(View.GONE);
 
+		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+
+		if(user==null){
+			Logger.d("user is null");
+		}
+		if(user.getUserName()==null){
+			userName.setText("讲座萌新");
+		}else {
+			userName.setText(user.getUserName());
+		}
+		if(user.getUserPhotoUrl()==null){
+			userheadImage.setImageResource(R.drawable.ic_defult_userhead);
+		}else{
+			Glide.with(getActivity()).load(user.getUserPhotoUrl()).into(userheadImage);
+		}
 		titleFirstButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -84,6 +113,7 @@ public class  MeFragment extends Fragment{
 			public void onClick(View v) {
 				Intent intent=new Intent(getActivity(),MyInfoActivity.class);
 				startActivity(intent);
+
 			}
 		});
 
@@ -111,6 +141,22 @@ public class  MeFragment extends Fragment{
 			}
 		});
 		return rootview;
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		// TODO Auto-generated method stub
+		super.onHiddenChanged(hidden);
+		if (!hidden) {
+			UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+			String userHead=user.getUserPhotoUrl();
+			if(userHead.length()!=0 && userHead!=null){
+				Glide.with(getActivity()).load(userHead).into(userheadImage);
+			}else{
+				userheadImage.setImageResource(R.mipmap.ic_launcher);
+			}
+			userName.setText(user.getUserName());
+		}
 	}
 
 }

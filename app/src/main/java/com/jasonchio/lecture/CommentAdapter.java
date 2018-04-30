@@ -3,6 +3,7 @@ package com.jasonchio.lecture;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * /**
@@ -94,8 +96,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 
 		if (view == null) {
 			viewHolder = new ViewHolder();
-			view = LayoutInflater.from(context).inflate(R.layout.comment_listitem,
-					null);
+			view = LayoutInflater.from(context).inflate(R.layout.comment_listitem, null);
 			viewHolder.userLayout = (RelativeLayout) view.findViewById(R.id.comment_user_layout);
 			viewHolder.commentLecutreLayout = (RelativeLayout) view.findViewById(R.id.comment_lecture_layout);
 			viewHolder.commentLikeLayout = (RelativeLayout) view.findViewById(R.id.comment_like_layout);
@@ -155,7 +156,10 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		}else{
 			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
 		}
-		if(comment.getUserHead()!=null || comment.getUserHead() != " "){
+
+		com.orhanobut.logger.Logger.d(comment.getUserHead());
+
+		if(comment.getUserHead()!=null || comment.getUserHead() != ""){
 			Glide.with(context).load(comment.getUserHead()).into(viewHolder.userPhoto);
 		}
 		return view;

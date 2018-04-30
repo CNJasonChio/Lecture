@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +22,7 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
@@ -58,7 +60,7 @@ import static com.mob.tools.utils.DeviceHelper.getApplication;
  * Created by zhaoyaobang on 2018/3/6.
  */
 
-public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerItemOnclickListener,AdapterView.OnItemClickListener{
+public class DiscoveryFragment extends Fragment implements View.OnClickListener,CommentAdapter.InnerItemOnclickListener,AdapterView.OnItemClickListener{
 
 	private View rootview;
 
@@ -94,6 +96,9 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 
 	UserDBDao mUserDao;
 
+	Dialog commentLoadDialog;
+
+	Dialog lectureLoadDialog;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -108,64 +113,15 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 			parent.removeView(rootview);
 		}
 
-		daoSession = ((MyApplication)getApplication()).getDaoSession();
-		mLectureDao = daoSession.getLectureDBDao();
-		mCommentDao=daoSession.getCommentDBDao();
-		mUserDao=daoSession.getUserDBDao();
+		initWidget();
 
-		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
-		titleLayout=(TitleLayout)rootview.findViewById(R.id.discovery_title_layout);
+		initView();
 
-		titleSecondButton=titleLayout.getSecondButton();
-		titleSecondButton.setBackgroundResource(R.drawable.ic_title_addcomment);
-		titleLayout.setFirstButtonVisible(View.GONE);
-		titleLayout.setTitle("发现");
-		titleSecondButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent=new Intent(getActivity(),SelecteLectureCommentActivity.class);
-				startActivity(intent);
-			}
-		});
-
-		handler=new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what){
-					case 1:
-						if (commentRequestResult == 0) {
-							Toasty.success(getContext(), "获取评论成功").show();
-							showCommentInfoToTop();
-						} else if (commentRequestResult == 1) {
-							Toasty.info(getContext(),"暂无更新").show();
-						} else {
-							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
-						}
-						break;
-					case 2:
-						if(lectureRequestResult==0){
-							showCommentInfoToTop();
-						}
-						break;
-					case 3:
-						break;
-				}
-				return true;
-			}
-		});
-		listView = (ListView) rootview.findViewById(R.id.swipe_target);
-
-		mAdapter = new CommentAdapter(listView,commentList,lectureList,mUserDao,mCommentDao,getContext());
-
-		listView.setAdapter(mAdapter);
-
-		mAdapter.setOnInnerItemOnClickListener(this);
-		listView.setOnItemClickListener(this);
+		initEvent();
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-
 				showCommentInfoToTop();
 				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
@@ -197,8 +153,9 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		CommentDB comment= commentList.get(position);
 		long lectureID=comment.getCommentlecureId();
-		Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
-		intent.putExtra("lecture_id",(int) lectureID);
+		Logger.d(lectureID);
+		Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
+		intent.putExtra("lecture_id", (int) lectureID);
 		startActivity(intent);
 	}
 
@@ -222,10 +179,12 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 				if(comment.getIsLike()==1){
 					Toast.makeText(getActivity(),"取消点赞",Toast.LENGTH_SHORT).show();
 					mAdapter.changeCommentLike(position,0);
+					mAdapter.notifyDataSetChanged();
 					LikeThisComment(comment.getCommentId(),0);
 				}else{
 					Toast.makeText(getActivity(),"点赞",Toast.LENGTH_SHORT).show();
 					LikeThisComment(comment.getCommentId(),1);
+					mAdapter.notifyDataSetChanged();
 					mAdapter.changeCommentLike(position,1);
 				}
 				break;
@@ -290,7 +249,9 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 
 		List<CommentDB> commentDBList=mCommentDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(CommentDBDao.Properties.CommentId).build().list();
 
+
 		if(commentDBList ==null || commentDBList.isEmpty()){
+			commentLoadDialog = DialogUtils.createLoadingDialog(getContext(),"正在获取评论");
 			CommentRequest();
 			return;
 		}
@@ -300,6 +261,7 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 			if(lecture!=null){
 				lectureList.add(lecture);
 			}else{
+				lectureLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
 				LectureRequest();
 				return;
 			}
@@ -332,6 +294,82 @@ public class DiscoveryFragment extends Fragment implements CommentAdapter.InnerI
 				}
 			}
 		}).start();
+	}
+
+
+	void initView() {
+		titleLayout.setFirstButtonVisible(View.GONE);
+		titleLayout.setTitle("发现");
+	}
+
+
+	void initWidget() {
+
+		daoSession = ((MyApplication)getApplication()).getDaoSession();
+		mLectureDao = daoSession.getLectureDBDao();
+		mCommentDao=daoSession.getCommentDBDao();
+		mUserDao=daoSession.getUserDBDao();
+
+		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
+		titleLayout=(TitleLayout)rootview.findViewById(R.id.discovery_title_layout);
+
+		titleSecondButton=titleLayout.getSecondButton();
+		titleSecondButton.setBackgroundResource(R.drawable.ic_title_addcomment);
+
+		listView = (ListView) rootview.findViewById(R.id.swipe_target);
+
+		mAdapter = new CommentAdapter(listView,commentList,lectureList,mUserDao,mCommentDao,getContext());
+
+		listView.setAdapter(mAdapter);
+	}
+
+
+	void initEvent() {
+
+		titleSecondButton.setOnClickListener(this);
+
+		mAdapter.setOnInnerItemOnClickListener(this);
+		listView.setOnItemClickListener(this);
+
+		handler=new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what){
+					case 1:
+						if (commentRequestResult == 0) {
+							DialogUtils.closeDialog(commentLoadDialog);
+							Toasty.success(getActivity(), "获取评论成功").show();
+							showCommentInfoToTop();
+						} else if (commentRequestResult == 1) {
+							DialogUtils.closeDialog(commentLoadDialog);
+							Toasty.info(getActivity(),"暂无更新").show();
+						} else {
+							DialogUtils.closeDialog(commentLoadDialog);
+							Toasty.error(getActivity(), "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if(lectureRequestResult==0){
+							DialogUtils.closeDialog(lectureLoadDialog);
+							showCommentInfoToTop();
+						}
+						break;
+					case 3:
+						break;
+				}
+				return true;
+			}
+		});
+	}
+
+
+	public void onClick(View v) {
+		switch (v.getId()){
+			case R.id.title_second_button:
+				Intent intent=new Intent(getActivity(),SelecteLectureCommentActivity.class);
+				startActivity(intent);
+				break;
+		}
 	}
 }
 

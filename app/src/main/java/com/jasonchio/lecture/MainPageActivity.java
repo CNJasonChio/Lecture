@@ -5,6 +5,9 @@ import android.support.v4.app.FragmentTabHost;
 import android.view.View;
 import android.widget.LinearLayout;
 import com.mob.MobSDK;
+import com.orhanobut.logger.AndroidLogAdapter;
+
+import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public class MainPageActivity extends BaseActivity {
 
@@ -24,6 +27,7 @@ public class MainPageActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
+		addLogAdapter(new AndroidLogAdapter());
 		setContentView(R.layout.tabmaintabs);
 
 
@@ -32,8 +36,12 @@ public class MainPageActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
+		initEvent();
+
 		initValue();
+
 		setLinstener();
+
 		fillDate();
 	}
 
@@ -78,6 +86,11 @@ public class MainPageActivity extends BaseActivity {
 	@Override
 	void initWidget() {
 		fragmentTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+	}
+
+	@Override
+	void initEvent() {
+
 	}
 
 	@Override
