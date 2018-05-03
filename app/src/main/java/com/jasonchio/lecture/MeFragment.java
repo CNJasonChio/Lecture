@@ -17,7 +17,13 @@ import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+
+import org.json.JSONException;
+
+import java.io.IOException;
 
 /**
  * /**
@@ -57,8 +63,13 @@ public class  MeFragment extends Fragment{
 	CircleImageView userheadImage;
 	DaoSession daoSession;
 	UserDBDao mUserDao;
+	View rootview;
 
-	private View rootview;
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
@@ -90,17 +101,19 @@ public class  MeFragment extends Fragment{
 
 		if(user==null){
 			Logger.d("user is null");
-		}
-		if(user.getUserName()==null){
-			userName.setText("讲座萌新");
-		}else {
-			userName.setText(user.getUserName());
-		}
-		if(user.getUserPhotoUrl()==null){
-			userheadImage.setImageResource(R.drawable.ic_defult_userhead);
 		}else{
-			Glide.with(getActivity()).load(user.getUserPhotoUrl()).into(userheadImage);
+			if(user.getUserName()==null){
+				userName.setText("讲座萌新");
+			}else {
+				userName.setText(user.getUserName());
+			}
+			if(user.getUserPhotoUrl()==null){
+				userheadImage.setImageResource(R.drawable.ic_defult_userhead);
+			}else{
+				Glide.with(getActivity()).load(user.getUserPhotoUrl()).into(userheadImage);
+			}
 		}
+
 		titleFirstButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

@@ -68,7 +68,6 @@ public class LibraryDetailActivity extends BaseActivity {
 		//初始化控件
 		initWidget();
 
-
 		//初始化视图
 		initView();
 
@@ -138,18 +137,13 @@ public class LibraryDetailActivity extends BaseActivity {
 				switch (msg.what) {
 					case 1:
 						if (libraryRequestResult == 0) {
-							//DialogUtils.closeDialog(libraryDialog);
 							Toasty.success(LibraryDetailActivity.this, "获取图书馆详情成功").show();
 							initLibrary(libName);
+							DialogUtils.closeDialog(libraryDialog);
 						} else if (libraryRequestResult == 1) {
 							DialogUtils.closeDialog(libraryDialog);
 							Toasty.error(LibraryDetailActivity.this, "暂无图书馆信息").show();
-						} else if(libraryRequestResult==5){
-							DialogUtils.closeDialog(libraryDialog);
-							Toasty.error(LibraryDetailActivity.this, "获取成功jin").show();
-						}else if(libraryRequestResult==4){
-							initLibrary(libName);
-						}else{
+						} else{
 							DialogUtils.closeDialog(libraryDialog);
 							Toasty.error(LibraryDetailActivity.this, "服务器出错，请稍候再试").show();
 						}
@@ -165,16 +159,6 @@ public class LibraryDetailActivity extends BaseActivity {
 		HideSysTitle();
 		titleLayoutTitleText.setText("图书馆详情");
 
-		if(isFocuse ==1){
-			titleSecondButton.setText("已关注");
-			titleSecondButton.setTextColor(Color.argb(255,255,157,0));
-			titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
-
-		}else {
-			titleSecondButton.setText("点击关注");
-			titleSecondButton.setTextColor(Color.argb(255,16,16,16));
-			titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
-		}
 	}
 
 	private void FocuseChangeRequest() {
@@ -215,7 +199,7 @@ public class LibraryDetailActivity extends BaseActivity {
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					libraryRequestResult = Utility.handleLibraryResponse(response,mLibraryDao);
-					handler.sendEmptyMessage(1);
+					handler.sendEmptyMessageDelayed(1,500);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -231,14 +215,23 @@ public class LibraryDetailActivity extends BaseActivity {
 
 		LibraryDB library=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
 		if(library!=null){
-			//libraryImage=(ImageView)findViewById(R.id.library_photo_image);
+
 			libraryName.setText(library.getLibraryName());
 			if(library.getLibraryContent()==null){
 				libraryContent.setText("暂无介绍");
 			}else{
 				libraryContent.setText(library.getLibraryContent());
 			}
-
+			isFocuse=library.getIsFocused();
+			if(isFocuse ==1){
+				titleSecondButton.setText("已关注");
+				titleSecondButton.setTextColor(Color.argb(255,255,157,0));
+				titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
+			}else {
+				titleSecondButton.setText("点击关注");
+				titleSecondButton.setTextColor(Color.argb(255,16,16,16));
+				titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
+			}
 			original=library.getLibraryUrl();
 			isFocuse=library.getIsFocused();
 			if(library.getLibraryImageUrl()==null){

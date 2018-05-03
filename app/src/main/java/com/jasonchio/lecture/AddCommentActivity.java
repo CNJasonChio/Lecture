@@ -145,9 +145,7 @@ public class AddCommentActivity extends BaseActivity {
 			}
 			case R.id.title_second_button: {
 				commentTime = Utility.getNowTime();
-				addCommentLoadDialog= DialogUtils.createLoadingDialog(AddCommentActivity.this,"正在发表评论");
 				AddCommentRequest();
-				finish();
 				break;
 			}
 			default:
@@ -156,6 +154,7 @@ public class AddCommentActivity extends BaseActivity {
 
 
 	private void AddCommentRequest() {
+		addCommentLoadDialog= DialogUtils.createLoadingDialog(AddCommentActivity.this,"正在发表评论");
 		contents = comment_text.getText().toString();
 		new Thread(new Runnable() {
 			@Override
@@ -170,7 +169,7 @@ public class AddCommentActivity extends BaseActivity {
 					//解析和处理服务器返回的数据
 					addCommentResult = Utility.handleAddCommentResponse(response, mUserDao);
 
-
+					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -180,8 +179,8 @@ public class AddCommentActivity extends BaseActivity {
 				}
 			}
 		}).start();
-	}
 
+	}
 
 	private void showLecture() {
 		LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();

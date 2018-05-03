@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
@@ -23,7 +24,9 @@ import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+
 import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +59,7 @@ import es.dmoral.toasty.Toasty;
  * Created by zhaoyaobang on 2018/3/7.
  */
 
-public class NearFragment extends Fragment{
+public class NearFragment extends Fragment {
 
 	private View rootview;
 
@@ -64,7 +67,7 @@ public class NearFragment extends Fragment{
 
 	LectureAdapter mAdapter;
 
-	List<LectureDB> lecturelist=new ArrayList<>();
+	List <LectureDB> lecturelist = new ArrayList <>();
 
 	ListView listView;
 
@@ -79,17 +82,18 @@ public class NearFragment extends Fragment{
 	String response;
 
 	Dialog requestLoadDialog;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
 	                         Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
-		if(rootview == null){
-			rootview=inflater.inflate(R.layout.fragment_near,null);
+		if (rootview == null) {
+			rootview = inflater.inflate(R.layout.fragment_near, null);
 		}
-		ViewGroup parent=(ViewGroup)rootview.getParent();
-		if(parent!=null){
+		ViewGroup parent = (ViewGroup) rootview.getParent();
+		if (parent != null) {
 			parent.removeView(rootview);
 		}
 
@@ -97,32 +101,31 @@ public class NearFragment extends Fragment{
 
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(getActivity(), listView,lecturelist,mLectureDao);
+		mAdapter = new LectureAdapter(getActivity(), listView, lecturelist, mLectureDao);
 
 		listView.setAdapter(mAdapter);
 
-		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
+		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
 
-		mLectureDao=daoSession.getLectureDBDao();
+		mLectureDao = daoSession.getLectureDBDao();
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				LectureDB lecture=lecturelist.get(position);
-				Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
-				intent.putExtra("lecture_id",lecture.getLectureId());
+			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+				LectureDB lecture = lecturelist.get(position);
+				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
+				intent.putExtra("lecture_id", (int) lecture.getLectureId());
 				startActivity(intent);
-					}
+			}
 		});
 
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-			/*
-			* 处理逻辑同推荐页面，加筛选条件（位置），先提交用户位置，接受返回的数据
-			* */
+				/*
+				 * 处理逻辑同推荐页面，加筛选条件（位置），先提交用户位置，接受返回的数据
+				 * */
 				showLectureInfoToTop();
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
 		});
@@ -157,7 +160,7 @@ public class NearFragment extends Fragment{
 			}
 		});
 
-		autoRefresh();
+		//autoRefresh();
 
 		return rootview;
 	}
@@ -172,26 +175,20 @@ public class NearFragment extends Fragment{
 	}
 
 	private void LectureRequest() {
-
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 
-					long lastLecureID= Utility.lastLetureinDB(mLectureDao);
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
 
-					Logger.d("lastLecureID"+lastLecureID);
+					Logger.d("lastLecureID" + lastLecureID);
 
 					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
 					Logger.json(response);
 
-					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
@@ -208,15 +205,15 @@ public class NearFragment extends Fragment{
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+		List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 
 		Logger.d(mAdapter.getCount());
-		if(lectureDBList.size()<1){
-			requestLoadDialog= DialogUtils.createLoadingDialog(getContext(),"正在获取讲座");
+		if (lectureDBList.size() < 1) {
+			requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在获取讲座");
 			LectureRequest();
 			return;
 		}
-		lecturelist.addAll(0,lectureDBList);
+		lecturelist.addAll(0, lectureDBList);
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
 	}

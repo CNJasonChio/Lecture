@@ -166,6 +166,7 @@ public class WelcomeActivity extends BaseActivity {
 							finish();
 						} else {
 							Toasty.error(WelcomeActivity.this, "服务器出错，请稍候再试").show();
+							finish();
 						}
 						break;
 				}

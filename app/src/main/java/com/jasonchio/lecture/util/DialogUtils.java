@@ -83,8 +83,6 @@ public class DialogUtils {
 
 		if (mDialogUtils != null && mDialogUtils.isShowing()) {
 			mDialogUtils.dismiss();
-		}else{
-			Log.d("test","mDialogUtils = null && mDialogUtils.is not Showing()");
 		}
 	}
 }

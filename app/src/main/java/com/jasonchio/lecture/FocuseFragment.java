@@ -138,7 +138,7 @@ public class FocuseFragment extends Fragment {
 			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
 				LectureDB lecture = lecturelist.get(position);
 				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
-				intent.putExtra("lecture_id", lecture.getLectureId());
+				intent.putExtra("lecture_id", (int) lecture.getLectureId());
 				startActivity(intent);
 			}
 		});
@@ -148,7 +148,6 @@ public class FocuseFragment extends Fragment {
 			public void onRefresh() {
 
 				showLectureInfoToTop();
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
 		});
@@ -156,11 +155,9 @@ public class FocuseFragment extends Fragment {
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
-
+				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
-
-		autoRefresh();
 
 		return rootview;
 	}
@@ -231,13 +228,15 @@ public class FocuseFragment extends Fragment {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		String userFocuse = Utility.getUserFocuse(ConstantClass.userOnline, mUserDao);
+		if(!lecturelist.isEmpty()){
+			lecturelist.clear();
+			mAdapter.notifyDataSetChanged();
+		}
 
-		Logger.d(userFocuse);
+		String userFocuse = Utility.getUserFocuse(ConstantClass.userOnline, mUserDao);
 
 		if (userFocuse == null || userFocuse.length() == 0) {
 			MyFocuseRequest();
-			Logger.d("数据库无用户关注的图书馆");
 			return;
 		}
 		String[] focuseLibrary = Utility.getStrings(userFocuse);

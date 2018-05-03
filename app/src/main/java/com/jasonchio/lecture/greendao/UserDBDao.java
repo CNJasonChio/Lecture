@@ -34,6 +34,7 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         public final static Property UserFocuseLirary = new Property(9, String.class, "userFocuseLirary", false, "USER_FOCUSE_LIRARY");
         public final static Property UserWantedLecture = new Property(10, String.class, "userWantedLecture", false, "USER_WANTED_LECTURE");
         public final static Property UserComment = new Property(11, String.class, "userComment", false, "USER_COMMENT");
+        public final static Property RecommentLectureOrder = new Property(12, String.class, "recommentLectureOrder", false, "RECOMMENT_LECTURE_ORDER");
     }
 
 
@@ -60,7 +61,8 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
                 "\"USER_LONGITUDE\" REAL NOT NULL ," + // 8: userLongitude
                 "\"USER_FOCUSE_LIRARY\" TEXT," + // 9: userFocuseLirary
                 "\"USER_WANTED_LECTURE\" TEXT," + // 10: userWantedLecture
-                "\"USER_COMMENT\" TEXT);"); // 11: userComment
+                "\"USER_COMMENT\" TEXT," + // 11: userComment
+                "\"RECOMMENT_LECTURE_ORDER\" TEXT);"); // 12: recommentLectureOrder
     }
 
     /** Drops the underlying database table. */
@@ -120,6 +122,11 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         if (userComment != null) {
             stmt.bindString(12, userComment);
         }
+ 
+        String recommentLectureOrder = entity.getRecommentLectureOrder();
+        if (recommentLectureOrder != null) {
+            stmt.bindString(13, recommentLectureOrder);
+        }
     }
 
     @Override
@@ -173,6 +180,11 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         if (userComment != null) {
             stmt.bindString(12, userComment);
         }
+ 
+        String recommentLectureOrder = entity.getRecommentLectureOrder();
+        if (recommentLectureOrder != null) {
+            stmt.bindString(13, recommentLectureOrder);
+        }
     }
 
     @Override
@@ -194,7 +206,8 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
             cursor.getDouble(offset + 8), // userLongitude
             cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // userFocuseLirary
             cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10), // userWantedLecture
-            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11) // userComment
+            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // userComment
+            cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12) // recommentLectureOrder
         );
         return entity;
     }
@@ -213,6 +226,7 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         entity.setUserFocuseLirary(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
         entity.setUserWantedLecture(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
         entity.setUserComment(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
+        entity.setRecommentLectureOrder(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
      }
     
     @Override

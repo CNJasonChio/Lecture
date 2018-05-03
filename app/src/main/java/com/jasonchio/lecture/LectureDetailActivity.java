@@ -12,8 +12,11 @@ import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.LibraryDB;
+import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -52,7 +55,10 @@ public class LectureDetailActivity extends BaseActivity {
 
 	UserDBDao mUserDao;
 
+	LibraryDBDao mLibraryDao;
+
 	int changeWantedResult;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -85,6 +91,7 @@ public class LectureDetailActivity extends BaseActivity {
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mLectureDao=daoSession.getLectureDBDao();
 		mUserDao=daoSession.getUserDBDao();
+		mLibraryDao=daoSession.getLibraryDBDao();
 	}
 
 	@Override
@@ -106,12 +113,6 @@ public class LectureDetailActivity extends BaseActivity {
 
 		titleLayout.setTitle("讲座详情");
 
-		//判断是否已经添加想看
-		if(isWanted==1){
-			titleSecondButton.setBackgroundResource(R.drawable.ic_myinfo_mywanted);
-		}else{
-			titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
-		}
 	}
 
 	@Override
@@ -195,6 +196,12 @@ public class LectureDetailActivity extends BaseActivity {
 			source=lecture.getLecutreSource();
 			original=lecture.getLectureUrl();
 			isWanted=lecture.getIsWanted();
+			//判断是否已经添加想看
+			if(isWanted==1){
+				titleSecondButton.setBackgroundResource(R.drawable.ic_myinfo_mywanted);
+			}else{
+				titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
+			}
 		} else{
 			Toasty.error(LectureDetailActivity.this,"加载讲座信息出错");
 			finish();

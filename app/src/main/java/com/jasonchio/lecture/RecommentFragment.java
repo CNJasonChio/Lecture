@@ -13,21 +13,27 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDB;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+
 import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import es.dmoral.toasty.Toasty;
 
 /**
@@ -64,7 +70,7 @@ public class RecommentFragment extends Fragment {
 
 	LectureAdapter mAdapter;
 
-	List<LectureDB> lecturelist = new ArrayList<>();
+	List <LectureDB> lecturelist = new ArrayList <>();
 
 	ListView listView;
 
@@ -78,7 +84,12 @@ public class RecommentFragment extends Fragment {
 
 	LectureDBDao mLectureDao;
 
+	UserDBDao mUserDao;
+
 	Dialog requestLoadDialog;
+
+	int offset = 0;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -97,10 +108,11 @@ public class RecommentFragment extends Fragment {
 
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(getActivity(),listView,lecturelist,mLectureDao);
+		mAdapter = new LectureAdapter(getActivity(), listView, lecturelist, mLectureDao);
 
-		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
-		mLectureDao=daoSession.getLectureDBDao();
+		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
+		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao = daoSession.getUserDBDao();
 
 		listView.setAdapter(mAdapter);
 
@@ -111,16 +123,12 @@ public class RecommentFragment extends Fragment {
 					case 1:
 						if (lectureRequestResult == 0) {
 
-							Toasty.success(getContext(), "获取讲座成功").show();
-
-							mAdapter.notifyDataSetChanged();
-
-							DialogUtils.closeDialog(requestLoadDialog);
-
+							Logger.d("获取讲座成功");
 							showLectureInfoToTop();
+							Toasty.success(getContext(), "获取讲座成功").show();
 						} else if (lectureRequestResult == 1) {
 							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(), "讲座信息暂无更新").show();
+							Toasty.info(getContext(), "讲座信息暂无更新").show();
 						} else {
 							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
@@ -133,10 +141,9 @@ public class RecommentFragment extends Fragment {
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
 
 				LectureDB lecture = lecturelist.get(position);
-				Logger.d(lecture.getLectureId());
 				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
 				intent.putExtra("lecture_id", (int) lecture.getLectureId());
 				startActivity(intent);
@@ -147,6 +154,8 @@ public class RecommentFragment extends Fragment {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+
+				requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
 
 				showLectureInfoToTop();
 
@@ -163,8 +172,6 @@ public class RecommentFragment extends Fragment {
 		});
 
 		autoRefresh();
-
-		RecommentLectureRequest();
 
 		return rootview;
 	}
@@ -185,19 +192,16 @@ public class RecommentFragment extends Fragment {
 			public void run() {
 				try {
 
-					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
 
-					Logger.d("lastLecureID"+lastLecureID);
+					Logger.d("lastLecureID" + lastLecureID);
 
 					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
 
-					Logger.json(response);
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 
-					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
-
-
-					handler.sendEmptyMessage(1);
+					handler.sendEmptyMessageDelayed(1, 1000);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -209,52 +213,71 @@ public class RecommentFragment extends Fragment {
 		}).start();
 	}
 
-	//将从数据库中查找到的讲座显示到界面中
+	//将讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		List<LectureDB> lectureDBList=mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+		String[] recommentOrder;
+		List <LectureDB> lectureDBS = new ArrayList <>();
 
-		Logger.d(mAdapter.getCount());
-		if(lectureDBList.isEmpty()){
-
-			requestLoadDialog= DialogUtils.createLoadingDialog(getContext(),"正在获取讲座");
-			LectureRequest();
-			return;
-		}
-		lecturelist.addAll(0,lectureDBList);
-		listView.setSelection(0);
-		mAdapter.notifyDataSetChanged();
-	}
-
-	private void RecommentLectureRequest(){
-
-		Logger.d("开始获取推荐的讲座");
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-
-					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
-
-					Logger.d("lastLecureID"+lastLecureID);
-
-					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.RecommentRequest(ConstantClass.ADDRESS, ConstantClass.RECOMMENT_COM, ConstantClass.userOnline);
-
-					Logger.json(response);
-
-					//lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
-
-
-					//handler.sendEmptyMessage(1);
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					Logger.d("解析失败，JSON error");
-					e.printStackTrace();
+		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+		if (user != null) {
+			String temp = user.getRecommentLectureOrder();
+			if (temp == null || temp == "") {
+				List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+				if (lectureDBList.isEmpty()) {
+					Logger.d("正在获取讲座");
+					LectureRequest();
+					return;
+				} else {
+					lecturelist.clear();
+					mAdapter.notifyDataSetChanged();
+					lectureDBS = mLectureDao.queryBuilder().orderDesc(LectureDBDao.Properties.LectureId).build().list();
 				}
+				lecturelist.addAll(0, lectureDBS);
+				listView.setSelection(0);
+				mAdapter.notifyDataSetChanged();
+			} else {
+
+				recommentOrder = Utility.getStrings(temp);
+
+				if (mAdapter.getCount() == recommentOrder.length) {
+					Toasty.info(getContext(), "讲座信息暂无更新").show();
+					return;
+				}
+
+				for (int i = mAdapter.getCount(); i < mAdapter.getCount() + 7 && i < recommentOrder.length; i += 7) {
+					Logger.d(i);
+					if (i + 7 > recommentOrder.length) {
+						for (int j = i; j < recommentOrder.length; j++) {
+							LectureDB lectureDB = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(Long.valueOf(recommentOrder[j]))).build().unique();
+
+							if (lectureDB == null) {
+								LectureRequest();
+								return;
+							} else {
+								lectureDBS.add(lectureDB);
+							}
+						}
+					} else {
+						for (int j = 0; j < 7; j++) {
+							LectureDB lectureDB = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(Long.valueOf(recommentOrder[i + j]))).build().unique();
+							if (lectureDB == null) {
+								LectureRequest();
+								return;
+							} else {
+								lectureDBS.add(lectureDB);
+							}
+
+						}
+					}
+				}
+
+				lecturelist.addAll(0, lectureDBS);
+				listView.setSelection(0);
+				mAdapter.notifyDataSetChanged();
+				DialogUtils.closeDialog(requestLoadDialog);
 			}
-		}).start();
+		}
 	}
+
 }

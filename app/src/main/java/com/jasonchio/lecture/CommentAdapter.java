@@ -3,7 +3,6 @@ package com.jasonchio.lecture;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,19 +11,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.CommentDB;
 import com.jasonchio.lecture.greendao.CommentDBDao;
 import com.jasonchio.lecture.greendao.LectureDB;
-import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
-import com.jasonchio.lecture.util.ConstantClass;
-import com.jasonchio.lecture.util.Utility;
-
 import java.util.List;
-import java.util.logging.Logger;
+import com.orhanobut.logger.*;
 
 /**
  * /**
@@ -53,23 +47,23 @@ import java.util.logging.Logger;
  */
 
 
-public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
+public class CommentAdapter extends BaseAdapter implements View.OnClickListener {
 
-	private List<CommentDB> commentList;
-	private List<LectureDB> lectureList;
+	private List <CommentDB> commentList;
+	private List <LectureDB> lectureList;
 	private Context context;
 	private InnerItemOnclickListener listener;
 	private UserDBDao mUserDao;
 	private CommentDBDao mCommentDao;
 	private ListView listView;
 
-	public CommentAdapter(ListView listView,List<CommentDB> commentDBList,List<LectureDB> lectureDBList,UserDBDao mUserDao,CommentDBDao mCommentDao,Context context){
-		this.listView=listView;
-		this.commentList=commentDBList;
-		this.context=context;
-		this.lectureList=lectureDBList;
-		this.mUserDao=mUserDao;
-		this.mCommentDao=mCommentDao;
+	public CommentAdapter(ListView listView, List <CommentDB> commentDBList, List <LectureDB> lectureDBList, UserDBDao mUserDao, CommentDBDao mCommentDao, Context context) {
+		this.listView = listView;
+		this.commentList = commentDBList;
+		this.context = context;
+		this.lectureList = lectureDBList;
+		this.mUserDao = mUserDao;
+		this.mCommentDao = mCommentDao;
 	}
 
 	@Override
@@ -87,12 +81,11 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		return 0;
 	}
 
-
 	@Override
 	public View getView(int position, View view, ViewGroup parent) {
 		final ViewHolder viewHolder;
-		final CommentDB comment=commentList.get(position);
-		final LectureDB lecture=lectureList.get(position);
+		final CommentDB comment = commentList.get(position);
+		final LectureDB lecture = lectureList.get(position);
 
 		if (view == null) {
 			viewHolder = new ViewHolder();
@@ -100,22 +93,22 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 			viewHolder.userLayout = (RelativeLayout) view.findViewById(R.id.comment_user_layout);
 			viewHolder.commentLecutreLayout = (RelativeLayout) view.findViewById(R.id.comment_lecture_layout);
 			viewHolder.commentLikeLayout = (RelativeLayout) view.findViewById(R.id.comment_like_layout);
-			viewHolder.commentText=(TextView)view.findViewById(R.id.comment_text);
+			viewHolder.commentText = (TextView) view.findViewById(R.id.comment_text);
 
-			viewHolder.userPhoto=(CircleImageView)view.findViewById(R.id.comment_photo_image);
-			viewHolder.commentText=(TextView)view.findViewById(R.id.comment_text);
-			viewHolder.userName=(TextView)view.findViewById(R.id.comment_user_name_text);
-			viewHolder.commentTime=(TextView)view.findViewById(R.id.comment_time_text);
-			viewHolder.commentLikers=(TextView)view.findViewById(R.id.comment_likers_text);
+			viewHolder.userPhoto = (CircleImageView) view.findViewById(R.id.comment_photo_image);
+			viewHolder.commentText = (TextView) view.findViewById(R.id.comment_text);
+			viewHolder.userName = (TextView) view.findViewById(R.id.comment_user_name_text);
+			viewHolder.commentTime = (TextView) view.findViewById(R.id.comment_time_text);
+			viewHolder.commentLikers = (TextView) view.findViewById(R.id.comment_likers_text);
 
-			viewHolder.lectureTitle=(TextView)view.findViewById(R.id.lecture_title_text);
-			viewHolder.lectureImage=(ImageView)view.findViewById(R.id.lecture_source_image);
-			viewHolder.lectureContent=(TextView)view.findViewById(R.id.lecture_content_text);
-			viewHolder.lectureTime=(TextView)view.findViewById(R.id.lecture_time_text);
-			viewHolder.lectureSource=(TextView)view.findViewById(R.id.lecture_source_text);
-			viewHolder.lectureLikers=(TextView)view.findViewById(R.id.lecture_likers_text);
-			viewHolder.commentLikersImage=(ImageView)view.findViewById(R.id.comment_like_image);
-			viewHolder.lectureWantedImage=(ImageView)view.findViewById(R.id.lecture_wanted_image);
+			viewHolder.lectureTitle = (TextView) view.findViewById(R.id.lecture_title_text);
+			viewHolder.lectureImage = (ImageView) view.findViewById(R.id.lecture_source_image);
+			viewHolder.lectureContent = (TextView) view.findViewById(R.id.lecture_content_text);
+			viewHolder.lectureTime = (TextView) view.findViewById(R.id.lecture_time_text);
+			viewHolder.lectureSource = (TextView) view.findViewById(R.id.lecture_source_text);
+			viewHolder.lectureLikers = (TextView) view.findViewById(R.id.lecture_likers_text);
+			viewHolder.commentLikersImage = (ImageView) view.findViewById(R.id.comment_like_image);
+			viewHolder.lectureWantedImage = (ImageView) view.findViewById(R.id.lecture_wanted_image);
 			view.setTag(viewHolder);
 		} else {
 			viewHolder = (ViewHolder) view.getTag();
@@ -132,7 +125,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 
 		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
 
-		if(lecture.getLectureImage()!=null){
+		if (lecture.getLectureImage() != null) {
 			Glide.with(context).load(lecture.getLectureImage()).into(viewHolder.lectureImage);
 		}
 		viewHolder.lectureContent.setText(lecture.getLectureContent());
@@ -146,21 +139,22 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 
 		viewHolder.userName.setText(comment.getCommentuserName());
 		viewHolder.userName.setText(comment.getCommentuserName());
-		if(lecture.getIsWanted()==0){
+
+		if (lecture.getIsWanted() == 0) {
 			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_lecture_likes);
-		}else {
+		} else {
 			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_myinfo_mywanted);
 		}
-		if(comment.getIsLike()==1){
+		if (comment.getIsLike() == 1) {
 			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
-		}else{
+		} else {
 			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
 		}
 
-		com.orhanobut.logger.Logger.d(comment.getUserHead());
-
-		if(comment.getUserHead()!=null || comment.getUserHead() != ""){
+		if (comment.getUserHead() != null || comment.getUserHead() != "") {
 			Glide.with(context).load(comment.getUserHead()).into(viewHolder.userPhoto);
+		} else {
+			viewHolder.userPhoto.setImageResource(R.drawable.ic_defult_userhead);
 		}
 		return view;
 	}
@@ -185,14 +179,15 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		TextView lectureSource;
 		TextView lectureLikers;
 		ImageView lectureWantedImage;
+
 	}
 
 	interface InnerItemOnclickListener {
 		void itemClick(View v);
 	}
 
-	public void setOnInnerItemOnClickListener(InnerItemOnclickListener listener){
-		this.listener=listener;
+	public void setOnInnerItemOnClickListener(InnerItemOnclickListener listener) {
+		this.listener = listener;
 	}
 
 	@Override
@@ -200,47 +195,41 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 		listener.itemClick(v);
 	}
 
-	public void changeCommentLike(int position, int islike){
+	public void changeCommentLike(int position, int islike) {
 
-		Message msg=Message.obtain();
-		msg.arg1=position;
-		if(islike==0){
+		Message msg = Message.obtain();
+		msg.what = islike;
+		msg.arg1 = position;
+
+		if (islike == 0) {
 			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
-			msg.arg2=R.drawable.ic_discovery_comment_like;
-		}else{
+			msg.arg2 = R.drawable.ic_discovery_comment_like;
+		} else {
 			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
-			msg.arg2=R.drawable.ic_discovery_comment_like_selected;
+			msg.arg2 = R.drawable.ic_discovery_comment_like_selected;
 		}
 
-		CommentDB comment=commentList.get(position);
-		if(islike==1){
-			comment.setCommentLikers(comment.getCommentLikers()+1);
-			mCommentDao.update(comment);
-		}else {
-			comment.setCommentLikers(comment.getCommentLikers()-1);
-			mCommentDao.update(comment);
-		}
-		commentList.set(position,comment);
+		CommentDB comment = commentList.get(position);
+		Logger.d(position);
+		Logger.d(comment.getCommentlecureId());
+		comment=mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(comment.getCommentId())).build().unique();
+		commentList.set(position, comment);
 		handler.sendMessage(msg);
 	}
 
-	private Handler handler = new Handler()
-	{
-		public void handleMessage(android.os.Message msg)
-		{
-			updateItem(msg.arg1,msg.arg2);
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			updateItem(msg.what, msg.arg1, msg.arg2);
 		}
 	};
 
-	/**、
+	/**
 	 * 刷新指定item
 	 *
 	 * @param index item在listview中的位置
 	 */
-	private void updateItem(int index,int drawable)
-	{
-		if (listView == null)
-		{
+	private void updateItem(int isLike, int index, int drawable) {
+		if (listView == null) {
 			return;
 		}
 
@@ -254,9 +243,18 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener{
 
 		View view = listView.getChildAt(index - visiblePosition);
 
-		ImageView likeImage=view.findViewById(R.id.comment_like_image);
+		ImageView likeImage = view.findViewById(R.id.comment_like_image);
 
 		likeImage.setImageResource(drawable);
-	}
 
+		TextView likeNum = view.findViewById(R.id.comment_likers_text);
+
+		CommentDB comment = commentList.get(index);
+
+		if(isLike==1){
+			likeNum.setText(Integer.toString(comment.getCommentLikers()+1));
+		}else{
+			likeNum.setText(Integer.toString(comment.getCommentLikers()-1));
+		}
+	}
 }

@@ -40,7 +40,7 @@ public class CommentRequestResult {
 	/**
 	 * state : 0
 	 * comment :
-	 */
+	 * */
 
 	private int state;
 	private List <CommentBean> comment;
@@ -109,16 +109,17 @@ public class CommentRequestResult {
 		/**
 		 * comment_id :
 		 * comment_user :
-		 * user_face_url:
+		 * comment_user_face_url :
 		 * comment_information :
 		 * comment_lecture :
 		 * comment_time :
 		 * comment_good_amount :
+		 * comment_user_like :
 		 */
 
 		private int comment_id;
 		private String comment_user;
-		private String user_face_url;
+		private String comment_user_face_url;
 		private String comment_information;
 		private int comment_lecture;
 		private String comment_time;
@@ -185,6 +186,14 @@ public class CommentRequestResult {
 			this.comment_user = comment_user;
 		}
 
+		public String getComment_user_face_url() {
+			return comment_user_face_url;
+		}
+
+		public void setComment_user_face_url(String comment_user_face_url) {
+			this.comment_user_face_url = comment_user_face_url;
+		}
+
 		public String getComment_information() {
 			return comment_information;
 		}
@@ -223,14 +232,6 @@ public class CommentRequestResult {
 
 		public void setComment_user_like(int comment_user_like) {
 			this.comment_user_like = comment_user_like;
-		}
-
-		public String getUser_face_url() {
-			return user_face_url;
-		}
-
-		public void setUser_face_url(String user_face_url) {
-			this.user_face_url = user_face_url;
 		}
 	}
 }

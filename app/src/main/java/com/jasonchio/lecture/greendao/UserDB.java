@@ -58,11 +58,13 @@ public class UserDB {
 
 	String userComment;     //用户的评论
 
-	@Generated(hash = 1075717061)
+	String recommentLectureOrder;   //针对该用户推荐的讲座次序
+
+	@Generated(hash = 1414690546)
 	public UserDB(long userId, String userName, String userPhone, String userSex,
 			String userSchool, String userPhotoUrl, String userBirthday,
 			double userLatitude, double userLongitude, String userFocuseLirary,
-			String userWantedLecture, String userComment) {
+			String userWantedLecture, String userComment, String recommentLectureOrder) {
 		this.userId = userId;
 		this.userName = userName;
 		this.userPhone = userPhone;
@@ -75,6 +77,7 @@ public class UserDB {
 		this.userFocuseLirary = userFocuseLirary;
 		this.userWantedLecture = userWantedLecture;
 		this.userComment = userComment;
+		this.recommentLectureOrder = recommentLectureOrder;
 	}
 
 	@Generated(hash = 1312299826)
@@ -175,6 +178,14 @@ public class UserDB {
 
 	public void setUserComment(String userComment) {
 		this.userComment = userComment;
+	}
+
+	public String getRecommentLectureOrder() {
+		return this.recommentLectureOrder;
+	}
+
+	public void setRecommentLectureOrder(String recommentLectureOrder) {
+		this.recommentLectureOrder = recommentLectureOrder;
 	}
 	
 }

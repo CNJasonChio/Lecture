@@ -15,7 +15,7 @@
         android:drawableTop="@drawable/selector_discovery"
         android:focusable="true"
         android:gravity="center_horizontal"
-        android:text="发现"
+        android:text="动态"
         android:textColor="@drawable/tab_text_sel"
         android:textSize="14sp"/>
 </LinearLayout>

@@ -159,15 +159,12 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 					case 1:
 						if (myFocuseLibRequestResult == 0) {
 							showFocuseLibrary();
-
+							Toasty.success(MyFocuseActivity.this,"获取“我的关注”成功").show();
 						} else if (myFocuseLibRequestResult == 1) {
-
 							Toasty.error(MyFocuseActivity.this, "数据库无更新").show();
 						} else if (myFocuseLibRequestResult == 3) {
-
 							Toasty.info(MyFocuseActivity.this, "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
 						} else {
-
 							Toasty.error(MyFocuseActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -177,6 +174,15 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 						} else {
 							Toasty.error(MyFocuseActivity.this, "服务器出错，请联系开发者").show();
 						}
+						break;
+					case 3:
+						if(focuseLibChangeResult==0){
+							Toasty.success(MyFocuseActivity.this,"成功取消关注").show();
+						}else {
+							Toasty.error(MyFocuseActivity.this,"取消关注失败").show();
+							showFocuseLibrary();
+						}
+						break;
 					default:
 						break;
 				}
@@ -234,6 +240,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 					//解析和处理服务器返回的数据
 					myFocuseLibRequestResult = Utility.handleFocuseLibraryResponse(response, mUserDao);
 
+					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -256,6 +263,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 					Logger.json(response);
 					//解析和处理服务器返回的数据
 					focuseLibChangeResult = Utility.handleFocuseChangeResponse(response,libName,mUserDao,mLibraryDao,0);
+					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();

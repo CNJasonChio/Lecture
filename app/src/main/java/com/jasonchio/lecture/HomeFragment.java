@@ -101,19 +101,11 @@ public class HomeFragment extends Fragment {
 
 	String response;
 
-	Dialog positionLoadDialog;
+	boolean sendPosOk=false;
 
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-
-	}
-
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-		View view = inflater.inflate(R.layout.fragment_home, null);
-
-		initView(view);
 
 		handler=new Handler(new Handler.Callback() {
 			@Override
@@ -121,7 +113,10 @@ public class HomeFragment extends Fragment {
 				switch (msg.what){
 					case 1:
 						if (sendPositionResult == 0) {
-							Toasty.success(getContext(), "定位成功").show();
+							if(sendPosOk==false){
+								Toasty.success(getContext(), "定位成功").show();
+								sendPosOk=true;
+							}
 						} else {
 							Toasty.error(getContext(), "定位失败，请稍候再试或联系开发者").show();
 						}
@@ -136,6 +131,15 @@ public class HomeFragment extends Fragment {
 		}else{
 			getPosition();
 		}
+	}
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+		View view = inflater.inflate(R.layout.fragment_home, null);
+
+		initView(view);
+
+
 		return view;
 	}
 
@@ -247,6 +251,7 @@ public class HomeFragment extends Fragment {
 	}
 
 	private void SendPosition() {
+		sendPosOk=false;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {

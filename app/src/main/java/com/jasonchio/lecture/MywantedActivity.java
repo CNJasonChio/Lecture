@@ -157,6 +157,8 @@ public class MywantedActivity extends BaseActivity {
 					case 2:
 						if(lectureRequestResult==0){
 							showWantedLecture();
+						}else{
+							DialogUtils.closeDialog(mywantedLoadDialog);
 						}
 					default:
 						break;
@@ -236,6 +238,7 @@ public class MywantedActivity extends BaseActivity {
 	private void showWantedLecture() {
 
 		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);
+		Logger.d(temp);
 		if(temp==null || temp.length()==0){
 			MywantedRequest();
 			return;

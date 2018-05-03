@@ -1,9 +1,12 @@
 package com.jasonchio.lecture;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -14,6 +17,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
@@ -41,6 +45,12 @@ import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.Permission;
+import com.yanzhenjie.permission.Rationale;
+import com.yanzhenjie.permission.RequestExecutor;
+import com.yanzhenjie.permission.SettingService;
 
 import org.json.JSONException;
 
@@ -48,6 +58,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
@@ -117,6 +128,8 @@ public class MyInfoActivity extends BaseActivity {
 	Handler handler;
 
 	Dialog myinfoLoadDialog;
+
+	Rationale mRationale;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -127,11 +140,9 @@ public class MyInfoActivity extends BaseActivity {
 		//初始化视图
 		initView();
 
-
-		MyinfoRequest();
-
 		initEvent();
 
+		showMyinfo();
 	}
 
 	@Override
@@ -219,7 +230,15 @@ public class MyInfoActivity extends BaseActivity {
 				break;
 			}
 			case R.id.myinfo_profilephoto_layout: {
-				showPopupWindow();
+				if(ContextCompat.checkSelfPermission(MyInfoActivity.this, Manifest.permission_group.CAMERA)!= PackageManager.PERMISSION_GRANTED){
+					askforPermisson();
+				}else{
+					if(ContextCompat.checkSelfPermission(MyInfoActivity.this, Manifest.permission_group.STORAGE)!= PackageManager.PERMISSION_GRANTED){
+						askforPermisson();
+					}else{
+						showPopupWindow();
+					}
+				}
 				break;
 			}
 			case R.id.myinfo_name_layout: {
@@ -699,19 +718,98 @@ public class MyInfoActivity extends BaseActivity {
 
 	private void showMyinfo(){
 
-
 		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 
-		String userHead=user.getUserPhotoUrl();
-		if(userHead.length()!=0 && userHead!=null){
-			Glide.with(MyInfoActivity.this).load(userHead).into(photoImage);
+		if(user==null){
+			myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"正在加载");
+			MyinfoRequest();
+			return;
 		}else{
-			photoImage.setImageResource(R.mipmap.ic_launcher);
+			String userHead=user.getUserPhotoUrl();
+			if(userHead.length()!=0 && userHead!=null){
+				Glide.with(MyInfoActivity.this).load(userHead).into(photoImage);
+			}else{
+				photoImage.setImageResource(R.mipmap.ic_launcher);
+			}
+			nameText.setText(user.getUserName());
+			sexText.setText(user.getUserSex());
+			schoolText.setText(user.getUserSchool());
+			birthdayText.setText(user.getUserBirthday());
+			phoneText.setText(user.getUserPhone());
 		}
-		nameText.setText(user.getUserName());
-		sexText.setText(user.getUserSex());
-		schoolText.setText(user.getUserSchool());
-		birthdayText.setText(user.getUserBirthday());
-		phoneText.setText(user.getUserPhone());
+
+	}
+
+	private void askforPermisson(){
+
+		AndPermission.with(this)
+				.permission(Permission.Group.CAMERA,Permission.Group.STORAGE)
+				.rationale(mRationale)
+				.onGranted(new Action() {
+					@Override
+					public void onAction(List<String> permissions) {
+						showPopupWindow();
+					}
+				})
+				.onDenied(new Action() {
+
+					@Override
+					public void onAction(List <String> permissions) {
+						Toasty.error(MyInfoActivity.this,"获取权限失败");
+						if (AndPermission.hasAlwaysDeniedPermission(MyInfoActivity.this, permissions)) {
+							// 这里使用一个Dialog展示没有这些权限应用程序无法继续运行，询问用户是否去设置中授权。
+							final SettingService settingService = AndPermission.permissionSetting(MyInfoActivity.this);
+							android.support.v7.app.AlertDialog.Builder builder=new android.support.v7.app.AlertDialog.Builder(MyInfoActivity.this);
+							builder.setTitle("权限请求");
+							builder.setMessage("小的需要您的相机权限和存储权限来为您更改头像，不然小主可能换不了自己的好看的头像了");
+							builder.setCancelable(true);
+							builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									// 如果用户同意去设置：
+									settingService.execute();
+								}
+							});
+							builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									// 如果用户不同意去设置：
+									settingService.cancel();
+								}
+							});
+							builder.show();
+						}
+
+					}
+				})
+				.start();
+
+		mRationale = new Rationale() {
+			@Override
+			public void showRationale(Context context, List<String> permissions,
+			                          final RequestExecutor executor) {
+				// 这里使用一个Dialog询问用户是否继续授权。
+				android.support.v7.app.AlertDialog.Builder builder=new android.support.v7.app.AlertDialog.Builder(MyInfoActivity.this);
+				builder.setTitle("权限请求");
+				builder.setMessage("小的需要您的相机权限和存储权限来为您更改头像，不然小主可能换不了自己的好看的头像了");
+				builder.setCancelable(true);
+				builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// 如果用户继续：
+						executor.execute();
+					}
+				});
+				builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// 如果用户中断：
+						executor.cancel();
+					}
+				});
+				builder.show();
+
+			}
+		};
 	}
 }

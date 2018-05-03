@@ -16,6 +16,7 @@ import com.jasonchio.lecture.greendao.LibraryDB;
 import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.AddCommentResult;
 import com.jasonchio.lecture.gson.ChangeUserHeadResult;
 import com.jasonchio.lecture.gson.CheckUpdateResult;
 import com.jasonchio.lecture.gson.CommentRequestResult;
@@ -29,6 +30,7 @@ import com.jasonchio.lecture.gson.MyCommentResult;
 import com.jasonchio.lecture.gson.MyFocuseResult;
 import com.jasonchio.lecture.gson.MyWantedResult;
 import com.jasonchio.lecture.gson.MyinfoResult;
+import com.jasonchio.lecture.gson.RecommentLectureResult;
 import com.jasonchio.lecture.gson.SigninResult;
 import com.jasonchio.lecture.gson.VercodeResult;
 import com.orhanobut.logger.Logger;
@@ -37,6 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -70,8 +74,6 @@ import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
  */
 
 public class Utility {
-
-	static Handler handler;
 
 	//解析和处理短信验证返回的信息
 	public static int handleVercodeResponse(String response) {
@@ -211,6 +213,37 @@ public class Utility {
 		return state;
 	}
 
+	//解析和处理服务器针对该用户推荐的讲座顺序
+
+	public static int handleRecommentLectureResponse(String response,UserDBDao mUserDao){
+		int state=1;
+
+		Gson gson=new Gson();
+
+		RecommentLectureResult result=gson.fromJson(response,RecommentLectureResult.class);
+
+		if(result!=null){
+			state=result.getState();
+			if(state==0){
+				UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+				if(user!=null){
+					List<Integer> recommentLectureOrder=result.getRecommend();
+					String recommentOrder="";
+					if(!recommentLectureOrder.isEmpty()){
+						for(Integer order: recommentLectureOrder){
+							recommentOrder+=Integer.toString(order)+",";
+						}
+					}
+					if(recommentOrder!=null && recommentOrder!=""){
+						user.setRecommentLectureOrder(recommentOrder);
+						mUserDao.update(user);
+					}
+				}
+			}
+		}
+		return state;
+
+	}
 	//解析和处理服务器返回的评论数据
 	public static int handleCommentResponse(String response, CommentDBDao mCommentDao) {
 
@@ -233,7 +266,7 @@ public class Utility {
 						commentDB.setCommentContent(comment.getComment_information());
 						commentDB.setCommentuserName(comment.getComment_user());
 						commentDB.setIsLike(comment.getComment_user_like());
-						commentDB.setUserHead(comment.getUser_face_url());
+						commentDB.setUserHead(comment.getComment_user_face_url());
 						mCommentDao.insertOrReplace(commentDB);
 					}
 				}
@@ -456,45 +489,48 @@ public class Utility {
 		int state = result.getState();
 		if (state == 0) {
 			String temp = Utility.getUserFocuse(ConstantClass.userOnline, mUserDao);
-			if(isFocuse==0){
-				String[] focuseLibrary = Utility.getStrings(temp);
-				List <String> focuseStr = new ArrayList <>();
+			if(temp!=null && temp!=""){
+				if(isFocuse==0){
+					String[] focuseLibrary = Utility.getStrings(temp);
+					List <String> focuseStr = new ArrayList <>();
 
-				for (int i = 0; i < focuseLibrary.length; i++) {
-					focuseStr.add(focuseLibrary[i]);
-				}
-				for (String lib : focuseStr) {
-					if (lib.equals(libName)) {
-						focuseStr.remove(lib);
-						break;
+					for (int i = 0; i < focuseLibrary.length; i++) {
+						focuseStr.add(focuseLibrary[i]);
 					}
-				}
+					for (String lib : focuseStr) {
+						if (lib.equals(libName)) {
+							focuseStr.remove(lib);
+							break;
+						}
+					}
 
-				String userFocuseLirary = "";
-				for (String focuse : focuseStr) {
-					userFocuseLirary += focuse + ",";
+					String userFocuseLirary = "";
+					for (String focuse : focuseStr) {
+						userFocuseLirary += focuse + ",";
+					}
+					UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+					userDB.setUserFocuseLirary(userFocuseLirary);
+					mUserDao.update(userDB);
+				}else{
+					temp+=libName+",";
+					UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+					userDB.setUserFocuseLirary(temp);
+					mUserDao.update(userDB);
 				}
-				UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-				userDB.setUserFocuseLirary(userFocuseLirary);
-				mUserDao.update(userDB);
-			}else{
-				temp+=libName+",";
-				UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-				userDB.setUserFocuseLirary(temp);
-				mUserDao.update(userDB);
-			}
-			LibraryDB libraryDB=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
+				LibraryDB libraryDB=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
 
-			if(libraryDB!=null){
-				libraryDB.setIsFocused(isFocuse);
-				mLibraryDao.update(libraryDB);
+				if(libraryDB!=null){
+					libraryDB.setIsFocused(isFocuse);
+					mLibraryDao.update(libraryDB);
+				}
 			}
+
 
 		}
 		return state;
 	}
 
-	//解析和处理服务器返回的添加或者取消关注的数据
+	//解析和处理服务器返回的添加或者取消点赞评论的数据
 	public static int handleLikeChangeResponse(String response, long commentID,CommentDBDao mCommentDao, int isLike) {
 
 		Gson gson = new Gson();
@@ -503,10 +539,16 @@ public class Utility {
 		if (state == 0) {
 			CommentDB comment=mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(commentID)).build().unique();
 				comment.setIsLike(isLike);
+				if(isLike==0){
+					comment.setCommentLikers(comment.getCommentLikers()-1);
+				}else {
+					comment.setCommentLikers(comment.getCommentLikers()+1);
+				}
 				mCommentDao.update(comment);
 		}
 		return state;
 	}
+
 	//解析和处理服务器返回的添加或者取消想看的数据
 	public static int handleWantedChangeResponse(String response, long lectureID, UserDBDao mUserDao, LectureDBDao mLectureDao,int isWanted) {
 
@@ -517,41 +559,41 @@ public class Utility {
 			String temp = Utility.getUserWanted(ConstantClass.userOnline, mUserDao);
 			LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
 			if(lecture.getIsWanted()!=isWanted){
-				if(isWanted==0){
-					String[] wantedLecture = Utility.getStrings(temp);
-					List <String> wantedStr = new ArrayList <>();
-
-					for (int i = 0; i < wantedLecture.length; i++) {
-						Logger.d(wantedLecture[i]);
-						wantedStr.add(wantedLecture[i]);
-					}
-
-					for (String lec : wantedStr) {
-						if (lec.equals(Long.toString(lecture.getLectureId()))) {
-							wantedStr.remove(lec);
-							Logger.d(lec);
-							break;
+				if (temp != null && temp!="") {
+					if(isWanted==0){
+						String[] wantedLecture = Utility.getStrings(temp);
+						List <String> wantedStr = new ArrayList <>();
+						for (int i = 0; i < wantedLecture.length; i++) {
+							wantedStr.add(wantedLecture[i]);
 						}
-					}
 
-					String userWantedLecture = "";
-					for (String wanted : wantedStr) {
-						userWantedLecture += wanted + ",";
-					}
-					UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-					userDB.setUserWantedLecture(userWantedLecture);
-					mUserDao.update(userDB);
+						for (String lec : wantedStr) {
+							if (lec.equals(Long.toString(lecture.getLectureId()))) {
+								wantedStr.remove(lec);
+								break;
+							}
+						}
+
+						String userWantedLecture = "";
+						for (String wanted : wantedStr) {
+							userWantedLecture += wanted + ",";
+						}
+						UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+						userDB.setUserWantedLecture(userWantedLecture);
+						mUserDao.update(userDB);
+						lecture.setLecutreLikers(lecture.getLecutreLikers()-1);
 				}else{
-					temp+=Long.toString(lectureID)+",";
-					UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+						temp+=Long.toString(lectureID)+",";
+						UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 
-					userDB.setUserWantedLecture(temp);
-					mUserDao.update(userDB);
-
+						userDB.setUserWantedLecture(temp);
+						mUserDao.update(userDB);
+						lecture.setLecutreLikers(lecture.getLecutreLikers()+1);
+					}
+					lecture.setIsWanted(isWanted);
+					mLectureDao.update(lecture);
 				}
-				LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
-				lectureDB.setIsWanted(isWanted);
-				mLectureDao.update(lectureDB);
+
 			}
 		}
 		return state;
@@ -602,7 +644,8 @@ public class Utility {
 		int state;
 
 		Gson gson = new Gson();
-		CommonStateResult result = gson.fromJson(response, CommonStateResult.class);
+
+		AddCommentResult result = gson.fromJson(response, AddCommentResult.class);
 
 		state = result.getState();
 
@@ -612,13 +655,11 @@ public class Utility {
 
 			UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 
-			/*
-			 * 修改用户的评论
-			 * */
-			//添加返回的用户评论ID,判断用户的评论是否为空！！！！
-
-			user.setUserComment(userComment);
-			mUserDao.update(user);
+			if(userComment!=null){
+				userComment+=Long.toString(result.getComment_id())+",";
+				user.setUserComment(userComment);
+				mUserDao.update(user);
+			}
 		}
 
 		return state;
@@ -641,12 +682,12 @@ public class Utility {
 
 		return state;
 	}
+
 	//解析和处理服务器返回的正文数据
 	public static boolean handleLectureContentResponse(String response, long lectureId, LectureDBDao mLectureDao) {
 
 		boolean isSucceed=false;
 		if (!TextUtils.isEmpty(response)) {
-			Logger.d(response);
 
 			LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureId)).build().unique();
 
@@ -755,12 +796,11 @@ public class Utility {
 	public static String getUserFocuse(long userID, UserDBDao mUserDao) {
 
 		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(userID)).build().unique();
-
 		String userFocuse="";
 
 		if(user!=null){
 			userFocuse = user.getUserFocuseLirary();
-			Logger.d(userFocuse);
+
 		}
 		return userFocuse;
 	}
@@ -769,11 +809,12 @@ public class Utility {
 
 		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(userID)).build().unique();
 
-		String userComment;
+		String userComment="";
 
-		userComment = user.getUserComment();
+		if(user!=null){
+			userComment = user.getUserComment();
+		}
 
-		Logger.d(userComment);
 		return userComment;
 	}
 
@@ -781,18 +822,16 @@ public class Utility {
 
 		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(userID)).build().unique();
 
-		String userWanted;
+		String userWanted="";
 
-		userWanted = user.getUserWantedLecture();
-		if(userWanted==null){
-			userWanted="";
+		if(user!=null){
+			userWanted = user.getUserWantedLecture();
 		}
-		Logger.d(userWanted);
 		return userWanted;
 	}
 
 	public static void getLectureContent(final long lectureID, String lectureInfo, final LectureDBDao mLectureDao) {
-		ContentRequest(lectureInfo,handler,new Callback() {
+		ContentRequest(lectureInfo,new Callback() {
 			@Override
 			public void onFailure(Call call, IOException e) {
 				Logger.d("content获取失败");
@@ -807,7 +846,7 @@ public class Utility {
 
 	public static void getLibraryContent(final long libraryID, String libraryInfo, final LibraryDBDao mLibraryDao) {
 
-		ContentRequest(libraryInfo,handler,new Callback() {
+		ContentRequest(libraryInfo,new Callback() {
 			@Override
 			public void onFailure(Call call, IOException e) {
 				Logger.d("content获取失败");
@@ -824,6 +863,7 @@ public class Utility {
 
 		Date dNow = new Date();
 		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		ft.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));  // 设置北京时区
 		String nowTime = ft.format(dNow);
 
 		return nowTime;

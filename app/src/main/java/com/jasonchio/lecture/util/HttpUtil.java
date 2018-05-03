@@ -2203,34 +2203,27 @@ public class HttpUtil {
 			outputStream.write(test.getBytes());
 			//发送数据到服务端
 			outputStream.flush();
+			Logger.d("给服务器发送头像信息数据完毕");
+			//创建输出流对象outputStream
+			outputStream.write(bout.toByteArray());
+			//发送数据到服务端
+			outputStream.flush();
 			//关闭输出流
 			socket.shutdownOutput();
-			Logger.d("给服务器发送数据完毕");
+
+			Logger.d("给服务器发送头像数据完毕");
 			//接收服务器返回的数据
 			//创建输入流对象InputStream
 			inputStream = socket.getInputStream();
 			//创建输入流读取器对象 并传入输入流对象
 			reader = new InputStreamReader(inputStream);
 			bufferedReader = new BufferedReader(reader);
-			Logger.d("给服务器发送数据完毕4");
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
 			Logger.d(response);
 			return response;
 
-			/*int state=Utility.handleCommonResponse(response);
-			Logger.d("state"+state);
-			if(state==0){
-				outputStream = socket.getOutputStream();
-				//写入要发送给服务器的数据
-				outputStream.write(bout.toByteArray());
-				//发送数据到服务端
-				outputStream.flush();
-				//关闭输出流
-				socket.shutdownOutput();
-			}
-			return response;*/
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -2244,7 +2237,7 @@ public class HttpUtil {
 	}
 
 	//正文请求
-	public static void ContentRequest(String address, Handler handler, Callback callback) {
+	public static void ContentRequest(String address, Callback callback) {
 		OkHttpClient client = new OkHttpClient();
 		Request request = new Request.Builder().url(address).build();
 		client.newCall(request).enqueue(callback);

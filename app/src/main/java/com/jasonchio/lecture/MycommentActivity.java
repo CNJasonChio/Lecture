@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;;
@@ -24,14 +25,16 @@ import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+
 import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
-public class MycommentActivity extends BaseActivity implements CommentAdapter.InnerItemOnclickListener,AdapterView.OnItemClickListener{
+public class MycommentActivity extends BaseActivity implements CommentAdapter.InnerItemOnclickListener, AdapterView.OnItemClickListener {
 
 	SwipeToLoadLayout swipeToLoadLayout;
 
@@ -43,10 +46,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	Button titleFirstButton;
 
-	int islike;
-
-	List<CommentDB> commentList =new ArrayList<>();
-	List<LectureDB> lectureList =new ArrayList<>();
+	List <CommentDB> commentList = new ArrayList <>();
+	List <LectureDB> lectureList = new ArrayList <>();
 
 	ListView listView;
 
@@ -70,6 +71,8 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	Dialog myCommentLoadDialog;
 
+	int likeThisCommentRequest;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -87,7 +90,6 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			public void onRefresh() {
 				myCommentLoadDialog=DialogUtils.createLoadingDialog(MycommentActivity.this,"正在加载");
 				showCommentInfoToTop();
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
 		});
@@ -111,6 +113,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			}
 		});
 	}
+
 	@Override
 	void initView() {
 		//BaseActivity方法，隐藏系统标题栏
@@ -122,18 +125,18 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	@Override
 	void initWidget() {
-		swipeToLoadLayout = (SwipeToLoadLayout)findViewById(R.id.swipeToLoadLayout);
-		titleLayout=(TitleLayout)findViewById(R.id.mycomment_title_layout);
-		titleSecondButton=titleLayout.getSecondButton();
-		titleFirstButton=titleLayout.getFirstButton();
-		listView = (ListView) findViewById(R.id.swipe_target);
-		mAdapter = new CommentAdapter(listView,commentList,lectureList,mUserDao,mCommentDao,MycommentActivity.this);
-		listView.setAdapter(mAdapter);
+		daoSession = ((MyApplication) getApplication()).getDaoSession();
+		mCommentDao = daoSession.getCommentDBDao();
+		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao = daoSession.getUserDBDao();
 
-		daoSession=((MyApplication)getApplication()).getDaoSession();
-		mCommentDao=daoSession.getCommentDBDao();
-		mLectureDao=daoSession.getLectureDBDao();
-		mUserDao=daoSession.getUserDBDao();
+		swipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipeToLoadLayout);
+		titleLayout = (TitleLayout) findViewById(R.id.mycomment_title_layout);
+		titleSecondButton = titleLayout.getSecondButton();
+		titleFirstButton = titleLayout.getFirstButton();
+		listView = (ListView) findViewById(R.id.swipe_target);
+		mAdapter = new CommentAdapter(listView, commentList, lectureList, mUserDao, mCommentDao, MycommentActivity.this);
+		listView.setAdapter(mAdapter);
 	}
 
 	@Override
@@ -142,28 +145,32 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		listView.setOnItemClickListener(this);
 		titleFirstButton.setOnClickListener(this);
 
-		handler=new Handler(new Handler.Callback() {
+		handler = new Handler(new Handler.Callback() {
 			@Override
 			public boolean handleMessage(Message msg) {
-				switch (msg.what){
+				switch (msg.what) {
 					case 1:
-						if ( myCommentRequestResult == 0) {
+						if (myCommentRequestResult == 0) {
 							showCommentInfoToTop();
-						} else if ( myCommentRequestResult == 1) {
+						} else if (myCommentRequestResult == 1) {
+							DialogUtils.closeDialog(myCommentLoadDialog);
 							Toasty.error(MycommentActivity.this, "数据库无更新").show();
-						} else if(myCommentRequestResult==3){
-							Toasty.info(MycommentActivity.this, "你还没有点评过讲座呢，先去看个讲座点评一下吧").show();
-						}else {
+						} else if (myCommentRequestResult == 3) {
+							DialogUtils.closeDialog(myCommentLoadDialog);
+							Toasty.info(MycommentActivity.this,
+									"你还没有点评过讲座呢，先去看个讲座点评一下吧").show();
+						} else {
+							DialogUtils.closeDialog(myCommentLoadDialog);
 							Toasty.error(MycommentActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
 					case 2:
-						if(lectureRequestResult==0){
+						if (lectureRequestResult == 0) {
 							showCommentInfoToTop();
 						}
 						break;
 					case 3:
-						if(commentRequestResult==0){
+						if (commentRequestResult == 0) {
 							showCommentInfoToTop();
 						}
 				}
@@ -174,20 +181,21 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()){
+		switch (v.getId()) {
 			case R.id.title_first_button:
 				finish();
 				break;
-				default:
+			default:
 		}
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		CommentDB comment= commentList.get(position);
-		Intent intent=new Intent(MycommentActivity.this,LectureDetailActivity.class);
-		intent.putExtra("lecture_id",(int) comment.getCommentlecureId());
+	public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+		CommentDB comment = commentList.get(position);
+		Intent intent = new Intent(MycommentActivity.this, LectureDetailActivity.class);
+		intent.putExtra("lecture_id", (int) comment.getCommentlecureId());
 		startActivity(intent);
+
 	}
 
 	@Override
@@ -196,30 +204,28 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 		position = (Integer) v.getTag();
 
-		CommentDB comment= commentList.get(position);
+		CommentDB comment = commentList.get(position);
 
-		switch (v.getId()){
+		switch (v.getId()) {
 			case R.id.comment_user_layout:
-				Toast.makeText(MycommentActivity.this,"查看评论人资料",Toast.LENGTH_SHORT).show();
+				Toast.makeText(MycommentActivity.this, "查看评论人资料", Toast.LENGTH_SHORT).show();
 				break;
 			case R.id.comment_lecture_layout:
-				Intent intent=new Intent(MycommentActivity.this,LectureDetailActivity.class);
-				intent.putExtra("lecture_id",comment.getCommentlecureId());
+				Intent intent = new Intent(MycommentActivity.this, LectureDetailActivity.class);
+				intent.putExtra("lecture_id", (int) comment.getCommentlecureId());
 				startActivity(intent);
 				break;
 			case R.id.comment_like_layout:
-				if(islike==1){
-					Toast.makeText(MycommentActivity.this,"取消点赞",Toast.LENGTH_SHORT).show();
-					/*comment.setCommentLikers(comment.getCommentLikers()-1);
-					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like);
-					mAdapter.notifyDataSetChanged();*/
-					islike=0;
-				}else{
-					Toast.makeText(MycommentActivity.this,"点赞",Toast.LENGTH_SHORT).show();
-					/*comment.setCommentLikers(comment.getCommentLikers()+1);
-					comment.setCommentLikersImage(R.drawable.ic_discovery_comment_like_selected);
-					mAdapter.notifyDataSetChanged()*/;
-					islike=1;
+				if (comment.getIsLike() == 1) {
+					Toast.makeText(MycommentActivity.this, "取消点赞", Toast.LENGTH_SHORT).show();
+					Logger.d(position);
+					mAdapter.changeCommentLike(position, 0);
+					LikeThisComment(comment.getCommentId(), 0);
+				} else {
+					Toast.makeText(MycommentActivity.this, "点赞", Toast.LENGTH_SHORT).show();
+					Logger.d(position);
+					LikeThisComment(comment.getCommentId(), 1);
+					mAdapter.changeCommentLike(position, 1);
 				}
 				break;
 			default:
@@ -234,10 +240,10 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				try {
 					//获取服务器返回数据
 					//response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_PORT,ConstantClass.userOnline);
-					response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_COM,ConstantClass.userOnline);
+					response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_COM, ConstantClass.userOnline);
 					Logger.json(response);
 					//解析和处理服务器返回的数据
-					myCommentRequestResult = Utility.handleMyCommentResponse(response,mUserDao);
+					myCommentRequestResult = Utility.handleMyCommentResponse(response, mUserDao);
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -250,22 +256,22 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		}).start();
 	}
 
-	private void CommentRequest(){
+	private void CommentRequest() {
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 
-					long lastCommentID=Utility.lastCommentinDB(mCommentDao);
+					long lastCommentID = Utility.lastCommentinDB(mCommentDao);
 
-					Logger.d("lastCommentID "+lastCommentID);
+					Logger.d("lastCommentID " + lastCommentID);
 
 					//response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_PORT,lastCommentID);
-					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_COM, ConstantClass.userOnline,lastCommentID);
+					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_COM, ConstantClass.userOnline, lastCommentID);
 					Logger.json(response);
 
-					commentRequestResult = Utility.handleCommentResponse(response,mCommentDao);
+					commentRequestResult = Utility.handleCommentResponse(response, mCommentDao);
 
 					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
@@ -290,15 +296,15 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			public void run() {
 				try {
 
-					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
 
-					Logger.d("lastLecureID"+lastLecureID);
+					Logger.d("lastLecureID" + lastLecureID);
 
 					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
 					Logger.json(response);
 
-					lectureRequestResult = Utility.handleLectureResponse(response,mLectureDao);
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
@@ -315,44 +321,70 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 	//将从数据库中查找到的讲座显示到界面中
 	private void showCommentInfoToTop() {
 
-		String userComment=Utility.getUserComment(ConstantClass.userOnline,mUserDao);
+		String userComment = Utility.getUserComment(ConstantClass.userOnline, mUserDao);
 
-		if(userComment==null || userComment.length()==0){
+		if (userComment == null || userComment.length() == 0) {
 			MyCommentRequest();
 			return;
 		}
 		String[] myComment = Utility.getStrings(userComment);
 
-		if(myComment.length==0){
-			Toasty.error(MycommentActivity.this,"解析用户的点评失败，请联系开发者").show();
+		if (myComment.length == 0) {
+			Toasty.error(MycommentActivity.this, "解析用户的点评失败，请联系开发者").show();
 			return;
-		}else{
+		} else {
 			if (!commentList.isEmpty()) {
-				commentList.removeAll(commentList);
+				commentList.clear();
 			}
 			CommentDB comment;
-			for(int i=0;i<myComment.length;i++){
-				comment=mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(myComment[i])).build().unique();
-				if(comment ==null){
+			for (int i = 0; i < myComment.length; i++) {
+				comment = mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(myComment[i])).build().unique();
+				if (comment == null) {
 					CommentRequest();
 					return;
-				}else{
-					LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(comment.getCommentlecureId())).build().unique();
-					if(lecture!=null){
+				} else {
+					LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(comment.getCommentlecureId())).build().unique();
+					if (lecture != null) {
 						lectureList.add(lecture);
 						commentList.add(comment);
-					}else{
+					} else {
 						LectureRequest();
 						return;
 					}
 
 				}
 			}
+
 			listView.setSelection(0);
 			mAdapter.notifyDataSetChanged();
-
 			DialogUtils.closeDialog(myCommentLoadDialog);
 		}
 
+	}
+
+	private void LikeThisComment(final long commentID, final int islike) {
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					//response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_PORT,commentID,ConstantClass.userOnline,islike);
+					response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_COM, commentID, ConstantClass.userOnline, islike);
+
+
+					Logger.json(response);
+
+					likeThisCommentRequest = Utility.handleLikeChangeResponse(response, commentID, mCommentDao, islike);
+
+					handler.sendEmptyMessage(3);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

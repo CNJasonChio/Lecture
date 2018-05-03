@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
@@ -27,11 +29,15 @@ import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
+
 import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import es.dmoral.toasty.Toasty;
+
 import static com.mob.tools.utils.DeviceHelper.getApplication;
 
 /**
@@ -60,7 +66,7 @@ import static com.mob.tools.utils.DeviceHelper.getApplication;
  * Created by zhaoyaobang on 2018/3/6.
  */
 
-public class DiscoveryFragment extends Fragment implements View.OnClickListener,CommentAdapter.InnerItemOnclickListener,AdapterView.OnItemClickListener{
+public class DiscoveryFragment extends Fragment implements View.OnClickListener, CommentAdapter.InnerItemOnclickListener, AdapterView.OnItemClickListener {
 
 	private View rootview;
 
@@ -76,9 +82,9 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 
 	String response;
 
-	List<CommentDB> commentList =new ArrayList<>();
+	List <CommentDB> commentList = new ArrayList <>();
 
-	List<LectureDB> lectureList=new ArrayList<>();
+	List <LectureDB> lectureList = new ArrayList <>();
 
 	Handler handler;
 
@@ -98,18 +104,17 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 
 	Dialog commentLoadDialog;
 
-	Dialog lectureLoadDialog;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
 	                         Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
-		if(rootview == null){
-			rootview=inflater.inflate(R.layout.fragment_discovery,null);
+		if (rootview == null) {
+			rootview = inflater.inflate(R.layout.fragment_discovery, null);
 		}
-		ViewGroup parent=(ViewGroup)rootview.getParent();
-		if(parent!=null){
+		ViewGroup parent = (ViewGroup) rootview.getParent();
+		if (parent != null) {
 			parent.removeView(rootview);
 		}
 
@@ -122,8 +127,8 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+				commentLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
 				showCommentInfoToTop();
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
 		});
@@ -150,9 +155,9 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		CommentDB comment= commentList.get(position);
-		long lectureID=comment.getCommentlecureId();
+	public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+		CommentDB comment = commentList.get(position);
+		long lectureID = comment.getCommentlecureId();
 		Logger.d(lectureID);
 		Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
 		intent.putExtra("lecture_id", (int) lectureID);
@@ -165,48 +170,46 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 
 		position = (Integer) v.getTag();
 
-		CommentDB comment= commentList.get(position);
+		CommentDB comment = commentList.get(position);
 
-		switch (v.getId()){
+		switch (v.getId()) {
 			case R.id.comment_user_layout:
-				Toast.makeText(getActivity(),"查看评论人资料",Toast.LENGTH_SHORT).show();
+				Toast.makeText(getActivity(), "查看评论人资料", Toast.LENGTH_SHORT).show();
 				break;
 			case R.id.comment_lecture_layout:
-				Intent intent=new Intent(getActivity(),LectureDetailActivity.class);
+				Intent intent = new Intent(getContext(), LectureDetailActivity.class);
+				intent.putExtra("lecture_id", (int) comment.getCommentlecureId());
 				startActivity(intent);
 				break;
 			case R.id.comment_like_layout:
-				if(comment.getIsLike()==1){
-					Toast.makeText(getActivity(),"取消点赞",Toast.LENGTH_SHORT).show();
-					mAdapter.changeCommentLike(position,0);
-					mAdapter.notifyDataSetChanged();
-					LikeThisComment(comment.getCommentId(),0);
-				}else{
-					Toast.makeText(getActivity(),"点赞",Toast.LENGTH_SHORT).show();
-					LikeThisComment(comment.getCommentId(),1);
-					mAdapter.notifyDataSetChanged();
-					mAdapter.changeCommentLike(position,1);
+				if (comment.getIsLike() == 1) {
+					Toast.makeText(getActivity(), "取消点赞", Toast.LENGTH_SHORT).show();
+					LikeThisComment(comment.getCommentId(), 0);
+					mAdapter.changeCommentLike(position, 0);
+					//mAdapter.notifyDataSetChanged();
+				} else {
+					Toast.makeText(getActivity(), "点赞", Toast.LENGTH_SHORT).show();
+					LikeThisComment(comment.getCommentId(), 1);
+					mAdapter.changeCommentLike(position, 1);
+
 				}
 				break;
 			default:
 		}
 	}
 
-	private void CommentRequest(){
+	private void CommentRequest() {
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 
-					long lastCommentID=Utility.lastCommentinDB(mCommentDao);
-
-					Logger.d("lastCommentID "+lastCommentID);
-
+					long lastCommentID = Utility.lastCommentinDB(mCommentDao);
+					Logger.d("lastCommentID " + lastCommentID);
 					//response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_PORT,lastCommentID);
-					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_COM,ConstantClass.userOnline,lastCommentID);
-					Logger.json(response);
-					commentRequestResult= Utility.handleCommentResponse(response,mCommentDao);
+					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_COM, ConstantClass.userOnline, lastCommentID);
+					commentRequestResult = Utility.handleCommentResponse(response, mCommentDao);
 
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
@@ -219,7 +222,7 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		}).start();
 	}
 
-	private void LikeThisComment(final long commentID,final int islike){
+	private void LikeThisComment(final long commentID, final int islike) {
 
 		new Thread(new Runnable() {
 			@Override
@@ -227,11 +230,11 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 				try {
 
 					//response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_PORT,commentID,ConstantClass.userOnline,islike);
-					response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_COM,commentID,ConstantClass.userOnline,islike);
+					response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_COM, commentID, ConstantClass.userOnline, islike);
 
 					Logger.json(response);
 
-					likeThisCommentRequest= Utility.handleLikeChangeResponse(response,commentID,mCommentDao,islike);
+					likeThisCommentRequest = Utility.handleLikeChangeResponse(response, commentID, mCommentDao, islike);
 
 					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
@@ -247,28 +250,32 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 	//将从数据库中查找到的评论显示到界面中
 	private void showCommentInfoToTop() {
 
-		List<CommentDB> commentDBList=mCommentDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(CommentDBDao.Properties.CommentId).build().list();
+		List <CommentDB> commentDBList = mCommentDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(CommentDBDao.Properties.CommentId).build().list();
 
-
-		if(commentDBList ==null || commentDBList.isEmpty()){
-			commentLoadDialog = DialogUtils.createLoadingDialog(getContext(),"正在获取评论");
+		List <CommentDB> commentDBS;
+		if (commentDBList == null || commentDBList.isEmpty()) {
 			CommentRequest();
 			return;
+		}else{
+			commentDBList.clear();
+			lectureList.clear();
+			mAdapter.notifyDataSetChanged();
+			commentDBS=mCommentDao.queryBuilder().orderDesc(CommentDBDao.Properties.CommentId).build().list();
 		}
 
-		for(CommentDB commentDB:commentDBList){
-			LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(commentDB.getCommentlecureId())).build().unique();
-			if(lecture!=null){
+		for (CommentDB commentDB : commentDBS) {
+			LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(commentDB.getCommentlecureId())).build().unique();
+			if (lecture != null) {
 				lectureList.add(lecture);
-			}else{
-				lectureLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
+			} else {
 				LectureRequest();
 				return;
 			}
 		}
-		commentList.addAll(0,commentDBList);
+		commentList.addAll(0, commentDBS);
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
+		DialogUtils.closeDialog(commentLoadDialog);
 	}
 
 	private void LectureRequest() {
@@ -277,12 +284,12 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 			public void run() {
 				try {
 
-					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
 
 					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
 
-					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
+					lectureRequestResult = Utility.handleLectureResponse(lectureresponse, mLectureDao);
 
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
@@ -299,30 +306,28 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 
 	void initView() {
 		titleLayout.setFirstButtonVisible(View.GONE);
-		titleLayout.setTitle("发现");
+		titleLayout.setTitle("动态");
 	}
-
 
 	void initWidget() {
 
-		daoSession = ((MyApplication)getApplication()).getDaoSession();
+		daoSession = ((MyApplication) getApplication()).getDaoSession();
 		mLectureDao = daoSession.getLectureDBDao();
-		mCommentDao=daoSession.getCommentDBDao();
-		mUserDao=daoSession.getUserDBDao();
+		mCommentDao = daoSession.getCommentDBDao();
+		mUserDao = daoSession.getUserDBDao();
 
 		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
-		titleLayout=(TitleLayout)rootview.findViewById(R.id.discovery_title_layout);
+		titleLayout = (TitleLayout) rootview.findViewById(R.id.discovery_title_layout);
 
-		titleSecondButton=titleLayout.getSecondButton();
+		titleSecondButton = titleLayout.getSecondButton();
 		titleSecondButton.setBackgroundResource(R.drawable.ic_title_addcomment);
 
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 
-		mAdapter = new CommentAdapter(listView,commentList,lectureList,mUserDao,mCommentDao,getContext());
+		mAdapter = new CommentAdapter(listView, commentList, lectureList, mUserDao, mCommentDao, getContext());
 
 		listView.setAdapter(mAdapter);
 	}
-
 
 	void initEvent() {
 
@@ -331,26 +336,24 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		mAdapter.setOnInnerItemOnClickListener(this);
 		listView.setOnItemClickListener(this);
 
-		handler=new Handler(new Handler.Callback() {
+		handler = new Handler(new Handler.Callback() {
 			@Override
 			public boolean handleMessage(Message msg) {
-				switch (msg.what){
+				switch (msg.what) {
 					case 1:
 						if (commentRequestResult == 0) {
-							DialogUtils.closeDialog(commentLoadDialog);
-							Toasty.success(getActivity(), "获取评论成功").show();
 							showCommentInfoToTop();
+							Toasty.success(getActivity(), "获取评论成功").show();
 						} else if (commentRequestResult == 1) {
 							DialogUtils.closeDialog(commentLoadDialog);
-							Toasty.info(getActivity(),"暂无更新").show();
+							Toasty.info(getActivity(), "暂无更新").show();
 						} else {
 							DialogUtils.closeDialog(commentLoadDialog);
 							Toasty.error(getActivity(), "服务器出错，请稍候再试").show();
 						}
 						break;
 					case 2:
-						if(lectureRequestResult==0){
-							DialogUtils.closeDialog(lectureLoadDialog);
+						if (lectureRequestResult == 0) {
 							showCommentInfoToTop();
 						}
 						break;
@@ -362,11 +365,10 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		});
 	}
 
-
 	public void onClick(View v) {
-		switch (v.getId()){
+		switch (v.getId()) {
 			case R.id.title_second_button:
-				Intent intent=new Intent(getActivity(),SelecteLectureCommentActivity.class);
+				Intent intent = new Intent(getActivity(), SelecteLectureCommentActivity.class);
 				startActivity(intent);
 				break;
 		}

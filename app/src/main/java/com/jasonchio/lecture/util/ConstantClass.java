@@ -69,44 +69,46 @@ public class ConstantClass {
 	//用户更改头像端口
 	public static final int CHANGE_HEAD_PORT=2018;
 
+
+	//注册命令
 	public static final int SIGNIN_COM=1;
-
+	//找回密码命令
 	public static final int FINDPWD_COM=2;
-
+	//登录命令
 	public static final int LOGIN_COM=3;
-
+	//请求讲座信息命令
 	public static final int LECTURE_REQUEST_COM=4;
-
+	//请求评论信息
 	public static final int COMMENT_REQUEST_COM=5;
-
+	//请求我的信息
 	public static final int MYINFO_REQUEST_COM=6;
-
+	//更改我的信息
 	public static final int CHANGE_MYINFO_REQUEST_COM=7;
-
+	//查找讲座
 	public static final int SEARCH_LECTURE_REQUEST_COM=8;
-
+	//d
 	public static final int MYWANTED_LECTURE_REQUEST_COM=9;
-
+	//
 	public static final int MYFOCUSE_LIBRARY_REQUEST_COM=10;
-
+	//
 	public static final int MYCOMMENT_REQUEST_COM=11;
-
+	//
 	public static final int ADD_CANCEL_WANTED_REQUEST_COM=12;
-
+	//
 	public static final int ADD_CANCEL_FOCUSE_REQUEST_COM=13;
-
+	//
 	public static final int LIBRARY_REQUEST_COM=14;
-
+	//
 	public static final int SEND_POSITION_COM=15;
-
+	//
 	public static final int ADD_COMMENT_COM=16;
-
+	//
 	public static final int LIKE_COMMENT_COM=17;
-
+	//
 	public static final int CHANGE_HEAD_COM=18;
-
+	//
 	public static final int RECOMMENT_COM=19;
-
+	//
 	public static final int UPDATE_COM=20;
 
 }
