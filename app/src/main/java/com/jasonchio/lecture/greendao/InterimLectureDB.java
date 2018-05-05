@@ -52,13 +52,15 @@ public class InterimLectureDB {
 
 	String lectureImage;    //讲座图片
 
-	int isWanted;
+	int isWanted;               //是否已经被该用户添加到“我的想看”中
 
-	@Generated(hash = 1537006485)
+	String lectureDistrict;     //讲座的所在区县
+
+	@Generated(hash = 1453160452)
 	public InterimLectureDB(long lectureId, String lectureTitle,
 			String lectureLocation, String lectureTime, String lecutreSource,
 			String lectureContent, String lectureUrl, int lecutreLikers,
-			String lectureImage, int isWanted) {
+			String lectureImage, int isWanted, String lectureDistrict) {
 		this.lectureId = lectureId;
 		this.lectureTitle = lectureTitle;
 		this.lectureLocation = lectureLocation;
@@ -69,6 +71,7 @@ public class InterimLectureDB {
 		this.lecutreLikers = lecutreLikers;
 		this.lectureImage = lectureImage;
 		this.isWanted = isWanted;
+		this.lectureDistrict = lectureDistrict;
 	}
 
 	@Generated(hash = 1900539246)
@@ -153,6 +156,14 @@ public class InterimLectureDB {
 
 	public void setIsWanted(int isWanted) {
 		this.isWanted = isWanted;
+	}
+
+	public String getLectureDistrict() {
+		return this.lectureDistrict;
+	}
+
+	public void setLectureDistrict(String lectureDistrict) {
+		this.lectureDistrict = lectureDistrict;
 	}
 
 }

@@ -1,5 +1,15 @@
 package com.jasonchio.lecture.gson;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * /**
  * <p>
@@ -27,21 +37,64 @@ package com.jasonchio.lecture.gson;
  */
 public class ChangeUserHeadResult {
 
-
 	/**
-	 * user_id :
+	 * url :
 	 * state :
 	 */
 
-	private String user_face_url;
+	private String url;
 	private int state;
 
-	public String getUser_face_url() {
-		return user_face_url;
+	public static ChangeUserHeadResult objectFromData(String str) {
+
+		return new Gson().fromJson(str, ChangeUserHeadResult.class);
 	}
 
-	public void setUser_face_url(String user_face_url) {
-		this.user_face_url = user_face_url;
+	public static ChangeUserHeadResult objectFromData(String str, String key) {
+
+		try {
+			JSONObject jsonObject = new JSONObject(str);
+
+			return new Gson().fromJson(jsonObject.getString(str), ChangeUserHeadResult.class);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static List <ChangeUserHeadResult> arrayChangeUserHeadResultFromData(String str) {
+
+		Type listType = new TypeToken <ArrayList <ChangeUserHeadResult>>() {
+		}.getType();
+
+		return new Gson().fromJson(str, listType);
+	}
+
+	public static List <ChangeUserHeadResult> arrayChangeUserHeadResultFromData(String str, String key) {
+
+		try {
+			JSONObject jsonObject = new JSONObject(str);
+			Type listType = new TypeToken <ArrayList <ChangeUserHeadResult>>() {
+			}.getType();
+
+			return new Gson().fromJson(jsonObject.getString(str), listType);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return new ArrayList();
+
+
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	public int getState() {

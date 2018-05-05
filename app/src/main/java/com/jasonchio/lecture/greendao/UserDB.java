@@ -52,6 +52,8 @@ public class UserDB {
 
 	double userLongitude;   //用户经度
 
+	String userLocation;    //用户位置
+
 	String userFocuseLirary;    //用户关注的图书馆
 
 	String userWantedLecture;   //用户想看的讲座
@@ -60,11 +62,12 @@ public class UserDB {
 
 	String recommentLectureOrder;   //针对该用户推荐的讲座次序
 
-	@Generated(hash = 1414690546)
+	@Generated(hash = 1491893409)
 	public UserDB(long userId, String userName, String userPhone, String userSex,
 			String userSchool, String userPhotoUrl, String userBirthday,
-			double userLatitude, double userLongitude, String userFocuseLirary,
-			String userWantedLecture, String userComment, String recommentLectureOrder) {
+			double userLatitude, double userLongitude, String userLocation,
+			String userFocuseLirary, String userWantedLecture, String userComment,
+			String recommentLectureOrder) {
 		this.userId = userId;
 		this.userName = userName;
 		this.userPhone = userPhone;
@@ -74,6 +77,7 @@ public class UserDB {
 		this.userBirthday = userBirthday;
 		this.userLatitude = userLatitude;
 		this.userLongitude = userLongitude;
+		this.userLocation = userLocation;
 		this.userFocuseLirary = userFocuseLirary;
 		this.userWantedLecture = userWantedLecture;
 		this.userComment = userComment;
@@ -186,6 +190,14 @@ public class UserDB {
 
 	public void setRecommentLectureOrder(String recommentLectureOrder) {
 		this.recommentLectureOrder = recommentLectureOrder;
+	}
+
+	public String getUserLocation() {
+		return this.userLocation;
+	}
+
+	public void setUserLocation(String userLocation) {
+		this.userLocation = userLocation;
 	}
 	
 }

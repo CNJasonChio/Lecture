@@ -68,68 +68,74 @@ public class MyInfoActivity extends BaseActivity {
 
 	String[] sexArray = new String[]{"蓝孩纸", "吕孩纸", "不告诉他们"};
 
-	RelativeLayout photoLayout;
+	RelativeLayout photoLayout;         //用户头像布局
 
-	RelativeLayout nameLayout;
+	RelativeLayout nameLayout;          //用户昵称布局
 
-	RelativeLayout sexLayout;
+	RelativeLayout sexLayout;           //用户性别布局
 
-	RelativeLayout schoolLayout;
+	RelativeLayout schoolLayout;        //用户学校布局
 
-	RelativeLayout birthdayLayout;
+	RelativeLayout birthdayLayout;      //用户生日布局
 
-	RelativeLayout phoneLayout;
+	RelativeLayout phoneLayout;         //用户手机号布局
 
-	LinearLayout ll_popup;
+	LinearLayout ll_popup;              //更改用户头像选择布局
 
-	CircleImageView photoImage;
+	CircleImageView photoImage;         //用户头像布局
 
-	TextView nameText;
-	String userName=null;
+	TextView nameText;                  //用户昵称
 
-	TextView sexText;
-	String userSex=null;
+	String userName=null;               //用户昵称
 
-	TextView schoolText;
-	String userSchool=null;
+	TextView sexText;                   //用户性别
 
-	TextView birthdayText;
-	String userBirthday=null;
+	String userSex=null;                //用户性别
 
-	TextView phoneText;
-	String userPhone;
+	TextView schoolText;                //用户学校
 
-	TitleLayout titleLayout;
+	String userSchool=null;             //用户学校
 
-	Button titleFirstButton;
+	TextView birthdayText;              //用户生日
 
-	Uri finalUri;
+	String userBirthday=null;           //用户生日
 
-	PopupWindow pop;
+	TextView phoneText;                 //用户手机号
 
-	private View popupWindowView;
+	String userPhone;                   //用户手机号
 
-	public static final int TAKE_PHOTO = 1;
-	public static final int OPEN_ALBUM = 2;
-	public static final int PHOTO_ALREADY = 3;
+	TitleLayout titleLayout;            //标题栏
 
-	String response;
+	Button titleFirstButton;            //标题栏第一个按钮
 
-	int myinfoRequestResult;
+	Uri finalUri;                       //裁剪后的头像 uri
 
-	int changeInfoResult;
+	PopupWindow pop;                    //选择窗口
 
-	int changeUserHeadResult;
+	View popupWindowView;               //选择窗口视图
 
-	DaoSession daoSession;
+	public static final int TAKE_PHOTO = 1;     //拍照
+	public static final int OPEN_ALBUM = 2;     //打开相册
+	public static final int PHOTO_ALREADY = 3;  //裁剪完成
 
-	UserDBDao mUserDao;
+	int myinfoRequestResult;            //用户信息请求结果
 
-	Handler handler;
+	int changeInfoResult;               //更改用户信息结果
 
-	Dialog myinfoLoadDialog;
+	int changeUserHeadResult;           //更改用户头像结果
 
-	Rationale mRationale;
+	DaoSession daoSession;              //数据库操作对象
+
+	UserDBDao mUserDao;                 //用户表操作对象
+
+	Handler handler;                    //handler对象
+
+	Dialog myinfoLoadDialog;            //加载对话框
+
+	Rationale mRationale;               //申请权限多次被拒绝后提示对象
+
+	Bitmap newHead;                     //新的用户头像
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -139,9 +145,9 @@ public class MyInfoActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化事件响应
 		initEvent();
-
+		//显示用户信息
 		showMyinfo();
 	}
 
@@ -211,7 +217,12 @@ public class MyInfoActivity extends BaseActivity {
 					case 3:
 						if(changeUserHeadResult==0){
 							DialogUtils.closeDialog(myinfoLoadDialog);
-							Toasty.success(MyInfoActivity.this,"修改成功").show();
+							if(newHead!=null){
+								photoImage.setImageBitmap(newHead);
+								Toasty.success(MyInfoActivity.this,"修改成功").show();
+							}else{
+								Toasty.error(MyInfoActivity.this,"获取新头像失败，修改失败").show();
+							}
 						}else{
 							DialogUtils.closeDialog(myinfoLoadDialog);
 							Toasty.error(MyInfoActivity.this, "修改失败，请稍候再试").show();
@@ -287,6 +298,7 @@ public class MyInfoActivity extends BaseActivity {
 		}
 	};
 
+	//设置学校
 	private void onSetSchool() {
 		// 使用LayoutInflater来加载dialog_setname.xml布局
 		LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -319,6 +331,7 @@ public class MyInfoActivity extends BaseActivity {
 		alertDialog.show();
 	}
 
+	//设置用户手机号
 	private void onSetPhone() {
 		// 使用LayoutInflater来加载dialog_setname.xml布局
 		LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -351,6 +364,7 @@ public class MyInfoActivity extends BaseActivity {
 		alertDialog.show();
 	}
 
+	//设置用户昵称
 	private void onCreateNameDialog() {
 		// 使用LayoutInflater来加载dialog_setname.xml布局
 		LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -383,6 +397,7 @@ public class MyInfoActivity extends BaseActivity {
 		alertDialog.show();
 	}
 
+	//设置用户性别
 	private void showSexChooseDialog() {
 		AlertDialog.Builder builder3 = new AlertDialog.Builder(this);// 自定义对话框
 		builder3.setSingleChoiceItems(sexArray, 0, new DialogInterface.OnClickListener() {// 2默认的选中
@@ -403,28 +418,33 @@ public class MyInfoActivity extends BaseActivity {
 	 * 头像提示框
 	 */
 	public void showPopupWindow() {
+		//初始化头像提示框
 		LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 		popupWindowView = inflater.inflate(R.layout.choose_photo_popupwindow, null);
 		pop = new PopupWindow(popupWindowView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true);
-
 		ll_popup = (LinearLayout) popupWindowView.findViewById(R.id.ll_popup);
+
+		//设置提示框属性
 		pop.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
 		pop.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 		pop.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00000000")));
 		pop.setFocusable(true);
 		pop.setOutsideTouchable(true);
 		pop.setContentView(popupWindowView);
+
+		//初始化提示框按钮
 		RelativeLayout parent = (RelativeLayout) popupWindowView.findViewById(R.id.parent);
 		Button chooseAlbum = (Button) popupWindowView.findViewById(R.id.item_popupwindows_Photo);
 		Button chooseCamrea = (Button) popupWindowView.findViewById(R.id.item_popupwindows_camera);
 		Button cancel = (Button) popupWindowView.findViewById(R.id.item_popupwindows_cancel);
 		pop.showAtLocation(popupWindowView, Gravity.CENTER, 0, 0);
 
+		//提示框点击处理监听器
 		parent.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				pop.dismiss();
-				ll_popup.clearAnimation();
+				 ll_popup.clearAnimation();
 			}
 		});
 		chooseAlbum.setOnClickListener(new View.OnClickListener() {
@@ -464,7 +484,6 @@ public class MyInfoActivity extends BaseActivity {
 					} else {
 						Toasty.error(MyInfoActivity.this,"没有裁剪照片的应用").show();
 					}
-
 					break;
 				case TAKE_PHOTO: //相机返回的 uri
 					//启动裁剪
@@ -483,9 +502,11 @@ public class MyInfoActivity extends BaseActivity {
 						//获取裁剪后的图片，并显示出来
 						Bitmap bitmap = BitmapFactory.decodeStream(
 								getContentResolver().openInputStream(finalUri));
-						photoImage.setImageBitmap(bitmap);
 
-						myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"很快的");
+						newHead=bitmap;
+
+						myinfoLoadDialog=DialogUtils.createLoadingDialog(MyInfoActivity.this,"正在修改");
+
 						changeUserHead(bitmap,Utility.getBitmapSize(bitmap));
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
@@ -496,6 +517,7 @@ public class MyInfoActivity extends BaseActivity {
 		}
 	}
 
+	//打开相机
 	private void openCamera() {
 		File outputfile = new File(getExternalCacheDir(), "output.png");
 		try {
@@ -518,7 +540,6 @@ public class MyInfoActivity extends BaseActivity {
 		intent.putExtra(MediaStore.EXTRA_OUTPUT, imageuri);
 		startActivityForResult(intent, TAKE_PHOTO);
 	}
-
 
 	/**
 	 * 图片裁剪
@@ -632,19 +653,17 @@ public class MyInfoActivity extends BaseActivity {
 		return null;
 	}
 
+	//用户信息请求
 	private void MyinfoRequest(){
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
-					//response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,ConstantClass.userOnline );
-					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_COM,ConstantClass.userOnline );
-					Logger.json(response);
-
+					//获取服务器返回的数据
+					String response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_COM,ConstantClass.userOnline );
+					//解析和处理服务器返回的数据
 					myinfoRequestResult= Utility.handleUserInfoResponse(response,mUserDao);
-
+					//处理结果
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -656,31 +675,34 @@ public class MyInfoActivity extends BaseActivity {
 		}).start();
 	}
 
+	//修改用户信息
 	private void ChangeMyinfoRequest(){
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
+					//获取用户更新后的信息
 					userName=nameText.getText().toString();
 					userSex=sexText.getText().toString();
 					userSchool=schoolText.getText().toString();
 					userBirthday=birthdayText.getText().toString();
 					userPhone=phoneText.getText().toString();
 
-					//response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_PORT,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
-					response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_COM,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
+					//获取服务器返回的数据
+					String response = HttpUtil.changeUserInfo(ConstantClass.ADDRESS, ConstantClass.CHANGE_MYINFO_REQUEST_COM,ConstantClass.userOnline,userName,userPhone,userSex,userSchool,userBirthday);
 
-					Logger.json(response);
-
+					//创建临时用户
 					UserDB user=new UserDB();
 					user.setUserName(userName);
 					user.setUserPhone(userPhone);
 					user.setUserSex(userSex);
 					user.setUserSchool(userSchool);
 					user.setUserBirthday(userBirthday);
+
+					//解析和处理服务器返回的数据
 					changeInfoResult= Utility.handleChangeInfoResponse(response,mUserDao,user);
+					//处理结果
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -692,19 +714,17 @@ public class MyInfoActivity extends BaseActivity {
 		}).start();
 	}
 
+	//修改用户头像
 	private void changeUserHead(final Bitmap bitmap, final int size){
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
-					//response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_PORT,ConstantClass.userOnline,bitmap,size);
-					response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_COM,ConstantClass.userOnline,bitmap,size);
-
-					Logger.json(response);
-
-					//changeUserHeadResult= Utility.handleChangeUserHeadResponse(response,mUserDao);
-
+					//获取服务器返回的数据
+					String response = HttpUtil.changeUserHead(ConstantClass.ADDRESS, ConstantClass.CHANGE_HEAD_COM,ConstantClass.userOnline,bitmap,size);
+					//解析和处理服务器返回的数据
+					changeUserHeadResult= Utility.handleChangeUserHeadResponse(response,mUserDao);
+					//处理结果
 					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -716,6 +736,7 @@ public class MyInfoActivity extends BaseActivity {
 		}).start();
 	}
 
+	//显示用户资料
 	private void showMyinfo(){
 
 		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
@@ -740,6 +761,7 @@ public class MyInfoActivity extends BaseActivity {
 
 	}
 
+	//申请权限
 	private void askforPermisson(){
 
 		AndPermission.with(this)
@@ -812,4 +834,5 @@ public class MyInfoActivity extends BaseActivity {
 			}
 		};
 	}
+
 }

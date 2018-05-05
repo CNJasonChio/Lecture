@@ -28,51 +28,56 @@ import es.dmoral.toasty.Toasty;
 
 public class LibraryDetailActivity extends BaseActivity {
 
-	ImageView libraryImage;
-	TextView titleLayoutTitleText;
-	TextView libraryName;
-	TextView libraryContent;
-	TextView libraryOriginal;
+	ImageView libraryImage;             //讲座信息来源图片
 
-	Button titleFirstButton;
-	Button titleSecondButton;
+	TextView titleLayoutTitleText;      //讲座信息来源标题文字
 
-	int isFocuse=0;
+	TextView libraryName;               //讲座信息来源名称
 
-	String response;
+	TextView libraryContent;            //讲座信息来源简介
 
-	String libName;
+	TextView libraryOriginal;           //讲座信息来源原文
 
-	String original;
+	Button titleFirstButton;            //标题栏第一个按钮
 
-	Handler handler;
+	Button titleSecondButton;           //标题栏第二个按钮
 
-	int libraryRequestResult;
+	int isFocuse=0;                     //是否已经关注该讲座信息来源
 
-	int changeFocuseResult;
+	String libName;                     //讲座信息来源名称
 
-	DaoSession daoSession;
+	String original;                    //讲座信息来源原文
 
-	LibraryDBDao mLibraryDao;
+	Handler handler;                    //handler 对象
 
-	UserDBDao mUserDao;
+	int libraryRequestResult;           //讲座信息来源请求结果
 
-	Dialog libraryDialog;
+	int changeFocuseResult;             //改变关注服务器返回的结果
+
+	DaoSession daoSession;              //数据库操作对象
+
+	LibraryDBDao mLibraryDao;           //讲座信息来源表操作对象
+
+	UserDBDao mUserDao;                 //用户表操作对象
+
+	Dialog libraryDialog;               //加载对话框
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library_detail);
 
+		//获取上文传递的讲座信息来源名称
 		Intent intent=getIntent();
 		libName=intent.getStringExtra("library_name");
+
 		//初始化控件
 		initWidget();
-
 		//初始化视图
 		initView();
-
+		//初始化事件响应
 		initEvent();
-
+		//初始化讲座信息来源
 		initLibrary(libName);
 	}
 
@@ -100,6 +105,7 @@ public class LibraryDetailActivity extends BaseActivity {
 				break;
 			}
 			case R.id.library_original_text:{
+				//打开讲座信息来源原文
 				Intent intent=new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse(original));
 				startActivity(intent);
@@ -109,7 +115,8 @@ public class LibraryDetailActivity extends BaseActivity {
 		}
 	}
 
-	protected void initWidget(){
+	@Override
+	void initWidget(){
 		libraryImage=(ImageView)findViewById(R.id.library_photo_image);
 		libraryName=(TextView)findViewById(R.id.library_name_text);
 		libraryContent=(TextView)findViewById(R.id.library_content_text);
@@ -154,51 +161,48 @@ public class LibraryDetailActivity extends BaseActivity {
 		});
 	}
 
-	protected void initView(){
-
+	@Override
+	void initView(){
+		//隐藏标题栏
 		HideSysTitle();
 		titleLayoutTitleText.setText("图书馆详情");
-
 	}
 
+	//改变关注请求
 	private void FocuseChangeRequest() {
-
+		//开启新线程
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_PORT,ConstantClass.userOnline,libName,isFocuse);
-					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_COM,ConstantClass.userOnline,libName,isFocuse);
-
-					Logger.json(response);
+					String response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_COM,ConstantClass.userOnline,libName,isFocuse);
 					//解析和处理服务器返回的数据
 					changeFocuseResult = Utility.handleFocuseChangeResponse(response,libName,mUserDao,mLibraryDao,isFocuse);
 				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
+					Logger.d(e);
 				} catch (JSONException e) {
-					Logger.d("连接失败，JSON error");
-					e.printStackTrace();
+					Logger.d(e);
 				}
 			}
 		}).start();
 	}
 
+	//讲座信息来源详情请求
 	private void LibraryRequest() {
-
+		//显示加载对话框
 		libraryDialog= DialogUtils.createLoadingDialog(LibraryDetailActivity.this,"正在加载");
 
+		//开启新线程
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_PORT,libName);
-					response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_COM, ConstantClass.userOnline,libName);
-					Logger.json(response);
+					String response = HttpUtil.LibraryRequest(ConstantClass.ADDRESS, ConstantClass.LIBRARY_REQUEST_COM, ConstantClass.userOnline,libName);
 					//解析和处理服务器返回的数据
 					libraryRequestResult = Utility.handleLibraryResponse(response,mLibraryDao);
+					//处理结果
 					handler.sendEmptyMessageDelayed(1,500);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -211,9 +215,12 @@ public class LibraryDetailActivity extends BaseActivity {
 		}).start();
 	}
 
+	//初始化讲座信息来源
 	private void initLibrary(String libName){
 
+		//从数据库中查找对应的讲座信息来源
 		LibraryDB library=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
+		//如果数据库中有该来源的详情
 		if(library!=null){
 
 			libraryName.setText(library.getLibraryName());
@@ -239,10 +246,10 @@ public class LibraryDetailActivity extends BaseActivity {
 			}else{
 				Glide.with(LibraryDetailActivity.this).load(library.getLibraryImageUrl()).into(libraryImage);
 			}
-		}else{
+		}
+		//如果数据库中没有该来源的详情，就向服务器发起请求
+		else{
 			LibraryRequest();
 		}
-
 	}
-
 }

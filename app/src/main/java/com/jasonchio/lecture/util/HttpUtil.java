@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.jasonchio.lecture.gson.CommonStateResult;
 import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
@@ -1969,6 +1971,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 
+			Logger.d(response);
 			Logger.d("获取服务器数据完毕");
 			return response;
 		} catch (UnknownHostException e) {
@@ -2167,11 +2170,7 @@ public class HttpUtil {
 	//修改用户头像
 	public static String changeUserHead(String address, int com, long userID, Bitmap userHead, int size) throws IOException, JSONException {
 
-		Logger.d("changeUserInfo");
-
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-
-		userHead.compress(Bitmap.CompressFormat.PNG, 100, bout);
+		Logger.d("changeUserHead");
 
 		String response;
 
@@ -2184,6 +2183,7 @@ public class HttpUtil {
 		String test = sendJson.toString();
 
 		Logger.json(test);
+
 		Socket socket;
 
 		InputStream inputStream = null;
@@ -2204,10 +2204,6 @@ public class HttpUtil {
 			//发送数据到服务端
 			outputStream.flush();
 			Logger.d("给服务器发送头像信息数据完毕");
-			//创建输出流对象outputStream
-			outputStream.write(bout.toByteArray());
-			//发送数据到服务端
-			outputStream.flush();
 			//关闭输出流
 			socket.shutdownOutput();
 
@@ -2221,7 +2217,11 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
+
 			Logger.d(response);
+
+			response=sendUserHeadFile(response, userHead);
+
 			return response;
 
 		} catch (UnknownHostException e) {
@@ -2368,4 +2368,71 @@ public class HttpUtil {
 		return null;
 	}
 
+	//向服务器发送头像
+	public static String sendUserHeadFile(String changeUserHeadResut, Bitmap userHead) throws IOException {
+
+		Logger.d("sendUserHeadFile");
+
+		String response = null;
+
+		Gson gson = new Gson();
+
+		CommonStateResult result = gson.fromJson(changeUserHeadResut, CommonStateResult.class);
+
+		int state = -1;
+
+		Socket socket;
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		if (result != null) {
+			state = result.getState();
+			if (state == 0) {
+				ByteArrayOutputStream bout = new ByteArrayOutputStream();
+				userHead.compress(Bitmap.CompressFormat.PNG, 100, bout);
+				try {
+					//创建Socket对象 & 指定服务端的IP及端口号
+					socket = new Socket(ConstantClass.ADDRESS, 2002);
+					//创建输出流对象outputStream
+					outputStream = socket.getOutputStream();
+					//写入要发送给服务器的数据
+					outputStream.write(bout.toByteArray());
+					//发送数据到服务端
+					outputStream.flush();
+					Logger.d("给服务器发送头像文件完毕");
+					//关闭输出流
+					socket.shutdownOutput();
+
+					//接收服务器返回的数据
+					//创建输入流对象InputStream
+					inputStream = socket.getInputStream();
+					//创建输入流读取器对象 并传入输入流对象
+					reader = new InputStreamReader(inputStream);
+					bufferedReader = new BufferedReader(reader);
+					//通过输入流读取器对象 接收服务器发送过来的数据
+					response = bufferedReader.readLine();
+					Logger.d("获取服务器数据完毕");
+
+					Logger.d(response);
+					return response;
+
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					bufferedReader.close();
+					reader.close();
+					inputStream.close();
+				}
+			}
+		}
+		return response;
+	}
 }

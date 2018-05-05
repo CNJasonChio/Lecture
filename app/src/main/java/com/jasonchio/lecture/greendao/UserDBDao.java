@@ -31,10 +31,11 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         public final static Property UserBirthday = new Property(6, String.class, "userBirthday", false, "USER_BIRTHDAY");
         public final static Property UserLatitude = new Property(7, double.class, "userLatitude", false, "USER_LATITUDE");
         public final static Property UserLongitude = new Property(8, double.class, "userLongitude", false, "USER_LONGITUDE");
-        public final static Property UserFocuseLirary = new Property(9, String.class, "userFocuseLirary", false, "USER_FOCUSE_LIRARY");
-        public final static Property UserWantedLecture = new Property(10, String.class, "userWantedLecture", false, "USER_WANTED_LECTURE");
-        public final static Property UserComment = new Property(11, String.class, "userComment", false, "USER_COMMENT");
-        public final static Property RecommentLectureOrder = new Property(12, String.class, "recommentLectureOrder", false, "RECOMMENT_LECTURE_ORDER");
+        public final static Property UserLocation = new Property(9, String.class, "userLocation", false, "USER_LOCATION");
+        public final static Property UserFocuseLirary = new Property(10, String.class, "userFocuseLirary", false, "USER_FOCUSE_LIRARY");
+        public final static Property UserWantedLecture = new Property(11, String.class, "userWantedLecture", false, "USER_WANTED_LECTURE");
+        public final static Property UserComment = new Property(12, String.class, "userComment", false, "USER_COMMENT");
+        public final static Property RecommentLectureOrder = new Property(13, String.class, "recommentLectureOrder", false, "RECOMMENT_LECTURE_ORDER");
     }
 
 
@@ -59,10 +60,11 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
                 "\"USER_BIRTHDAY\" TEXT," + // 6: userBirthday
                 "\"USER_LATITUDE\" REAL NOT NULL ," + // 7: userLatitude
                 "\"USER_LONGITUDE\" REAL NOT NULL ," + // 8: userLongitude
-                "\"USER_FOCUSE_LIRARY\" TEXT," + // 9: userFocuseLirary
-                "\"USER_WANTED_LECTURE\" TEXT," + // 10: userWantedLecture
-                "\"USER_COMMENT\" TEXT," + // 11: userComment
-                "\"RECOMMENT_LECTURE_ORDER\" TEXT);"); // 12: recommentLectureOrder
+                "\"USER_LOCATION\" TEXT," + // 9: userLocation
+                "\"USER_FOCUSE_LIRARY\" TEXT," + // 10: userFocuseLirary
+                "\"USER_WANTED_LECTURE\" TEXT," + // 11: userWantedLecture
+                "\"USER_COMMENT\" TEXT," + // 12: userComment
+                "\"RECOMMENT_LECTURE_ORDER\" TEXT);"); // 13: recommentLectureOrder
     }
 
     /** Drops the underlying database table. */
@@ -108,24 +110,29 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         stmt.bindDouble(8, entity.getUserLatitude());
         stmt.bindDouble(9, entity.getUserLongitude());
  
+        String userLocation = entity.getUserLocation();
+        if (userLocation != null) {
+            stmt.bindString(10, userLocation);
+        }
+ 
         String userFocuseLirary = entity.getUserFocuseLirary();
         if (userFocuseLirary != null) {
-            stmt.bindString(10, userFocuseLirary);
+            stmt.bindString(11, userFocuseLirary);
         }
  
         String userWantedLecture = entity.getUserWantedLecture();
         if (userWantedLecture != null) {
-            stmt.bindString(11, userWantedLecture);
+            stmt.bindString(12, userWantedLecture);
         }
  
         String userComment = entity.getUserComment();
         if (userComment != null) {
-            stmt.bindString(12, userComment);
+            stmt.bindString(13, userComment);
         }
  
         String recommentLectureOrder = entity.getRecommentLectureOrder();
         if (recommentLectureOrder != null) {
-            stmt.bindString(13, recommentLectureOrder);
+            stmt.bindString(14, recommentLectureOrder);
         }
     }
 
@@ -166,24 +173,29 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         stmt.bindDouble(8, entity.getUserLatitude());
         stmt.bindDouble(9, entity.getUserLongitude());
  
+        String userLocation = entity.getUserLocation();
+        if (userLocation != null) {
+            stmt.bindString(10, userLocation);
+        }
+ 
         String userFocuseLirary = entity.getUserFocuseLirary();
         if (userFocuseLirary != null) {
-            stmt.bindString(10, userFocuseLirary);
+            stmt.bindString(11, userFocuseLirary);
         }
  
         String userWantedLecture = entity.getUserWantedLecture();
         if (userWantedLecture != null) {
-            stmt.bindString(11, userWantedLecture);
+            stmt.bindString(12, userWantedLecture);
         }
  
         String userComment = entity.getUserComment();
         if (userComment != null) {
-            stmt.bindString(12, userComment);
+            stmt.bindString(13, userComment);
         }
  
         String recommentLectureOrder = entity.getRecommentLectureOrder();
         if (recommentLectureOrder != null) {
-            stmt.bindString(13, recommentLectureOrder);
+            stmt.bindString(14, recommentLectureOrder);
         }
     }
 
@@ -204,10 +216,11 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
             cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // userBirthday
             cursor.getDouble(offset + 7), // userLatitude
             cursor.getDouble(offset + 8), // userLongitude
-            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // userFocuseLirary
-            cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10), // userWantedLecture
-            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // userComment
-            cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12) // recommentLectureOrder
+            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // userLocation
+            cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10), // userFocuseLirary
+            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // userWantedLecture
+            cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12), // userComment
+            cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13) // recommentLectureOrder
         );
         return entity;
     }
@@ -223,10 +236,11 @@ public class UserDBDao extends AbstractDao<UserDB, Long> {
         entity.setUserBirthday(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
         entity.setUserLatitude(cursor.getDouble(offset + 7));
         entity.setUserLongitude(cursor.getDouble(offset + 8));
-        entity.setUserFocuseLirary(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
-        entity.setUserWantedLecture(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
-        entity.setUserComment(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
-        entity.setRecommentLectureOrder(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
+        entity.setUserLocation(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
+        entity.setUserFocuseLirary(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
+        entity.setUserWantedLecture(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
+        entity.setUserComment(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
+        entity.setRecommentLectureOrder(cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13));
      }
     
     @Override

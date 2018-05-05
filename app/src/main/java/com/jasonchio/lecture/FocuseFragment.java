@@ -60,33 +60,32 @@ import es.dmoral.toasty.Toasty;
  * Created by zhaoyaobang on 2018/3/7.
  */
 
-public class FocuseFragment extends Fragment {
+public class FocuseFragment extends BaseFragment {
 
-	private View rootview;
+	View rootview;                          //根视图
 
-	SwipeToLoadLayout swipeToLoadLayout;
+	SwipeToLoadLayout swipeToLoadLayout;    //刷新布局
 
-	LectureAdapter mAdapter;
+	LectureAdapter mAdapter;                //讲座适配器
 
-	List <LectureDB> lecturelist = new ArrayList <>();
+	List <LectureDB> lecturelist = new ArrayList <>();      //讲座列表
 
-	String response;
+	Handler handler;                        //Handler对象
 
-	Handler handler;
+	int myFocuseRequestResult;             //我的关注请求服务器返回结果
 
-	int myFocuseRequestResult = 0;
+	int lectureRequestResult;               //讲座数据请求服务器返回结果
 
-	int lectureRequestResult;
+	ListView listView;                      //要显示的 listview
 
-	ListView listView;
+	DaoSession daoSession;                  //数据库操作对象
 
-	DaoSession daoSession;
+	UserDBDao mUserDao;                     //用户表操作对象
 
-	UserDBDao mUserDao;
+	LectureDBDao mLectureDao;               //讲座表操作对象
 
-	LectureDBDao mLectureDao;
+	Dialog requestLoadDialog;               //加载对话框
 
-	Dialog requestLoadDialog;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -98,70 +97,20 @@ public class FocuseFragment extends Fragment {
 		if (parent != null) {
 			parent.removeView(rootview);
 		}
-		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
-		mLectureDao = daoSession.getLectureDBDao();
-		mUserDao = daoSession.getUserDBDao();
 
-		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
+		//初始化控件
+		initWidget();
 
-		listView = (ListView) rootview.findViewById(R.id.swipe_target);
+		//初始化视图
+		initView();
 
-		mAdapter = new LectureAdapter(getActivity(), listView,lecturelist,mLectureDao);
-
-		listView.setAdapter(mAdapter);
-
-		handler = new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what) {
-					case 1:
-						if (myFocuseRequestResult == 0) {
-							showLectureInfoToTop();
-						} else if (myFocuseRequestResult == 1) {
-							Toasty.info(getContext(), "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
-						} else {
-							DialogUtils.closeDialog(requestLoadDialog);
-						}
-						break;
-					case 2:
-						if (lectureRequestResult == 0) {
-							DialogUtils.closeDialog(requestLoadDialog);
-							showLectureInfoToTop();
-						}
-				}
-				return true;
-			}
-		});
-
-		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
-				LectureDB lecture = lecturelist.get(position);
-				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
-				intent.putExtra("lecture_id", (int) lecture.getLectureId());
-				startActivity(intent);
-			}
-		});
-
-		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-
-				showLectureInfoToTop();
-				swipeToLoadLayout.setRefreshing(false);
-			}
-		});
-
-		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
-			@Override
-			public void onLoadMore() {
-				swipeToLoadLayout.setLoadingMore(false);
-			}
-		});
+		//初始化响应事件
+		initEvent();
 
 		return rootview;
 	}
 
+	//自动刷新
 	private void autoRefresh() {
 		swipeToLoadLayout.post(new Runnable() {
 			@Override
@@ -171,20 +120,18 @@ public class FocuseFragment extends Fragment {
 		});
 	}
 
+	//“我的关注”请求
 	private void MyFocuseRequest() {
-
+		//开启新线程
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,ConstantClass.userOnline);
-					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_COM, ConstantClass.userOnline);
-
-					Logger.json(response);
+					String response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_COM, ConstantClass.userOnline);
 					//解析和处理服务器返回的数据
 					myFocuseRequestResult = Utility.handleFocuseLibraryResponse(response, mUserDao);
-
+					//处理结果
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -197,22 +144,20 @@ public class FocuseFragment extends Fragment {
 		}).start();
 	}
 
+	//讲座信息请求
 	private void LectureRequest() {
-
+		//开启新线程请求
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
+					//得到讲座表中最后一条讲座的 id
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
-
-					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline,lastLecureID);
-
-					Logger.json(response);
-
+					//获取服务器返回数据
+					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
+					//解析和处理服务器返回的数据
 					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-
+					//处理结果
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -228,48 +173,128 @@ public class FocuseFragment extends Fragment {
 	//将从数据库中查找到的讲座显示到界面中
 	private void showLectureInfoToTop() {
 
-		if(!lecturelist.isEmpty()){
-			lecturelist.clear();
-			mAdapter.notifyDataSetChanged();
-		}
-
+		//获得用户关注的讲座来源
 		String userFocuse = Utility.getUserFocuse(ConstantClass.userOnline, mUserDao);
 
+		//如果本地没有用户的关注信息，就向服务器发送请求
 		if (userFocuse == null || userFocuse.length() == 0) {
 			MyFocuseRequest();
 			return;
 		}
+
+		//若本地有用户的关注信息，将其解析成字符串数组以便处理
 		String[] focuseLibrary = Utility.getStrings(userFocuse);
-		if (focuseLibrary.length == 0) {
-			List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
-			Logger.d("无关注的图书馆");
-			if (lectureDBList == null || lectureDBList.isEmpty()) {
-				requestLoadDialog= DialogUtils.createLoadingDialog(getContext(),"正在获取讲座");
-				LectureRequest();
-				return;
-			} else {
-				lecturelist.addAll(0, lectureDBList);
-				listView.setSelection(0);
+		//如果获取到了用户关注的讲座信息来源
+		if (focuseLibrary.length != 0) {
+			//清空列表中先有表项
+			if (mAdapter.getCount() != 0) {
+				lecturelist.clear();
 				mAdapter.notifyDataSetChanged();
 			}
-		} else {
+
 			List <LectureDB> lectureDBList = new ArrayList <>();
-
+			//按用户关注的讲座信息来源，逐个查询符合条件的讲座
 			for (int i = 0; i < focuseLibrary.length; i++) {
-
 				List <LectureDB> lectureDBS = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LecutreSource.eq(focuseLibrary[i])).build().list();
+				//如果数据库中没有该来源的讲座，就查询下一来源的讲座
 				if (lectureDBS.isEmpty()) {
 					continue;
 				} else {
 					lectureDBList.addAll(lectureDBS);
 				}
 			}
+			//如果数据库中没有符合条件的讲座，就进行讲座请求
 			if (lectureDBList.isEmpty()) {
-				lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+				LectureRequest();
+				return;
 			}
+			//否则添加到要显示的讲座列表中
 			lecturelist.addAll(0, lectureDBList);
 			listView.setSelection(0);
 			mAdapter.notifyDataSetChanged();
 		}
+	}
+
+	@Override
+	void initView() {
+		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
+		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao = daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initWidget() {
+		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
+		listView = (ListView) rootview.findViewById(R.id.swipe_target);
+		mAdapter = new LectureAdapter(getActivity(), lecturelist);
+		listView.setAdapter(mAdapter);
+	}
+
+	@Override
+	void initEvent() {
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (myFocuseRequestResult == 0) {
+							showLectureInfoToTop();
+						} else if (myFocuseRequestResult == 1) {
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(), "获取关注的讲座来源失败，请稍候再试").show();
+						} else if (myFocuseRequestResult == 3) {
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.info(getContext(), "还没有关注的图书馆哟，先去找找自己感兴趣的讲座来源吧！").show();
+						} else {
+							DialogUtils.closeDialog(requestLoadDialog);
+						}
+						break;
+					case 2:
+						if (lectureRequestResult == 0) {
+							DialogUtils.closeDialog(requestLoadDialog);
+							showLectureInfoToTop();
+						}else{
+							DialogUtils.closeDialog(requestLoadDialog);
+						}
+				}
+				return true;
+			}
+		});
+
+		//item 点击监听器
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+
+		{
+			@Override
+			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+				LectureDB lecture = lecturelist.get(position);
+				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
+				intent.putExtra("lecture_id", (int) lecture.getLectureId());
+				startActivity(intent);
+			}
+		});
+
+		//上拉加载更多监听器
+		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+
+				showLectureInfoToTop();
+				swipeToLoadLayout.setRefreshing(false);
+			}
+		});
+
+		//下拉刷新监听器
+		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
+			@Override
+			public void onLoadMore() {
+				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
+	}
+
+	@Override
+	public void onClick(View v) {
+
 	}
 }

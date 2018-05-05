@@ -19,6 +19,8 @@ import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.UserDB;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
@@ -59,29 +61,29 @@ import es.dmoral.toasty.Toasty;
  * Created by zhaoyaobang on 2018/3/7.
  */
 
-public class NearFragment extends Fragment {
+public class NearFragment extends BaseFragment {
 
-	private View rootview;
+	private View rootview;                      //根视图
 
-	SwipeToLoadLayout swipeToLoadLayout;
+	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
 
-	LectureAdapter mAdapter;
+	LectureAdapter mAdapter;                    //讲座适配器
 
-	List <LectureDB> lecturelist = new ArrayList <>();
+	List <LectureDB> lecturelist = new ArrayList <>();      //讲座列表
 
-	ListView listView;
+	ListView listView;                          //要显示的 listview
 
-	int lectureRequestResult;
+	int lectureRequestResult;                   // 讲座请求结果
 
-	Handler handler;
+	Handler handler;                            // handler duixiang
 
-	DaoSession daoSession;
+	DaoSession daoSession;                      // 数据库操作对象
 
-	LectureDBDao mLectureDao;
+	UserDBDao mUserDao;                         //用户表操作对象
 
-	String response;
+	LectureDBDao mLectureDao;                   //讲座表操作对象
 
-	Dialog requestLoadDialog;
+	Dialog requestLoadDialog;                   //加载对话框
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,17 +99,98 @@ public class NearFragment extends Fragment {
 			parent.removeView(rootview);
 		}
 
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
+		//初始化响应事件
+		initEvent();
+
+		//autoRefresh();
+
+		return rootview;
+	}
+
+	private void autoRefresh() {
+		swipeToLoadLayout.post(new Runnable() {
+			@Override
+			public void run() {
+				swipeToLoadLayout.setRefreshing(true);
+			}
+		});
+	}
+
+	//讲座请求
+	private void LectureRequest() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获得数据库中最后一条讲座
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
+					//获取服务器返回数据
+					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
+					//解析和处理服务器返回数据
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
+					//处理结果
+					handler.sendEmptyMessage(1);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+	private void showLectureInfoToTop() {
+
+		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+		List <LectureDB> lectureDBList;
+		if(user.getUserLocation()!=null){
+			lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).where(LectureDBDao.Properties.LectureDistrict.like("%"+user.getUserLocation()+"%")).build().list();
+			if(lectureDBList.isEmpty()){
+				requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在获取讲座");
+				LectureRequest();
+				return;
+			}
+		}else{
+			Toasty.info(getContext(),"还没有您的位置信息，点击左上角开始定位").show();
+			lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
+			//如果数据库中没有待显示的讲座，则向服务器请求
+			if (lectureDBList.size() < 1) {
+				requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在获取讲座");
+				LectureRequest();
+				return;
+			}
+		}
+
+		lecturelist.addAll(0, lectureDBList);
+		listView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	void initView() {
+
+	}
+
+	@Override
+	void initWidget() {
 		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
-
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
-
-		mAdapter = new LectureAdapter(getActivity(), listView, lecturelist, mLectureDao);
-
+		mAdapter = new LectureAdapter(getActivity(),lecturelist);
 		listView.setAdapter(mAdapter);
-
 		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
-
 		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao=daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initEvent() {
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
@@ -160,63 +243,11 @@ public class NearFragment extends Fragment {
 			}
 		});
 
-		//autoRefresh();
-
-		return rootview;
 	}
 
-	private void autoRefresh() {
-		swipeToLoadLayout.post(new Runnable() {
-			@Override
-			public void run() {
-				swipeToLoadLayout.setRefreshing(true);
-			}
-		});
+	@Override
+	public void onClick(View v) {
+
 	}
-
-	private void LectureRequest() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-
-					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
-
-					Logger.d("lastLecureID" + lastLecureID);
-
-					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
-					Logger.json(response);
-
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-
-					handler.sendEmptyMessage(1);
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					Logger.d("解析失败，JSON error");
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
-
-	//将从数据库中查找到的讲座显示到界面中
-	private void showLectureInfoToTop() {
-
-		List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(10).orderDesc(LectureDBDao.Properties.LectureId).build().list();
-
-		Logger.d(mAdapter.getCount());
-		if (lectureDBList.size() < 1) {
-			requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在获取讲座");
-			LectureRequest();
-			return;
-		}
-		lecturelist.addAll(0, lectureDBList);
-		listView.setSelection(0);
-		mAdapter.notifyDataSetChanged();
-	}
-
 }
 

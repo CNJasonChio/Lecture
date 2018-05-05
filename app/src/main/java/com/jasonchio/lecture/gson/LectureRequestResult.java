@@ -39,12 +39,12 @@ public class LectureRequestResult {
 
 
 	/**
-	 * state :
+	 * state : 0
 	 * lecture :
 	 * */
 
 	private int state;
-	private List<LectureBean> lecture;
+	private List <LectureBean> lecture;
 
 	public static LectureRequestResult objectFromData(String str) {
 
@@ -64,19 +64,19 @@ public class LectureRequestResult {
 		return null;
 	}
 
-	public static List<LectureRequestResult> arrayLectureRequestResultFromData(String str) {
+	public static List <LectureRequestResult> arrayLectureRequestResultFromData(String str) {
 
-		Type listType = new TypeToken<ArrayList<LectureRequestResult>>() {
+		Type listType = new TypeToken <ArrayList <LectureRequestResult>>() {
 		}.getType();
 
 		return new Gson().fromJson(str, listType);
 	}
 
-	public static List<LectureRequestResult> arrayLectureRequestResultFromData(String str, String key) {
+	public static List <LectureRequestResult> arrayLectureRequestResultFromData(String str, String key) {
 
 		try {
 			JSONObject jsonObject = new JSONObject(str);
-			Type listType = new TypeToken<ArrayList<LectureRequestResult>>() {
+			Type listType = new TypeToken <ArrayList <LectureRequestResult>>() {
 			}.getType();
 
 			return new Gson().fromJson(jsonObject.getString(str), listType);
@@ -98,11 +98,11 @@ public class LectureRequestResult {
 		this.state = state;
 	}
 
-	public List<LectureBean> getLecture() {
+	public List <LectureBean> getLecture() {
 		return lecture;
 	}
 
-	public void setLecture(List<LectureBean> lecture) {
+	public void setLecture(List <LectureBean> lecture) {
 		this.lecture = lecture;
 	}
 
@@ -113,9 +113,12 @@ public class LectureRequestResult {
 		 * lecture_title :
 		 * lecture_location :
 		 * lecture_time :
+		 * lecture_information :
 		 * lecture_source :
+		 * range :
 		 * lecture_url :
 		 * lecture_fans_amount :
+		 * lecture_picture :
 		 */
 
 		private int lecture_id;
@@ -123,10 +126,11 @@ public class LectureRequestResult {
 		private String lecture_title;
 		private String lecture_location;
 		private String lecture_time;
+		private String lecture_information;
 		private String lecture_source;
+		private String range;
 		private String lecture_url;
 		private int lecture_fans_amount;
-		private String lecture_information;
 		private String lecture_picture;
 
 		public static LectureBean objectFromData(String str) {
@@ -147,19 +151,19 @@ public class LectureRequestResult {
 			return null;
 		}
 
-		public static List<LectureBean> arrayLectureBeanFromData(String str) {
+		public static List <LectureBean> arrayLectureBeanFromData(String str) {
 
-			Type listType = new TypeToken<ArrayList<LectureBean>>() {
+			Type listType = new TypeToken <ArrayList <LectureBean>>() {
 			}.getType();
 
 			return new Gson().fromJson(str, listType);
 		}
 
-		public static List<LectureBean> arrayLectureBeanFromData(String str, String key) {
+		public static List <LectureBean> arrayLectureBeanFromData(String str, String key) {
 
 			try {
 				JSONObject jsonObject = new JSONObject(str);
-				Type listType = new TypeToken<ArrayList<LectureBean>>() {
+				Type listType = new TypeToken <ArrayList <LectureBean>>() {
 				}.getType();
 
 				return new Gson().fromJson(jsonObject.getString(str), listType);
@@ -179,6 +183,14 @@ public class LectureRequestResult {
 
 		public void setLecture_id(int lecture_id) {
 			this.lecture_id = lecture_id;
+		}
+
+		public int getUser_want_lecture() {
+			return user_want_lecture;
+		}
+
+		public void setUser_want_lecture(int user_want_lecture) {
+			this.user_want_lecture = user_want_lecture;
 		}
 
 		public String getLecture_title() {
@@ -205,12 +217,28 @@ public class LectureRequestResult {
 			this.lecture_time = lecture_time;
 		}
 
+		public String getLecture_information() {
+			return lecture_information;
+		}
+
+		public void setLecture_information(String lecture_information) {
+			this.lecture_information = lecture_information;
+		}
+
 		public String getLecture_source() {
 			return lecture_source;
 		}
 
 		public void setLecture_source(String lecture_source) {
 			this.lecture_source = lecture_source;
+		}
+
+		public String getRange() {
+			return range;
+		}
+
+		public void setRange(String range) {
+			this.range = range;
 		}
 
 		public String getLecture_url() {
@@ -229,27 +257,11 @@ public class LectureRequestResult {
 			this.lecture_fans_amount = lecture_fans_amount;
 		}
 
-		public String getLecture_information() {
-			return lecture_information;
-		}
-
-		public void setLecture_information(String lecture_information) {
-			this.lecture_information = lecture_information;
-		}
-
-		public int getUser_want_lecture() {
-			return user_want_lecture;
-		}
-
-		public void setUser_want_lecture(int user_want_lecture) {
-			this.user_want_lecture = user_want_lecture;
-		}
-
 		public String getLecture_picture() {
 			return lecture_picture;
 		}
 
-		public void setLecture_picture(String lecture_pic) {
+		public void setLecture_picture(String lecture_picture) {
 			this.lecture_picture = lecture_picture;
 		}
 	}

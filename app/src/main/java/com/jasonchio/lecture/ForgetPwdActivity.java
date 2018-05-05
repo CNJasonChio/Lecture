@@ -12,13 +12,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
 import com.orhanobut.logger.Logger;
+
 import org.json.JSONException;
+
 import java.io.IOException;
+
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
 import es.dmoral.toasty.Toasty;
@@ -33,28 +37,27 @@ public class ForgetPwdActivity extends BaseActivity {
 	Button backButton;              //返回按钮
 	Button changepwdButton;         //确定修改密码的按钮
 	Button sendForpwdVercodeButton; //发送验证码的按钮
-	ImageView pwdCanSee;               //密码是否可见
-	ImageView repwdCanSee;             //重复密码是否可见
+	ImageView pwdCanSee;            //密码是否可见
+	ImageView repwdCanSee;          //重复密码是否可见
 
 	TitleLayout titleLayout;        //标题栏
 	Handler handler;                //验证码的回调监听
-	int countdown = 30;               //获取验证码倒计时30s
 
-	boolean pwdcansee = true;        //密码是否可见状态
-	boolean repwdcansee = true;      //重复密码是否可见状态
+	boolean pwdcansee = true;       //密码是否可见状态
+	boolean repwdcansee = true;     //重复密码是否可见状态
 
-	String response;
+	int findPwdResult;              //修改密码服务器返回的结果
+	int countdown = 30;             //获取验证码倒计时30s
 
-	int findPwdResult;
-
-	String password;
-	String repassword;
-	String vercode;
-	String phone;
+	String password;                //密码
+	String repassword;              //重复密码
+	String vercode;                 //验证码
+	String phone;                   //手机号码
 
 	@SuppressLint("HandlerLeak")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		//初始化发送验证码 SDK
 		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_forgetpwd);
@@ -63,12 +66,13 @@ public class ForgetPwdActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化事件处理
 		initEvent();
 
 	}
 
-	protected void initWidget() {
+	@Override
+	void initWidget() {
 		titleLayout = (TitleLayout) findViewById(R.id.fgtpwd_title_layout);
 		newpasswordEdit = (EditText) findViewById(R.id.pgtpwd_newpassword_edit);
 		fgtpwdaccountEdit = (EditText) findViewById(R.id.fgtpwd_account_edit);
@@ -101,22 +105,24 @@ public class ForgetPwdActivity extends BaseActivity {
 			}
 		};
 
-		SMSSDK.registerEventHandler(eventHandler); // 注册回调监听接口
+		//注册验证码回调监听接口
+		SMSSDK.registerEventHandler(eventHandler);
 
 		//设置发送验证码按钮监听事件
 		sendForpwdVercodeButton.setOnClickListener(this);
 		//设置注册按钮监听事件
 		changepwdButton.setOnClickListener(this);
 
-		handler = new Handler() {
-			public void handleMessage(Message msg) {
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
 				if (msg.what == -9) {
 					sendForpwdVercodeButton.setText("重新发送(" + countdown + ")");
 				} else if (msg.what == -8) {
 					sendForpwdVercodeButton.setText("发送验证码");
 					sendForpwdVercodeButton.setClickable(true); // 设置可点击
 					countdown = 30;
-				} else if(msg.what==-7){
+				} else if (msg.what == -7) {
 					Logger.d("短信验证码验证成功，正在向服务器发送注册请求");
 					if (findPwdResult == 0) {
 						// 验证成功后跳转登录界面
@@ -130,8 +136,7 @@ public class ForgetPwdActivity extends BaseActivity {
 					} else {
 						Toasty.error(ForgetPwdActivity.this, "服务器出错，请稍候再试").show();
 					}
-
-				}else {
+				} else {
 					int event = msg.arg1;
 					int result = msg.arg2;
 					Object data = msg.obj;
@@ -161,12 +166,13 @@ public class ForgetPwdActivity extends BaseActivity {
 						}
 					}
 				}
+				return true;
 			}
-		};
+		});
 	}
 
-	protected void initView() {
-
+	@Override
+	void initView() {
 		//BaseActivity方法，隐藏系统标题栏
 		HideSysTitle();
 
@@ -187,12 +193,12 @@ public class ForgetPwdActivity extends BaseActivity {
 			}
 			case R.id.fgtpwd_pwd_cansee: {
 				if (pwdcansee == false) {
-					//如果是不能看到密码的情况下，
+					//如果是不能看到密码的情况下，密码设置为可见
 					newpasswordEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
 					pwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					pwdcansee = true;
 				} else {
-					//如果是能看到密码的状态下
+					//如果是能看到密码的状态下，密码设置为不可见
 					newpasswordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
 					pwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					pwdcansee = false;
@@ -201,12 +207,12 @@ public class ForgetPwdActivity extends BaseActivity {
 			}
 			case R.id.fgtpwd_repwd_cansee: {
 				if (repwdcansee == false) {
-					//如果是不能看到密码的情况下，
+					//如果是不能看到密码的情况下，密码设置为可见
 					confirmEdit.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
 					repwdCanSee.setImageResource(R.drawable.ic_pwd_cansee);
 					repwdcansee = true;
 				} else {
-					//如果是能看到密码的状态下
+					//如果是能看到密码的状态下，密码设置为不可见
 					confirmEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
 					repwdCanSee.setImageResource(R.drawable.ic_pwd_cantsee);
 					repwdcansee = false;
@@ -217,6 +223,7 @@ public class ForgetPwdActivity extends BaseActivity {
 				phone = fgtpwdaccountEdit.getText().toString();
 				if (!Utility.judgePhoneNums(phone)) {// 判断输入号码是否正确
 					Toasty.error(ForgetPwdActivity.this, "手机号码不正确");
+					break;
 				}
 				SMSSDK.getVerificationCode("86", phone); // 调用sdk发送短信验证
 				sendForpwdVercodeButton.setClickable(false);// 设置按钮不可点击 显示倒计时
@@ -241,15 +248,20 @@ public class ForgetPwdActivity extends BaseActivity {
 				break;
 			}
 			case R.id.fgtpwd_change_password: {
+				//获得用户输入的密码、确认密码、验证码、手机号
 				password = newpasswordEdit.getText().toString();
 				repassword = confirmEdit.getText().toString();
 				vercode = vercodeEdit.getText().toString();
 				phone = fgtpwdaccountEdit.getText().toString();
+				//判断两次密码是否相同
 				if (!isPwdsame(password, repassword)) {
 					Toasty.error(ForgetPwdActivity.this, "两次密码不一致");
-					return;
-				} else if (password.isEmpty() | phone.isEmpty() | repassword.isEmpty() | vercode.isEmpty()) {
+					break;
+				}
+				//判断必填项是否为空
+				else if (password.isEmpty() | phone.isEmpty() | repassword.isEmpty() | vercode.isEmpty()) {
 					Toasty.error(ForgetPwdActivity.this, "手机号、密码、确认密码、验证码为必填项").show();
+					break;
 				} else {
 					//验证手机验证码是否正确
 					SMSSDK.submitVerificationCode("86", phone, vercode);
@@ -273,6 +285,7 @@ public class ForgetPwdActivity extends BaseActivity {
 		SMSSDK.unregisterAllEventHandler();
 	}
 
+	//服务器返回的验证结果
 	private void vercodeResult(int vercodeResult) {
 		if (vercodeResult == 462) {
 			Toasty.error(ForgetPwdActivity.this, "验证码发送太频繁，请一分钟后再试").show();
@@ -289,6 +302,7 @@ public class ForgetPwdActivity extends BaseActivity {
 		}
 	}
 
+	//找回密码请求
 	private void FindPwdRequest() {
 		//获取手机号与新密码
 		phone = fgtpwdaccountEdit.getText().toString();
@@ -298,10 +312,10 @@ public class ForgetPwdActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_PORT, phone, password);
-					response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_COM, phone, password);
+					String response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_COM, phone, password);
 					//解析和处理服务器返回的数据
 					findPwdResult = Utility.handleFindPwdRespose(response);
+					//处理结果
 					handler.sendEmptyMessage(-7);
 				} catch (IOException e) {
 					Logger.e(e, "IOException");

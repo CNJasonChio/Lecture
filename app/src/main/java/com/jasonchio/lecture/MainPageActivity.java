@@ -23,7 +23,7 @@ import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public class MainPageActivity extends BaseActivity {
 
-	public FragmentTabHost fragmentTabHost;
+	public FragmentTabHost fragmentTabHost;     //FragmentTabHost对象
 
 	private String[] TabTags = {"首页", "动态", "我的"};
 
@@ -33,39 +33,37 @@ public class MainPageActivity extends BaseActivity {
 
 	private Integer[] StyleTab = {R.color.white, R.color.white, R.color.white, R.color.white};
 
-	String response;
+	int myinfoRequestResult;        //用户信息请求结果
 
-	int myinfoRequestResult;
+	int recommentOrderResult;       //推荐讲座请求结果
 
-	int recommentOrderResult;
-	DaoSession daoSession;
+	DaoSession daoSession;          //数据库操作对象
 
-	UserDBDao mUserDao;
+	UserDBDao mUserDao;             //用户表操作对象
 
-	LectureDBDao mLectureDao;
+	LectureDBDao mLectureDao;       //讲座表操作对象
 
 	protected void onCreate(Bundle savedInstanceState) {
-		MobSDK.init(this);
 		super.onCreate(savedInstanceState);
+		//初始化 Logger
 		addLogAdapter(new AndroidLogAdapter());
 		setContentView(R.layout.tabmaintabs);
-
 
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
-
+		//请求推荐的讲座
 		RecommentLectureRequest();
-
+		//请求用户信息
 		MyinfoRequest();
-
+		//初始化事件响应
 		initEvent();
-
+		//初始化导航栏值
 		initValue();
-
+		//设置监听器
 		setLinstener();
-
+		//填充数据
 		fillDate();
 	}
 
@@ -76,7 +74,6 @@ public class MainPageActivity extends BaseActivity {
 
 	private void setLinstener() {
 		// imv_back.setOnClickListener(this);
-
 	}
 
 	private void fillDate() {
@@ -132,10 +129,7 @@ public class MainPageActivity extends BaseActivity {
 			public void run() {
 				try {
 
-					//response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_PORT,ConstantClass.userOnline );
-					response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_COM,ConstantClass.userOnline );
-
-					Logger.json(response);
+					String response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_COM,ConstantClass.userOnline );
 
 					myinfoRequestResult= Utility.handleUserInfoResponse(response,mUserDao);
 

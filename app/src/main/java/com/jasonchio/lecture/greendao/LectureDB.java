@@ -34,30 +34,33 @@ import org.greenrobot.greendao.annotation.Generated;
 public class LectureDB {
 
 	@Id
-	long lectureId;       //讲座ID
+	long lectureId;             //讲座ID
 
-	String lectureTitle;    //讲座标题
+	String lectureTitle;        //讲座标题
 
-	String lectureLocation;    //讲座地点
+	String lectureLocation;     //讲座地点
 
-	String lectureTime;     //讲座时间
+	String lectureTime;         //讲座时间
 
-	String lecutreSource;   //讲座的来源
+	String lecutreSource;       //讲座的来源
 
-	String lectureContent;  //讲座正文
+	String lectureContent;      //讲座正文
 
-	String lectureUrl;      //讲座原文URL
+	String lectureUrl;          //讲座原文URL
 
-	int lecutreLikers;      //讲座收藏数
+	int lecutreLikers;          //讲座收藏数
 
-	String lectureImage;    //讲座图片
+	String lectureImage;        //讲座图片
 
-	int isWanted;
+	int isWanted;               //是否已经被该用户添加到“我的想看”中
 
-	@Generated(hash = 1001263479)
+	String lectureDistrict;     //讲座的所在区县
+
+	@Generated(hash = 607782172)
 	public LectureDB(long lectureId, String lectureTitle, String lectureLocation,
 			String lectureTime, String lecutreSource, String lectureContent,
-			String lectureUrl, int lecutreLikers, String lectureImage, int isWanted) {
+			String lectureUrl, int lecutreLikers, String lectureImage, int isWanted,
+			String lectureDistrict) {
 		this.lectureId = lectureId;
 		this.lectureTitle = lectureTitle;
 		this.lectureLocation = lectureLocation;
@@ -68,6 +71,7 @@ public class LectureDB {
 		this.lecutreLikers = lecutreLikers;
 		this.lectureImage = lectureImage;
 		this.isWanted = isWanted;
+		this.lectureDistrict = lectureDistrict;
 	}
 
 	@Generated(hash = 1965277576)
@@ -152,5 +156,13 @@ public class LectureDB {
 
 	public void setIsWanted(int isWanted) {
 		this.isWanted = isWanted;
+	}
+
+	public String getLectureDistrict() {
+		return this.lectureDistrict;
+	}
+
+	public void setLectureDistrict(String lectureDistrict) {
+		this.lectureDistrict = lectureDistrict;
 	}
 }

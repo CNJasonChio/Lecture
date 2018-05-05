@@ -35,37 +35,36 @@ import es.dmoral.toasty.Toasty;
 
 public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapter.InnerItemOnclickListener, AdapterView.OnItemClickListener {
 
-	TitleLayout titleLayout;
+	TitleLayout titleLayout;                    //标题栏
 
-	Button titleFirstButton;
+	Button titleFirstButton;                    //标题的第一个按钮
 
-	SwipeToLoadLayout swipeToLoadLayout;
+	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
 
-	FocuseLibraryAdapter mAdapter;
+	FocuseLibraryAdapter mAdapter;              //关注讲座信息来源的适配器
 
-	List <String> librarylist = new ArrayList <>();
+	List <String> librarylist = new ArrayList <>();     //讲座信息来源列表
 
-	ListView listView;
+	ListView listView;                          //要显示的 listview
 
-	String response;
+	Button addCancelButton;                     //添加或取消关注按钮
 
-	Button addCancelButton;
+	DaoSession daoSession;                      //数据库操作对象
 
-	DaoSession daoSession;
+	UserDBDao mUserDao;                         //用户表操作对象
 
-	UserDBDao mUserDao;
+	LibraryDBDao mLibraryDao;                   //讲座信息来源表操作对象
 
-	LibraryDBDao mLibraryDao;
+	int focuseLibChangeResult;                  //添加或取消关注的结果
 
-	int focuseLibChangeResult;
+	int myFocuseLibRequestResult;               //“我的关注”请求服务器返回结果
 
-	int myFocuseLibRequestResult;
+	int libraryRequestResult;                   //讲座信息来源详情请求结果
 
-	int libraryRequestResult;
+	Handler handler;                            // handler 对象
 
-	Handler handler;
+	Dialog myFocuseLoadDialog;                  //加载对话框
 
-	Dialog myFocuseLoadDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -75,12 +74,13 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化事件响应
 		initEvent();
-
+		//自动刷新
 		autoRefresh();
 	}
 
+	//自动刷新
 	private void autoRefresh() {
 		swipeToLoadLayout.post(new Runnable() {
 			@Override
@@ -105,34 +105,27 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 	void initWidget() {
 
 		titleLayout = (TitleLayout) findViewById(R.id.myfocuse_title_layout);
-
 		swipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipeToLoadLayout);
-
 		titleFirstButton = titleLayout.getFirstButton();
-
 		listView = (ListView) findViewById(R.id.swipe_target);
-
 		mAdapter = new FocuseLibraryAdapter(librarylist, MyFocuseActivity.this);
-
 		addCancelButton = (Button) findViewById(R.id.myfocuse_add_cancel_button);
-
 		daoSession = ((MyApplication) getApplication()).getDaoSession();
-
 		mLibraryDao = daoSession.getLibraryDBDao();
-
 		mUserDao = daoSession.getUserDBDao();
 	}
 
 	@Override
 	void initEvent() {
+
 		mAdapter.setOnInnerItemOnClickListener(this);
 		listView.setOnItemClickListener(this);
-
 		titleFirstButton.setOnClickListener(this);
 
 		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+				//显示对应的讲座信息来源的详情
 				String libraryName = librarylist.get(position);
 				Intent intent = new Intent(MyFocuseActivity.this, LibraryDetailActivity.class);
 				intent.putExtra("library_name",libraryName);
@@ -143,11 +136,10 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-
+				//显示加载对话框
 				myFocuseLoadDialog=DialogUtils.createLoadingDialog(MyFocuseActivity.this,"正在加载");
+				//显示关注的讲座信息来源
 				showFocuseLibrary();
-				DialogUtils.closeDialog(myFocuseLoadDialog);
-				mAdapter.notifyDataSetChanged();
 				swipeToLoadLayout.setRefreshing(false);
 			}
 		});
@@ -209,16 +201,18 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 	}
 
 	public void itemClick(View v) {
+
+		//获得对应的讲座信息来源
 		int position;
-
 		position = (Integer) v.getTag();
-
 		String library = librarylist.get(position);
 
 		switch (v.getId()) {
 			case R.id.myfocuse_add_cancel_button:
 				Toasty.info(MyFocuseActivity.this, "已取消关注");
+				//想服务器发出改变关注的请求
 				FocuseChangeRequest(library);
+				//从列表中移除对应讲座信息来源
 				librarylist.remove(position);
 				mAdapter.notifyDataSetChanged();
 				break;
@@ -226,6 +220,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		}
 	}
 
+	//请求“我的关注”
 	private void MyFocuseRequest() {
 
 		new Thread(new Runnable() {
@@ -233,13 +228,10 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_PORT,ConstantClass.userOnline);
-					response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_COM, ConstantClass.userOnline);
-
-					Logger.json(response);
+					String response = HttpUtil.MyFocusedRequest(ConstantClass.ADDRESS, ConstantClass.MYFOCUSE_LIBRARY_REQUEST_COM, ConstantClass.userOnline);
 					//解析和处理服务器返回的数据
 					myFocuseLibRequestResult = Utility.handleFocuseLibraryResponse(response, mUserDao);
-
+					//处理结果
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -252,6 +244,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		}).start();
 	}
 
+	//关注改变请求
 	private void FocuseChangeRequest(final String libName) {
 
 		new Thread(new Runnable() {
@@ -259,8 +252,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 			public void run() {
 				try {
 					//获取服务器返回数据
-					response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_COM, ConstantClass.userOnline, libName, 0);
-					Logger.json(response);
+					String response = HttpUtil.AddLibraryFocusedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_FOCUSE_REQUEST_COM, ConstantClass.userOnline, libName, 0);
 					//解析和处理服务器返回的数据
 					focuseLibChangeResult = Utility.handleFocuseChangeResponse(response,libName,mUserDao,mLibraryDao,0);
 					handler.sendEmptyMessage(3);
@@ -275,22 +267,28 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 		}).start();
 	}
 
+	//显示关注的讲座信息来源
 	private void showFocuseLibrary() {
 
+		//从数据库查询用户的关注
 		String temp = Utility.getUserFocuse(ConstantClass.userOnline, mUserDao);
+		//如果数据库中没有用户的关注信息，就从服务器请求
 		if (temp == null || temp.length() == 0) {
 			MyFocuseRequest();
 			return;
 		}
+		//将用户的关注转换成字符串数组，方便操作
 		String[] focuseLibrary = Utility.getStrings(temp);
 
 		if (focuseLibrary.length == 0) {
 			Toasty.error(MyFocuseActivity.this, "解析用户关注的讲座失败，请联系开发者").show();
 			return;
 		} else {
+			//如果此时的讲座信息来源列表不为空，则清空
 			if (!librarylist.isEmpty()) {
-				librarylist.removeAll(librarylist);
+				librarylist.clear();
 			}
+			//依次添加用户的关注到关注列表
 			for (int i = 0; i < focuseLibrary.length; i++) {
 				librarylist.add(focuseLibrary[i]);
 			}
@@ -298,9 +296,8 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 
 		listView.setSelection(0);
 		mAdapter.notifyDataSetChanged();
-
+		DialogUtils.closeDialog(myFocuseLoadDialog);
 	}
-
 }
 
 

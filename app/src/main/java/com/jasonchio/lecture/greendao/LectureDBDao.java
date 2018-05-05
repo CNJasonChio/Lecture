@@ -32,6 +32,7 @@ public class LectureDBDao extends AbstractDao<LectureDB, Long> {
         public final static Property LecutreLikers = new Property(7, int.class, "lecutreLikers", false, "LECUTRE_LIKERS");
         public final static Property LectureImage = new Property(8, String.class, "lectureImage", false, "LECTURE_IMAGE");
         public final static Property IsWanted = new Property(9, int.class, "isWanted", false, "IS_WANTED");
+        public final static Property LectureDistrict = new Property(10, String.class, "lectureDistrict", false, "LECTURE_DISTRICT");
     }
 
 
@@ -56,7 +57,8 @@ public class LectureDBDao extends AbstractDao<LectureDB, Long> {
                 "\"LECTURE_URL\" TEXT," + // 6: lectureUrl
                 "\"LECUTRE_LIKERS\" INTEGER NOT NULL ," + // 7: lecutreLikers
                 "\"LECTURE_IMAGE\" TEXT," + // 8: lectureImage
-                "\"IS_WANTED\" INTEGER NOT NULL );"); // 9: isWanted
+                "\"IS_WANTED\" INTEGER NOT NULL ," + // 9: isWanted
+                "\"LECTURE_DISTRICT\" TEXT);"); // 10: lectureDistrict
     }
 
     /** Drops the underlying database table. */
@@ -106,6 +108,11 @@ public class LectureDBDao extends AbstractDao<LectureDB, Long> {
             stmt.bindString(9, lectureImage);
         }
         stmt.bindLong(10, entity.getIsWanted());
+ 
+        String lectureDistrict = entity.getLectureDistrict();
+        if (lectureDistrict != null) {
+            stmt.bindString(11, lectureDistrict);
+        }
     }
 
     @Override
@@ -149,6 +156,11 @@ public class LectureDBDao extends AbstractDao<LectureDB, Long> {
             stmt.bindString(9, lectureImage);
         }
         stmt.bindLong(10, entity.getIsWanted());
+ 
+        String lectureDistrict = entity.getLectureDistrict();
+        if (lectureDistrict != null) {
+            stmt.bindString(11, lectureDistrict);
+        }
     }
 
     @Override
@@ -168,7 +180,8 @@ public class LectureDBDao extends AbstractDao<LectureDB, Long> {
             cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // lectureUrl
             cursor.getInt(offset + 7), // lecutreLikers
             cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // lectureImage
-            cursor.getInt(offset + 9) // isWanted
+            cursor.getInt(offset + 9), // isWanted
+            cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10) // lectureDistrict
         );
         return entity;
     }
@@ -185,6 +198,7 @@ public class LectureDBDao extends AbstractDao<LectureDB, Long> {
         entity.setLecutreLikers(cursor.getInt(offset + 7));
         entity.setLectureImage(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
         entity.setIsWanted(cursor.getInt(offset + 9));
+        entity.setLectureDistrict(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
      }
     
     @Override

@@ -1,5 +1,6 @@
 package com.jasonchio.lecture;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -49,20 +50,18 @@ import com.orhanobut.logger.*;
 
 public class CommentAdapter extends BaseAdapter implements View.OnClickListener {
 
-	private List <CommentDB> commentList;
-	private List <LectureDB> lectureList;
-	private Context context;
-	private InnerItemOnclickListener listener;
-	private UserDBDao mUserDao;
-	private CommentDBDao mCommentDao;
-	private ListView listView;
+	private List <CommentDB> commentList;       //评论列表
+	private List <LectureDB> lectureList;       //评论对应的讲座列表
+	private Context context;                    //上下文
+	private InnerItemOnclickListener listener;  //内部item点击监听器
+	private CommentDBDao mCommentDao;           //评论表操作对象
+	private ListView listView;                  //要显示的listview
 
-	public CommentAdapter(ListView listView, List <CommentDB> commentDBList, List <LectureDB> lectureDBList, UserDBDao mUserDao, CommentDBDao mCommentDao, Context context) {
+	public CommentAdapter(ListView listView, List <CommentDB> commentDBList, List <LectureDB> lectureDBList, CommentDBDao mCommentDao, Context context) {
 		this.listView = listView;
 		this.commentList = commentDBList;
 		this.context = context;
 		this.lectureList = lectureDBList;
-		this.mUserDao = mUserDao;
 		this.mCommentDao = mCommentDao;
 	}
 
@@ -125,6 +124,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener 
 
 		viewHolder.lectureTitle.setText(lecture.getLectureTitle());
 
+		//加载讲座图片
 		if (lecture.getLectureImage() != null) {
 			Glide.with(context).load(lecture.getLectureImage()).into(viewHolder.lectureImage);
 		}
@@ -140,17 +140,21 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener 
 		viewHolder.userName.setText(comment.getCommentuserName());
 		viewHolder.userName.setText(comment.getCommentuserName());
 
+		//判断该讲座用户是否已经添加到想看
 		if (lecture.getIsWanted() == 0) {
 			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_lecture_likes);
 		} else {
 			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_myinfo_mywanted);
 		}
+
+		//判断该评论用户是否已经点过赞
 		if (comment.getIsLike() == 1) {
 			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
 		} else {
 			viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
 		}
 
+		//加载评论对应的用户头像
 		if (comment.getUserHead() != null || comment.getUserHead() != "") {
 			Glide.with(context).load(comment.getUserHead()).into(viewHolder.userPhoto);
 		} else {
@@ -195,30 +199,30 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener 
 		listener.itemClick(v);
 	}
 
+	//处理点赞或取消点赞引起的界面改变
 	public void changeCommentLike(int position, int islike) {
 
 		Message msg = Message.obtain();
 		msg.what = islike;
 		msg.arg1 = position;
 
+		//取消点赞
 		if (islike == 0) {
-			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
 			msg.arg2 = R.drawable.ic_discovery_comment_like;
-		} else {
-			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
+		} else {    //点赞
 			msg.arg2 = R.drawable.ic_discovery_comment_like_selected;
 		}
 
 		CommentDB comment = commentList.get(position);
-		Logger.d(position);
-		Logger.d(comment.getCommentlecureId());
 		comment=mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(comment.getCommentId())).build().unique();
 		commentList.set(position, comment);
 		handler.sendMessage(msg);
 	}
 
+
 	private Handler handler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
+			//改变对应的 item
 			updateItem(msg.what, msg.arg1, msg.arg2);
 		}
 	};

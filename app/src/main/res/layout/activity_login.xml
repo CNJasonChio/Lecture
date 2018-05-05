@@ -172,7 +172,7 @@
         andorid:stateListAnimator="@null"
         andorid:layout_below="@id/login_findpwd_sigin_layout"/>
 
-    <RelativeLayout
+ <!--   <RelativeLayout
         andorid:layout_width="match_parent"
         andorid:layout_height="wrap_content"
         andorid:id="@+id/login_third_view_layout"
@@ -240,5 +240,5 @@
         andorid:layout_height="10dp"
         andorid:layout_alignParentBottom="true"
         andorid:id="@+id/login_view3">
-    </View>
+    </View>-->
 </RelativeLayout>

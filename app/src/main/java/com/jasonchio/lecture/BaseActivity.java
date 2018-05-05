@@ -52,12 +52,14 @@ import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener{
 
-	SignOutReceiver receiver;
+	SignOutReceiver receiver;   //退出登录广播接收器对象
+
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		//添加 activity 到 自定义的activity 列表中
 		ActivityCollector.addActivity(this);
-		//addLogAdapter(new AndroidLogAdapter());
+		//禁止屏幕旋转
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 	}
 
@@ -96,12 +98,14 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		//activity 销毁掉后，将其从 activity 列表中删除
 		ActivityCollector.removeActivity(this);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		//注册广播接收器
 		IntentFilter intentFilter=new IntentFilter();
 		intentFilter.addAction("com.jasonchio.lecture.SIGNOUT");
 		receiver=new SignOutReceiver();
@@ -111,17 +115,18 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 	@Override
 	protected void onPause() {
 		super.onPause();
+		//注销广播接收器
 		if(receiver!=null){
 			unregisterReceiver(receiver);
 			receiver=null;
 		}
 	}
 
+	//自定义广播接收器类
 	class SignOutReceiver extends BroadcastReceiver{
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
-			com.orhanobut.logger.Logger.d("received signout broadcast");
 			AlertDialog.Builder builder=new AlertDialog.Builder(context);
 			builder.setTitle("退出登录");
 			builder.setMessage("确定退出登录吗？");
@@ -129,6 +134,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
+					//确定退出登录后，结束所有的 activity,返回到登录界面
 					ActivityCollector.finishAll();
 					Intent intent1=new Intent(context,LoginActivity.class);
 					context.startActivity(intent1);

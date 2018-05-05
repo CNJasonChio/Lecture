@@ -48,17 +48,15 @@ import java.util.List;
 
 public class LectureAdapter extends BaseAdapter {
 
-	private List<LectureDB> lectureDBList;
-	private Context context;
-	private ListView listView;
-	private LectureDBDao mLectureDao;
+	private List<LectureDB> lectureDBList;  //讲座列表
 
-	public LectureAdapter(Context context, ListView listView, List<LectureDB> lectureList, LectureDBDao mLectureDao){
+	private Context context;                //上下文
+
+	public LectureAdapter(Context context,List<LectureDB> lectureList){
 		this.lectureDBList=lectureList;
-		this.listView=listView;
 		this.context=context;
-		this.mLectureDao=mLectureDao;
 	}
+
 	@Override
 	public View getView(int position, View view,ViewGroup parent) {
 
@@ -104,13 +102,13 @@ public class LectureAdapter extends BaseAdapter {
 
 	public final static class ViewHolder {
 
-		TextView lectureTitle;
-		ImageView lectureImage;
-		TextView lectureContent;
-		TextView lectureTime;
-		TextView lectureSource;
-		TextView lectureLikers;
-		ImageView lectureWantedImage;
+		TextView lectureTitle;          //讲座标题
+		ImageView lectureImage;         //讲座图片
+		TextView lectureContent;        //讲座正文
+		TextView lectureTime;           //讲座时间
+		TextView lectureSource;         //讲座来源
+		TextView lectureLikers;         //讲座收藏人数
+		ImageView lectureWantedImage;   //讲座是否被收藏对应的图片
 
 	}
 
@@ -129,62 +127,5 @@ public class LectureAdapter extends BaseAdapter {
 		return 0;
 	}
 
-/*	public void changeLectureWanted(int position, int isWanted){
 
-		Message msg=Message.obtain();
-		msg.arg1=position;
-		if(isWanted==0){
-			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like);
-			msg.arg2=R.drawable.ic_lecture_likes;
-		}else{
-			//viewHolder.commentLikersImage.setImageResource(R.drawable.ic_discovery_comment_like_selected);
-			msg.arg2=R.drawable.ic_myinfo_mywanted;
-		}
-
-		LectureDB lectureDB=lectureDBList.get(position);
-		if(isWanted==1){
-			lectureDB.setLecutreLikers(lectureDB.getLecutreLikers()+1);
-			mLectureDao.update(lectureDB);
-		}else {
-			lectureDB.setLecutreLikers(lectureDB.getLecutreLikers()-1);
-			mLectureDao.update(lectureDB);
-		}
-		lectureDBList.set(position,lectureDB);
-		handler.sendMessage(msg);
-	}
-
-	private Handler handler = new Handler()
-	{
-		public void handleMessage(android.os.Message msg)
-		{
-			updateItem(msg.arg1,msg.arg2);
-		}
-	};
-
-	*//**、
-	 * 刷新指定item
-	 *
-	 * @param index item在listview中的位置
-	 *//*
-	private void updateItem(int index,int drawable)
-	{
-		if (listView == null)
-		{
-			return;
-		}
-
-		// 获取当前可以看到的item位置
-		int visiblePosition = listView.getFirstVisiblePosition();
-
-		// 如添加headerview后 firstview就是hearderview
-		// 所有索引+1 取第一个view
-		// View view = listview.getChildAt(index - visiblePosition + 1);
-		// 获取点击的view
-
-		View view = listView.getChildAt(index - visiblePosition);
-
-		ImageView likeImage=view.findViewById(R.id.lecture_wanted_image);
-
-		likeImage.setImageResource(drawable);
-	}*/
 }

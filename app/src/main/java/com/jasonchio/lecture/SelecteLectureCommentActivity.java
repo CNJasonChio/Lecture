@@ -78,7 +78,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 		titleLayout=(TitleLayout)findViewById(R.id.select_lecture_title_layout);
 		titleFirstButton=titleLayout.getFirstButton();
 		listView=(ListView)findViewById(R.id.select_lecture_list);
-		mAdapter=new LectureAdapter(SelecteLectureCommentActivity.this,listView,lecturelist,mLectureDao);
+		mAdapter=new LectureAdapter(SelecteLectureCommentActivity.this,lecturelist);
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mLectureDao=daoSession.getLectureDBDao();

@@ -1,8 +1,6 @@
 package com.jasonchio.lecture;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,7 +9,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -28,9 +25,11 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
-import com.jasonchio.lecture.util.ActivityCollector;
+import com.baidu.location.LocationClientOption;
+import com.jasonchio.lecture.greendao.DaoSession;
+import com.jasonchio.lecture.greendao.UserDB;
+import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
-import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
@@ -75,111 +74,76 @@ import es.dmoral.toasty.Toasty;
  */
 
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends BaseFragment {
 
-	private RecommentFragment fragmentRecommend;
-	private FocuseFragment fragmentFoucse;
-	private NearFragment fragmentNear;
-	private Button titleSecondButton;
-	private Button titleFirstButton;
-	private PagerSlidingTabStrip tabStrip;
+	RecommentFragment fragmentRecommend;    //推荐 fragment
 
-	private DisplayMetrics displayMetrics;
+	FocuseFragment fragmentFoucse;          //关注fragment
 
-	TitleLayout titleLayout;
+	NearFragment fragmentNear;              //附近 fragment
 
-	public LocationClient locationClient;
+	Button titleSecondButton;               //标题栏的第二个按钮
 
-	Handler handler;
+	Button titleFirstButton;                //标题栏的第一个按钮
 
-	double longtituide;
-	double latituide;
+	PagerSlidingTabStrip tabStrip;          //导航栏
 
-	int sendPositionResult=0;
+	DisplayMetrics displayMetrics;          //显示单位
 
-	Rationale mRationale;
+	TitleLayout titleLayout;                //标题栏
 
-	String response;
+	LocationClient locationClient;          //定位
 
-	boolean sendPosOk=false;
+	Handler handler;                        //handler
+
+	double longtituide;                     //用户经度
+	double latituide;                       //用户纬度
+
+	String location;                        //用户所在区县
+
+	int sendPositionResult = 0;               //向服务器发送用户位置的结果
+
+	Rationale mRationale;                   //请求权限被拒绝多次后的提示对象
+
+	boolean sendPosOk = false;                //发送位置信息完成
+
+	View rootView;                          //根视图
+
+	DaoSession daoSession;                  //数据库操作对象
+
+	UserDBDao mUserDao;                     //用户表操作对象
 
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
 
-		handler=new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what){
-					case 1:
-						if (sendPositionResult == 0) {
-							if(sendPosOk==false){
-								Toasty.success(getContext(), "定位成功").show();
-								sendPosOk=true;
-							}
-						} else {
-							Toasty.error(getContext(), "定位失败，请稍候再试或联系开发者").show();
-						}
-						break;
-				}
-				return true;
-			}
-		});
+		//检查权限
 
-		if(ContextCompat.checkSelfPermission(getContext(),Manifest.permission_group.LOCATION)!= PackageManager.PERMISSION_GRANTED){
+
+		if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission_group.LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			askforPermisson();
-		}else{
+		} else {
 			getPosition();
 		}
+
+
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		View view = inflater.inflate(R.layout.fragment_home, null);
+		rootView = inflater.inflate(R.layout.fragment_home, null);
 
-		initView(view);
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
+		//初始化响应事件
+		initEvent();
 
-
-		return view;
+		return rootView;
 	}
 
-	private void initView(View view) {
-
-		titleLayout = (TitleLayout) view.findViewById(R.id.home_title_layout);
-		titleLayout.setTitle("首页");
-		titleLayout.setSecondButtonBackground(R.drawable.ic_title_search);
-		titleSecondButton = titleLayout.getSecondButton();
-		titleFirstButton = titleLayout.getFirstButton();
-		titleLayout.setFirstButtonBackground(R.drawable.ic_title_location);
-
-		titleSecondButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(getContext(), SearchActivity.class);
-				startActivity(intent);
-			}
-		});
-
-		titleFirstButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if(ContextCompat.checkSelfPermission(getContext(),Manifest.permission_group.LOCATION)!= PackageManager.PERMISSION_GRANTED){
-					askforPermisson();
-				}else{
-					getPosition();
-				}
-
-			}
-		});
-		displayMetrics = getResources().getDisplayMetrics();
-		ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
-		pager.setOffscreenPageLimit(2);// 设置缓存页面，当前页面的相邻两个页面都会被缓存
-		tabStrip = (PagerSlidingTabStrip) view.findViewById(R.id.tabs);
-		pager.setAdapter(new MyPagerAdapter(getChildFragmentManager()));
-		setTabValue();
-		tabStrip.setViewPager(pager);
-	}
-
+	//设置导航栏属性
 	private void setTabValue() {
 		// 设置Tab是自动填充满屏幕的
 		tabStrip.setShouldExpand(true);
@@ -200,6 +164,78 @@ public class HomeFragment extends Fragment {
 		tabStrip.setTabBackground(0);
 	}
 
+	@Override
+	void initView() {
+		titleLayout.setTitle("首页");
+		titleLayout.setSecondButtonBackground(R.drawable.ic_title_search);
+		titleLayout.setFirstButtonBackground(R.drawable.ic_title_location);
+		displayMetrics = getResources().getDisplayMetrics();
+		ViewPager pager = (ViewPager) rootView.findViewById(R.id.pager);
+		pager.setOffscreenPageLimit(2);// 设置缓存页面，当前页面的相邻两个页面都会被缓存
+		tabStrip = (PagerSlidingTabStrip) rootView.findViewById(R.id.tabs);
+		pager.setAdapter(new MyPagerAdapter(getChildFragmentManager()));
+		setTabValue();
+		tabStrip.setViewPager(pager);
+	}
+
+	@Override
+	void initWidget() {
+		titleLayout = (TitleLayout) rootView.findViewById(R.id.home_title_layout);
+		titleSecondButton = titleLayout.getSecondButton();
+		titleFirstButton = titleLayout.getFirstButton();
+		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
+		mUserDao = daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initEvent() {
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (sendPositionResult == 0) {
+							if (sendPosOk == false) {
+								Toasty.success(getContext(), "定位成功").show();
+								saveUserPosition();
+								sendPosOk = true;
+							}
+						} else {
+							Toasty.error(getContext(), "定位失败，请稍候再试或联系开发者").show();
+						}
+						break;
+				}
+				return true;
+			}
+		});
+
+		titleSecondButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(getContext(), SearchActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		titleFirstButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission_group.LOCATION) != PackageManager.PERMISSION_GRANTED) {
+					askforPermisson();
+				} else {
+					getPosition();
+				}
+
+			}
+		});
+	}
+
+	@Override
+	public void onClick(View v) {
+
+	}
+
+	//导航栏适配器
 	private class MyPagerAdapter extends FragmentStatePagerAdapter {
 		public MyPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -250,19 +286,16 @@ public class HomeFragment extends Fragment {
 
 	}
 
+	//向服务器发送位置信息
 	private void SendPosition() {
-		sendPosOk=false;
+		sendPosOk = false;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
+					String response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_COM, ConstantClass.userOnline, longtituide, latituide);
 
-					//response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_PORT, ConstantClass.userOnline, longtituide, latituide);
-					response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_COM, ConstantClass.userOnline, longtituide, latituide);
-
-					Logger.json(response);
-
-					sendPositionResult= Utility.handleCommonResponse(response);
+					sendPositionResult = Utility.handleCommonResponse(response);
 
 					handler.sendEmptyMessage(1);
 
@@ -276,79 +309,80 @@ public class HomeFragment extends Fragment {
 		}).start();
 	}
 
+	//定位监听器
 	public class MyLocationListener implements BDLocationListener {
 		@Override
 		public void onReceiveLocation(BDLocation bdLocation) {
 			Logger.d("获取位置信息");
 			longtituide = bdLocation.getLongitude();
 			latituide = bdLocation.getLatitude();
+			location = bdLocation.getDistrict();
 			SendPosition();
 		}
 	}
 
-	private void getPosition(){
+	//获取用户位置
+	private void getPosition() {
 		locationClient = new LocationClient(getContext());
 		locationClient.registerLocationListener(new MyLocationListener());
+		LocationClientOption locationClientOption = new LocationClientOption();
+		locationClientOption.setIsNeedAddress(true);
+		locationClient.setLocOption(locationClientOption);
 		locationClient.start();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		if(locationClient!=null){
+		if (locationClient != null) {
 			locationClient.stop();
 		}
 	}
 
-	private void askforPermisson(){
-		AndPermission.with(this)
-				.permission(Permission.Group.LOCATION)
-				.rationale(mRationale)
-				.onGranted(new Action() {
-					@Override
-					public void onAction(List<String> permissions) {
-						getPosition();
-					}
-				})
-				.onDenied(new Action() {
+	//申请权限
+	private void askforPermisson() {
+		AndPermission.with(this).permission(Permission.Group.LOCATION).rationale(mRationale).onGranted(new Action() {
+			@Override
+			public void onAction(List <String> permissions) {
+				getPosition();
+			}
+		}).onDenied(new Action() {
 
-					@Override
-					public void onAction(List <String> permissions) {
-						Toasty.error(getContext(),"获取定位权限失败");
-						if (AndPermission.hasAlwaysDeniedPermission(getContext(), permissions)) {
-							// 这里使用一个Dialog展示没有这些权限应用程序无法继续运行，询问用户是否去设置中授权。
-							final SettingService settingService = AndPermission.permissionSetting(getContext());
-							android.support.v7.app.AlertDialog.Builder builder=new android.support.v7.app.AlertDialog.Builder(getContext());
-							builder.setTitle("权限请求");
-							builder.setMessage("小的需要您的定位权限来为您推荐附近的讲座，不然小主可能跑很远才能看到想看的讲座");
-							builder.setCancelable(true);
-							builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									// 如果用户同意去设置：
-									settingService.execute();
-								}
-							});
-							builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									// 如果用户不同意去设置：
-									settingService.cancel();
-								}
-							});
-							builder.show();
+			@Override
+			public void onAction(List <String> permissions) {
+				Toasty.error(getContext(), "获取定位权限失败");
+				if (AndPermission.hasAlwaysDeniedPermission(getContext(), permissions)) {
+					// 这里使用一个Dialog展示没有这些权限应用程序无法继续运行，询问用户是否去设置中授权。
+					final SettingService settingService = AndPermission.permissionSetting(getContext());
+					android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+					builder.setTitle("权限请求");
+					builder.setMessage("小的需要您的定位权限来为您推荐附近的讲座，不然小主可能跑很远才能看到想看的讲座");
+					builder.setCancelable(true);
+					builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// 如果用户同意去设置：
+							settingService.execute();
 						}
+					});
+					builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// 如果用户不同意去设置：
+							settingService.cancel();
+						}
+					});
+					builder.show();
+				}
 
-					}
-				})
-				.start();
+			}
+		}).start();
 
 		mRationale = new Rationale() {
 			@Override
-			public void showRationale(Context context, List<String> permissions,
-			                          final RequestExecutor executor) {
+			public void showRationale(Context context, List <String> permissions, final RequestExecutor executor) {
 				// 这里使用一个Dialog询问用户是否继续授权。
-				android.support.v7.app.AlertDialog.Builder builder=new android.support.v7.app.AlertDialog.Builder(getContext());
+				android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
 				builder.setTitle("权限请求");
 				builder.setMessage("小的需要您的定位权限来为您推荐附近的讲座，不然小主可能跑很远才能看到想看的讲座");
 				builder.setCancelable(true);
@@ -371,4 +405,15 @@ public class HomeFragment extends Fragment {
 			}
 		};
 	}
+
+	//保存用户的位置信息
+	private void saveUserPosition() {
+		UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+		userDB.setUserLocation(location);
+		Logger.d(location);
+		userDB.setUserLongitude(longtituide);
+		userDB.setUserLatitude(latituide);
+		mUserDao.update(userDB);
+	}
+
 }

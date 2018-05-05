@@ -1,5 +1,15 @@
 package com.jasonchio.lecture.gson;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * /**
  * <p>
@@ -27,13 +37,58 @@ package com.jasonchio.lecture.gson;
  */
 public class LibraryRequestResult {
 
+
 	/**
-	 * state :
+	 * state : 0
 	 * library_info :
-	 */
+	 * */
 
 	private int state;
 	private LibraryInfoBean library_info;
+
+	public static LibraryRequestResult objectFromData(String str) {
+
+		return new Gson().fromJson(str, LibraryRequestResult.class);
+	}
+
+	public static LibraryRequestResult objectFromData(String str, String key) {
+
+		try {
+			JSONObject jsonObject = new JSONObject(str);
+
+			return new Gson().fromJson(jsonObject.getString(str), LibraryRequestResult.class);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static List <LibraryRequestResult> arrayLibraryRequestResultFromData(String str) {
+
+		Type listType = new TypeToken <ArrayList <LibraryRequestResult>>() {
+		}.getType();
+
+		return new Gson().fromJson(str, listType);
+	}
+
+	public static List <LibraryRequestResult> arrayLibraryRequestResultFromData(String str, String key) {
+
+		try {
+			JSONObject jsonObject = new JSONObject(str);
+			Type listType = new TypeToken <ArrayList <LibraryRequestResult>>() {
+			}.getType();
+
+			return new Gson().fromJson(jsonObject.getString(str), listType);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return new ArrayList();
+
+
+	}
 
 	public int getState() {
 		return state;
@@ -53,13 +108,14 @@ public class LibraryRequestResult {
 
 	public static class LibraryInfoBean {
 		/**
-		 * library_id : 1
-		 * library_name : 武汉理工大学图书馆
-		 * library_picture_url : null
-		 * library_information : null
-		 * library_address_url : null
-		 * library_longtitude : null
-		 * library_latitude : null
+		 * library_id :
+		 * library_name :
+		 * library_picture_url :
+		 * library_information :
+		 * library_address_url :
+		 * library_longtitude :
+		 * library_latitude :
+		 * library_range :
 		 * user_focus_lib :
 		 */
 
@@ -70,7 +126,52 @@ public class LibraryRequestResult {
 		private String library_address_url;
 		private double library_longtitude;
 		private double library_latitude;
+		private String library_range;
 		private int user_focus_lib;
+
+		public static LibraryInfoBean objectFromData(String str) {
+
+			return new Gson().fromJson(str, LibraryInfoBean.class);
+		}
+
+		public static LibraryInfoBean objectFromData(String str, String key) {
+
+			try {
+				JSONObject jsonObject = new JSONObject(str);
+
+				return new Gson().fromJson(jsonObject.getString(str), LibraryInfoBean.class);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+
+		public static List <LibraryInfoBean> arrayLibraryInfoBeanFromData(String str) {
+
+			Type listType = new TypeToken <ArrayList <LibraryInfoBean>>() {
+			}.getType();
+
+			return new Gson().fromJson(str, listType);
+		}
+
+		public static List <LibraryInfoBean> arrayLibraryInfoBeanFromData(String str, String key) {
+
+			try {
+				JSONObject jsonObject = new JSONObject(str);
+				Type listType = new TypeToken <ArrayList <LibraryInfoBean>>() {
+				}.getType();
+
+				return new Gson().fromJson(jsonObject.getString(str), listType);
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+			return new ArrayList();
+
+
+		}
 
 		public int getLibrary_id() {
 			return library_id;
@@ -126,6 +227,14 @@ public class LibraryRequestResult {
 
 		public void setLibrary_latitude(double library_latitude) {
 			this.library_latitude = library_latitude;
+		}
+
+		public String getLibrary_range() {
+			return library_range;
+		}
+
+		public void setLibrary_range(String library_range) {
+			this.library_range = library_range;
 		}
 
 		public int getUser_focus_lib() {

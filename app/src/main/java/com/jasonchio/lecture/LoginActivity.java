@@ -31,41 +31,49 @@ import static com.orhanobut.logger.Logger.addLogAdapter;
 public class LoginActivity extends BaseActivity {
 
 	EditText passwordEdit;      //填写密码的编辑框
+
 	EditText accountEdit;       //填写帐号的编辑框
+
 	Button loginButton;         //登录按钮
 
 	TextView fgtpwdText;        //忘记密码
+
 	TextView signinText;        //新用户注册
 
-	CheckBox remPwdBox;
+	CheckBox remPwdBox;         //记住密码选择框
 
 	ImageView isCanSee;         //密码是否可见
-	ImageView wechatLoginImage; //微信登录
+
+/*	ImageView wechatLoginImage; //微信登录
 	ImageView qqLoginImage;     //QQ登录
-	ImageView sinaLoginImage;   //新浪微博登录
+	ImageView sinaLoginImage;   //新浪微博登录*/
 
-	boolean cansee = false;       //密码是否可见状态
-	boolean isRemPwd=false;       //是否记住密码
+	boolean cansee = false;     //密码是否可见状态
 
-	String response;
-	String userPhone;
-	String userPwd;
+	boolean isRemPwd=false;     //是否记住密码
 
-	int loginResult = -1;
+	String userPhone;           //手机号
 
-	Handler handler;
+	String userPwd;             //密码
 
-	DaoSession mDaoSession ;
-	UserDBDao mUserDao;
+	int loginResult = -1;       //登录结果
 
-	SharedPreferences preferences;
-	SharedPreferences.Editor editor;
+	Handler handler;            //handler 对象
 
-	Dialog loginLoadDialog;
+	DaoSession mDaoSession ;    //数据库操作对象
+
+	UserDBDao mUserDao;         //用户表操作对象
+
+	SharedPreferences preferences;      //SharedPreferences 对象
+
+	SharedPreferences.Editor editor;    //SharedPreferences.Editor对象
+
+	Dialog loginLoadDialog;             //加载对话框
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		//初始化Logger 适配器
 		addLogAdapter(new AndroidLogAdapter());
 		setContentView(R.layout.activity_login);
 
@@ -78,7 +86,8 @@ public class LoginActivity extends BaseActivity {
 
 	}
 
-	protected void initView() {
+	@Override
+	void initView() {
 		//BaseActivity方法，隐藏系统标题栏
 		HideSysTitle();
 
@@ -96,16 +105,16 @@ public class LoginActivity extends BaseActivity {
 		}
 	}
 
-	protected void initWidget() {
-
+	@Override
+	void initWidget() {
 		passwordEdit = (EditText) findViewById(R.id.login_password_edit);
 		accountEdit = (EditText) findViewById(R.id.login_account_edit);
 		loginButton = (Button) findViewById(R.id.login_button);
 		fgtpwdText = (TextView) findViewById(R.id.login_fgtpwd_text);
 		signinText = (TextView) findViewById(R.id.login_signin_text);
-		wechatLoginImage = (ImageView) findViewById(R.id.login_wechat_login);
+		/*wechatLoginImage = (ImageView) findViewById(R.id.login_wechat_login);
 		qqLoginImage = (ImageView) findViewById(R.id.login_qq_login);
-		sinaLoginImage = (ImageView) findViewById(R.id.login_sina_login);
+		sinaLoginImage = (ImageView) findViewById(R.id.login_sina_login);*/
 		isCanSee = (ImageView) findViewById(R.id.login_pwd_cansee);
 		remPwdBox=(CheckBox)findViewById(R.id.login_remember_pwd_checkbox);
 		mDaoSession = ((MyApplication)getApplication()).getDaoSession();
@@ -209,17 +218,20 @@ public class LoginActivity extends BaseActivity {
 
 	private void loginRequest() {
 
+		//获取用户输入的手机号、密码
 		userPhone = accountEdit.getText().toString();
 		userPwd = passwordEdit.getText().toString();
 
+		//开启新线程
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					//response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone, userPwd);
-					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, userPwd);
+					//获取服务器返回的结果
+					String response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, userPwd);
+					//解析和处理服务器返回的结果
 					loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
-					Logger.d(loginResult);
+					//处理结果
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("通信失败，IO error");

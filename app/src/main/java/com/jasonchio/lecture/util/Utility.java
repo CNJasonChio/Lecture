@@ -46,6 +46,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
+import static com.jasonchio.lecture.util.HttpUtil.LibraryRequest;
 
 /**
  * /**
@@ -177,7 +178,7 @@ public class Utility {
 	}
 
 	//解析和处理服务器返回的讲座数据
-	public static int handleLectureResponse(String response, final LectureDBDao mLectureDao) {
+	public static int handleLectureResponse(String response, LectureDBDao mLectureDao) {
 
 		Gson gson = new Gson();
 
@@ -198,6 +199,7 @@ public class Utility {
 				lectureDB.setLecutreSource(lecture.getLecture_source());
 				lectureDB.setLecutreLikers(lecture.getLecture_fans_amount());
 				lectureDB.setLectureUrl(lecture.getLecture_url());
+				lectureDB.setLectureDistrict(lecture.getRange());
 				lectureDB.setIsWanted(lecture.getUser_want_lecture());
 				lectureDB.setLectureImage(lecture.getLecture_picture());
 				if(lecture.getLecture_information()==null || lecture.getLecture_information().length()==0){
@@ -214,7 +216,6 @@ public class Utility {
 	}
 
 	//解析和处理服务器针对该用户推荐的讲座顺序
-
 	public static int handleRecommentLectureResponse(String response,UserDBDao mUserDao){
 		int state=1;
 
@@ -244,6 +245,7 @@ public class Utility {
 		return state;
 
 	}
+
 	//解析和处理服务器返回的评论数据
 	public static int handleCommentResponse(String response, CommentDBDao mCommentDao) {
 
@@ -344,7 +346,7 @@ public class Utility {
 
 			state = result.getState();
 			if (state == 0) {
-				String url = result.getUser_face_url();
+				String url = result.getUrl();
 				UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 				user.setUserPhotoUrl(url);
 				mUserDao.update(user);
@@ -625,6 +627,7 @@ public class Utility {
 						interimLectureDB.setLectureImage(lectureDB.getLectureImage());
 						interimLectureDB.setLectureLocation(lectureDB.getLectureLocation());
 						interimLectureDB.setLectureTime(lectureDB.getLectureTime());
+						interimLectureDB.setLectureDistrict(lectureDB.getLectureDistrict());
 						interimLectureDB.setLectureTitle(lectureDB.getLectureTitle());
 						interimLectureDB.setLecutreLikers(lectureDB.getLecutreLikers());
 						interimLectureDB.setLecutreSource(lectureDB.getLecutreSource());
@@ -737,7 +740,7 @@ public class Utility {
 		}
 	}
 
-	private static boolean isMobileNO(String mobileNums) {
+	private static boolean isMobileNO(String mobileNums)   {
 		String telRegex = "[1][345789]\\d{9}";// "[1]"代表第1位为数字1，"[358]"代表第二位可以为3、5、8中的一个，"\\d{9}"代表后面是可以是0～9的数字，有9位。
 		if (TextUtils.isEmpty(mobileNums))
 			return false;
@@ -878,4 +881,5 @@ public class Utility {
 		}
 		return bitmap.getRowBytes() * bitmap.getHeight();                //earlier version
 	}
+
 }

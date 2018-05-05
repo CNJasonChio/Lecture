@@ -7,19 +7,22 @@ import android.widget.TextView;
 
 public class AboutActivity extends BaseActivity {
 
-	TextView aboutText;
-	TitleLayout titleLayout;
-	Button titleFirstButton;
+	TextView aboutText;             //关于界面的正文
+
+	TitleLayout titleLayout;        //关于界面的标题栏
+
+	Button titleFirstButton;        //标题栏的第一个按钮
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_about);
 
+		//初始化控件
 		initWidget();
-
+		//初始化视图
 		initView();
-
+		//初始化点击响应事件
 		initEvent();
 	}
 
@@ -46,6 +49,7 @@ public class AboutActivity extends BaseActivity {
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
+			//标题栏的第一个按钮
 			case R.id.title_first_button:
 				finish();
 				break;

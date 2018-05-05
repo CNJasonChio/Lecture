@@ -27,43 +27,40 @@ import es.dmoral.toasty.Toasty;
 
 public class LectureDetailActivity extends BaseActivity {
 
-	TitleLayout titleLayout;
+	TitleLayout titleLayout;        //标题栏
 
-	Button titleFirstButton;
-	Button titleSecondButton;
+	Button titleFirstButton;        //标题栏的第一个按钮
+	Button titleSecondButton;       //标题栏的第二个 ann
 
-	TextView lectureTitle;
-	TextView lectureSource;
-	TextView lectureTime;
-	TextView lecturePlace;
-	TextView lectureContent;
-	TextView lectureOriginal;
+	TextView lectureTitle;          //讲座标题
+	TextView lectureSource;         //讲座来源
+	TextView lectureTime;           //讲座时间
+	TextView lecturePlace;          //讲座地点
+	TextView lectureContent;        //讲座正文
+	TextView lectureOriginal;       //讲座原文链接
 
-	int isWanted =0;
+	int isWanted =0;                //是否已经被收藏
 
-	String response;
+	String original;                //讲座原文链接
 
-	String original;
+	String source;                  //讲座来源
 
-	String source;
+	long lectureId;                 //讲座 id
 
-	long lectureId;
+	DaoSession daoSession;          //数据库操作对象
 
-	DaoSession daoSession;
+	LectureDBDao mLectureDao;       //讲座表操作对象
 
-	LectureDBDao mLectureDao;
+	UserDBDao mUserDao;             //用户表操作对象
 
-	UserDBDao mUserDao;
-
-	LibraryDBDao mLibraryDao;
-
-	int changeWantedResult;
+	int changeWantedResult;         //加入或取消“我的想看”操作的结果
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_lecture_detail);
 
+		//获得上文传递的讲座 id
 		Intent intent=getIntent();
 		lectureId=intent.getIntExtra("lecture_id",1);
 
@@ -71,13 +68,14 @@ public class LectureDetailActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化响应时间
 		initEvent();
-
+		//初始化讲座详情
 		initLectureDetail();
 	}
 
-	protected void initWidget(){
+	@Override
+	void initWidget(){
 		titleLayout=(TitleLayout)findViewById(R.id.lecture_detail_title_layout);
 		titleFirstButton=titleLayout.getFirstButton();
 		titleSecondButton=titleLayout.getSecondButton();
@@ -91,7 +89,6 @@ public class LectureDetailActivity extends BaseActivity {
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 		mLectureDao=daoSession.getLectureDBDao();
 		mUserDao=daoSession.getUserDBDao();
-		mLibraryDao=daoSession.getLibraryDBDao();
 	}
 
 	@Override
@@ -106,7 +103,8 @@ public class LectureDetailActivity extends BaseActivity {
 		lectureSource.setOnClickListener(this);
 	}
 
-	protected void initView(){
+	@Override
+	void initView(){
 
 		//隐藏系统标题栏
 		HideSysTitle();
@@ -123,6 +121,7 @@ public class LectureDetailActivity extends BaseActivity {
 				break;
 			}
 			case R.id.title_second_button:{
+
 				if(isWanted==1){
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
 					Toast.makeText(LectureDetailActivity.this,"已从“我的想看”移除",Toast.LENGTH_SHORT).show();
@@ -137,13 +136,14 @@ public class LectureDetailActivity extends BaseActivity {
 				break;
 			}
 			case R.id.lecture_detail_original_text:{
+				//打开讲座原文
 				Intent intent=new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse(original));
 				startActivity(intent);
 				break;
 			}
 			case R.id.lecture_detail_source_text:{
-				if(source==null){
+				if(source.equals("暂无来源")){
 					Toasty.info(LectureDetailActivity.this,"暂无详情");
 				}else{
 					Intent intent=new Intent(LectureDetailActivity.this,LibraryDetailActivity.class);
@@ -158,16 +158,13 @@ public class LectureDetailActivity extends BaseActivity {
 	}
 
 	private void WantedChangeRequest() {
-
+		//开启新线程
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_PORT,ConstantClass.userOnline,lectureID,isWanted);
-					response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_COM,ConstantClass.userOnline,lectureId,isWanted);
-
-					Logger.json(response);
+					String response = HttpUtil.AddLectureWantedRequest(ConstantClass.ADDRESS, ConstantClass.ADD_CANCEL_WANTED_REQUEST_COM,ConstantClass.userOnline,lectureId,isWanted);
 					//解析和处理服务器返回的数据
 					changeWantedResult = Utility.handleWantedChangeResponse(response,lectureId,mUserDao,mLectureDao,isWanted);
 				} catch (IOException e) {
@@ -181,6 +178,7 @@ public class LectureDetailActivity extends BaseActivity {
 		}).start();
 	}
 
+	//初始化讲座详情
 	private void initLectureDetail(){
 		/*
 		* 从数据库中查找
@@ -189,7 +187,11 @@ public class LectureDetailActivity extends BaseActivity {
 
 		if(lecture!=null){
 			lectureTitle.setText(lecture.getLectureTitle());
-			lectureSource.setText(lecture.getLecutreSource());
+			if(lecture.getLecutreSource()==null || lecture.getLecutreSource()==""){
+				lectureSource.setText("暂无来源");
+			} else{
+				lectureSource.setText(lecture.getLecutreSource());
+			}
 			lectureTime.setText(lecture.getLectureTime());
 			lecturePlace.setText(lecture.getLectureLocation());
 			lectureContent.setText(lecture.getLectureContent());

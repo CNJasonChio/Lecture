@@ -36,42 +36,40 @@ import es.dmoral.toasty.Toasty;
 
 public class MycommentActivity extends BaseActivity implements CommentAdapter.InnerItemOnclickListener, AdapterView.OnItemClickListener {
 
-	SwipeToLoadLayout swipeToLoadLayout;
+	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
 
-	CommentAdapter mAdapter;
+	CommentAdapter mAdapter;                    //评论适配器
 
-	TitleLayout titleLayout;
+	TitleLayout titleLayout;                    //标题栏
 
-	Button titleSecondButton;
+	Button titleSecondButton;                   //标题栏的第二个按钮
 
-	Button titleFirstButton;
+	Button titleFirstButton;                    //标题栏的第一个按钮
 
-	List <CommentDB> commentList = new ArrayList <>();
-	List <LectureDB> lectureList = new ArrayList <>();
+	List <CommentDB> commentList = new ArrayList <>();      //评论列表
+	List <LectureDB> lectureList = new ArrayList <>();      //评论对应的讲座列表
 
-	ListView listView;
+	ListView listView;                          //要显示的 listview
 
-	String response;
+	DaoSession daoSession;                      //数据库操作对象
 
-	DaoSession daoSession;
+	CommentDBDao mCommentDao;                   //评论表操作对象
 
-	CommentDBDao mCommentDao;
+	LectureDBDao mLectureDao;                   //讲座表操作对象
 
-	LectureDBDao mLectureDao;
+	UserDBDao mUserDao;                         //用户表操作对象
 
-	UserDBDao mUserDao;
+	int myCommentRequestResult;                 //“我的点评”请求结果
 
-	int myCommentRequestResult;
+	int commentRequestResult;                   //评论请求结果
 
-	int commentRequestResult;
+	int lectureRequestResult;                   //评论对应的讲座请求结果
 
-	int lectureRequestResult;
+	Handler handler;                            //handler 对象
 
-	Handler handler;
+	Dialog myCommentLoadDialog;                 //加载对话框
 
-	Dialog myCommentLoadDialog;
-
-	int likeThisCommentRequest;
+	int likeThisCommentResult;                 //给评论点赞或取消点赞结构
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,29 +80,13 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化响应事件
 		initEvent();
-
-		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-				myCommentLoadDialog=DialogUtils.createLoadingDialog(MycommentActivity.this,"正在加载");
-				showCommentInfoToTop();
-				swipeToLoadLayout.setRefreshing(false);
-			}
-		});
-
-		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
-			@Override
-			public void onLoadMore() {
-				swipeToLoadLayout.setLoadingMore(false);
-			}
-		});
-
+		//自动刷新
 		autoRefresh();
-
 	}
 
+	//自动刷新
 	private void autoRefresh() {
 		swipeToLoadLayout.post(new Runnable() {
 			@Override
@@ -135,12 +117,13 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		titleSecondButton = titleLayout.getSecondButton();
 		titleFirstButton = titleLayout.getFirstButton();
 		listView = (ListView) findViewById(R.id.swipe_target);
-		mAdapter = new CommentAdapter(listView, commentList, lectureList, mUserDao, mCommentDao, MycommentActivity.this);
+		mAdapter = new CommentAdapter(listView, commentList, lectureList, mCommentDao, MycommentActivity.this);
 		listView.setAdapter(mAdapter);
 	}
 
 	@Override
 	void initEvent() {
+
 		mAdapter.setOnInnerItemOnClickListener(this);
 		listView.setOnItemClickListener(this);
 		titleFirstButton.setOnClickListener(this);
@@ -177,6 +160,23 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				return true;
 			}
 		});
+
+		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				myCommentLoadDialog=DialogUtils.createLoadingDialog(MycommentActivity.this,"正在加载");
+				showCommentInfoToTop();
+				swipeToLoadLayout.setRefreshing(false);
+			}
+		});
+
+		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
+			@Override
+			public void onLoadMore() {
+				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
+
 	}
 
 	@Override
@@ -191,11 +191,11 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	@Override
 	public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+		//打开对应的讲座详情
 		CommentDB comment = commentList.get(position);
 		Intent intent = new Intent(MycommentActivity.this, LectureDetailActivity.class);
 		intent.putExtra("lecture_id", (int) comment.getCommentlecureId());
 		startActivity(intent);
-
 	}
 
 	@Override
@@ -232,6 +232,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		}
 	}
 
+	//“我的点评”请求
 	private void MyCommentRequest() {
 
 		new Thread(new Runnable() {
@@ -239,11 +240,10 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_PORT,ConstantClass.userOnline);
-					response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_COM, ConstantClass.userOnline);
-					Logger.json(response);
+					String response = HttpUtil.MycommentRequest(ConstantClass.ADDRESS, ConstantClass.MYCOMMENT_REQUEST_COM, ConstantClass.userOnline);
 					//解析和处理服务器返回的数据
 					myCommentRequestResult = Utility.handleMyCommentResponse(response, mUserDao);
+					//处理结果
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -256,23 +256,20 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		}).start();
 	}
 
+	//评论请求
 	private void CommentRequest() {
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
+					//获取数据库中最后一条评论的 id
 					long lastCommentID = Utility.lastCommentinDB(mCommentDao);
-
-					Logger.d("lastCommentID " + lastCommentID);
-
-					//response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_PORT,lastCommentID);
-					response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_COM, ConstantClass.userOnline, lastCommentID);
-					Logger.json(response);
-
+					//获取服务器返回数据
+					String response = HttpUtil.CommentRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REQUEST_COM, ConstantClass.userOnline, lastCommentID);
+					//解析和处理服务器返回的数据
 					commentRequestResult = Utility.handleCommentResponse(response, mCommentDao);
-
+					//处理结果
 					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -284,28 +281,20 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		}).start();
 	}
 
+	//评论对应的讲座请求
 	private void LectureRequest() {
-
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
+					//获取数据库中最后一条讲座的 id
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
-
-					Logger.d("lastLecureID" + lastLecureID);
-
-					//response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-					response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
-					Logger.json(response);
-
+					//获取服务器返回数据
+					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
+					//解析和处理服务器返回的数据
 					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-
+					//处理结果
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -320,34 +309,40 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	//将从数据库中查找到的讲座显示到界面中
 	private void showCommentInfoToTop() {
-
+		//从数据库查询用户的评论
 		String userComment = Utility.getUserComment(ConstantClass.userOnline, mUserDao);
-
+		//如果本地没有就从服务器请求
 		if (userComment == null || userComment.length() == 0) {
 			MyCommentRequest();
 			return;
 		}
+		//将用户的评论 id 解析成字符串数组，方便操作
 		String[] myComment = Utility.getStrings(userComment);
-
 		if (myComment.length == 0) {
 			Toasty.error(MycommentActivity.this, "解析用户的点评失败，请联系开发者").show();
 			return;
 		} else {
+			//如果评论列表不为空，则清空
 			if (!commentList.isEmpty()) {
 				commentList.clear();
 			}
 			CommentDB comment;
+			//从数据库中逐个查找用户的评论
 			for (int i = 0; i < myComment.length; i++) {
 				comment = mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(myComment[i])).build().unique();
+				//如果数据库中没有该条评论，就从服务器请求
 				if (comment == null) {
 					CommentRequest();
 					return;
 				} else {
+					//从数据库中查找该评论对应的讲座信息
 					LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(comment.getCommentlecureId())).build().unique();
+					//如果有对应的信息，将该条评论及对应的讲座添加到对应的列表中
 					if (lecture != null) {
 						lectureList.add(lecture);
 						commentList.add(comment);
 					} else {
+						//如果没有该评论对应的讲座信息就从服务器请求
 						LectureRequest();
 						return;
 					}
@@ -362,21 +357,17 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	}
 
+	//给评论点赞或取消
 	private void LikeThisComment(final long commentID, final int islike) {
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
-					//response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_PORT,commentID,ConstantClass.userOnline,islike);
-					response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_COM, commentID, ConstantClass.userOnline, islike);
-
-
-					Logger.json(response);
-
-					likeThisCommentRequest = Utility.handleLikeChangeResponse(response, commentID, mCommentDao, islike);
-
+					//获取服务器返回数据
+					String response = HttpUtil.LikeThisComment(ConstantClass.ADDRESS, ConstantClass.LIKE_COMMENT_COM, commentID, ConstantClass.userOnline, islike);
+					//解析和处理服务器返回的数据
+					likeThisCommentResult = Utility.handleLikeChangeResponse(response, commentID, mCommentDao, islike);
+					//处理结果
 					handler.sendEmptyMessage(3);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");

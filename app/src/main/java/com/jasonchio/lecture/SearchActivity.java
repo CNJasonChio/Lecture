@@ -20,13 +20,11 @@ import java.io.IOException;
 
 public class SearchActivity extends BaseActivity {
 
-	private SearchView searchView;
+	SearchView searchView;      //搜索视图
 
-	String response;
+	EditText searchEdit;        //搜索条件
 
-	EditText searchEdit;
-
-	String searchStr;
+	String searchStr;           //搜索条件
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36,7 +34,7 @@ public class SearchActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化事件响应
 		initEvent();
 	}
 
@@ -54,10 +52,10 @@ public class SearchActivity extends BaseActivity {
 
 	@Override
 	void initEvent() {
+		//进行搜索
 		searchView.setOnClickSearch(new ICallBack() {
 			@Override
 			public void SearchAciton(String string) {
-
 				searchStr=searchEdit.getText().toString();
 				Intent intent=new Intent(SearchActivity.this,ResultSiftActivity.class);
 				intent.putExtra("search_key",searchStr);

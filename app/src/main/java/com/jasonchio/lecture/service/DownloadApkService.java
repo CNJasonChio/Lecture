@@ -1,23 +1,34 @@
 package com.jasonchio.lecture.service;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
+import android.view.WindowManager;
+
 import com.jasonchio.lecture.R;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import com.jasonchio.lecture.util.StorageUtils;
 import com.orhanobut.logger.Logger;
+
+import es.dmoral.toasty.Toasty;
 
 /**
  * Created by Crazyfzw on 2016/8/21.
@@ -72,16 +83,18 @@ public class DownloadApkService extends IntentService {
 
 			//以文件流读取数据
 			long bytetotal = urlConnection.getContentLength(); //取得文件长度
+			Logger.d("新版本的大小为：" + Long.toString(bytetotal));
 			long bytesum = 0;
 			int byteread = 0;
 			in = urlConnection.getInputStream();
 			File dir = StorageUtils.getCacheDirectory(this); //取得应用缓存目录
+			Logger.d("下载目录为" + dir);
 			String apkName = urlStr.substring(urlStr.lastIndexOf("/") + 1, urlStr.length());//取得apK文件名
+			Logger.d("文件名为：" + apkName);
 			File apkFile = new File(dir, apkName);
 			out = new FileOutputStream(apkFile);
 			byte[] buffer = new byte[BUFFER_SIZE];
 
-			int limit = 0;
 			int oldProgress = 0;
 			while ((byteread = in.read(buffer)) != -1) {
 				bytesum += byteread;
@@ -94,13 +107,14 @@ public class DownloadApkService extends IntentService {
 				oldProgress = progress;
 			}
 
+			Logger.d("download apk finish");
 			// 下载完成,调用installAPK开始安装文件
 			installAPk(apkFile);
-			Log.d("调试", "download apk finish");
+
 			mNotifyManager.cancel(NOTIFICATION_ID);
 
 		} catch (Exception e) {
-			Log.e(TAG, "download apk file error");
+			Logger.d("download apk file error");
 		} finally {
 			if (out != null) {
 				try {
@@ -143,16 +157,16 @@ public class DownloadApkService extends IntentService {
 	 */
 
 	private void installAPk(File apkFile) {
+
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		//如果没有设置SDCard写权限，或者没有sdcard,apk文件保存在内存中，需要授予权限才能安装
-		try {
-			String[] command = {"chmod", "777", apkFile.toString()}; //777代表权限 rwxrwxrwx
-			ProcessBuilder builder = new ProcessBuilder(command);
-			builder.start();
-		} catch (IOException ignored) {
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+			Uri contentUri = FileProvider.getUriForFile(this , "com.jasonchio.lecture.fileprovider", apkFile);
+			intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+		} else {
+			intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
 		}
-		intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
-		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		startActivity(intent);
+		this.startActivity(intent);
 	}
 }

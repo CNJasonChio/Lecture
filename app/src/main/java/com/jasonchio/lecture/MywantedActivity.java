@@ -32,31 +32,32 @@ import es.dmoral.toasty.Toasty;
 
 public class MywantedActivity extends BaseActivity {
 
-	SwipeToLoadLayout swipeToLoadLayout;
-	TitleLayout titleLayout;
-	Button titleFirstButton;
-	LectureAdapter mAdapter;
+	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
 
-	ListView listView;
+	TitleLayout titleLayout;                    //标题栏
 
+	Button titleFirstButton;                    //标题栏的第一个按钮
 
-	String response;
+	LectureAdapter mAdapter;                    //讲座适配器
 
-	int mywantedResult=-1;
+	ListView listView;                          //要显示的 listview
 
-	int lectureRequestResult=-1;
+	int mywantedResult=-1;                      //请求“我的想看”结果
 
-	List<LectureDB> lecturelist=new ArrayList<>();
+	int lectureRequestResult=-1;                //讲座请求结果
 
-	DaoSession daoSession;
+	List<LectureDB> lecturelist=new ArrayList<>();  //讲座列表
 
-	UserDBDao mUserDao;
+	DaoSession daoSession;                      //数据库操作对象
 
-	LectureDBDao mLectureDao;
+	UserDBDao mUserDao;                         //用户表操作对象
 
-	Handler handler;
+	LectureDBDao mLectureDao;                   //讲座表操作对象
 
-	Dialog mywantedLoadDialog;
+	Handler handler;                            //handler 对象
+
+	Dialog mywantedLoadDialog;                  //加载对话框
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -66,30 +67,13 @@ public class MywantedActivity extends BaseActivity {
 		initWidget();
 		//初始化视图
 		initView();
-
+		//初始化响应事件
 		initEvent();
-
-		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-				mywantedLoadDialog= DialogUtils.createLoadingDialog(MywantedActivity.this,"正在加载");
-				showWantedLecture();
-				mAdapter.notifyDataSetChanged();
-				swipeToLoadLayout.setRefreshing(false);
-			}
-		});
-
-		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
-			@Override
-			public void onLoadMore() {
-
-				swipeToLoadLayout.setLoadingMore(false);
-			}
-		});
-
+		//自动刷新
 		autoRefresh();
 	}
 
+	//自动刷新
 	private void autoRefresh() {
 		swipeToLoadLayout.post(new Runnable() {
 			@Override
@@ -115,7 +99,7 @@ public class MywantedActivity extends BaseActivity {
 		titleFirstButton=titleLayout.getFirstButton();
 		listView = (ListView) findViewById(R.id.swipe_target);
 
-		mAdapter = new LectureAdapter(MywantedActivity.this, listView,lecturelist,mLectureDao);
+		mAdapter = new LectureAdapter(MywantedActivity.this,lecturelist);
 
 		daoSession=((MyApplication)getApplication()).getDaoSession();
 
@@ -166,6 +150,24 @@ public class MywantedActivity extends BaseActivity {
 				return true;
 			}
 		});
+
+		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				mywantedLoadDialog= DialogUtils.createLoadingDialog(MywantedActivity.this,"正在加载");
+				showWantedLecture();
+				mAdapter.notifyDataSetChanged();
+				swipeToLoadLayout.setRefreshing(false);
+			}
+		});
+
+		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
+			@Override
+			public void onLoadMore() {
+
+				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
 	}
 
 	@Override
@@ -179,6 +181,7 @@ public class MywantedActivity extends BaseActivity {
 		}
 	}
 
+	//“我的想看”请求
 	private void MywantedRequest() {
 
 		new Thread(new Runnable() {
@@ -186,12 +189,10 @@ public class MywantedActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_PORT,ConstantClass.userOnline);
-					response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_COM,ConstantClass.userOnline);
-					Logger.json(response);
+					String response = HttpUtil.MyWantedRequest(ConstantClass.ADDRESS, ConstantClass.MYWANTED_LECTURE_REQUEST_COM,ConstantClass.userOnline);
 					//解析和处理服务器返回的数据
 					mywantedResult= Utility.handleWantedLectureResponse(response,mUserDao);
-
+					//结果处理
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -204,25 +205,19 @@ public class MywantedActivity extends BaseActivity {
 		}).start();
 	}
 
+	//讲座请求
 	private void LectureRequest() {
-
-		//先从数据库查找是否有数据，按时间排列，加载前十条，没有则从服务器请求，并保存
-		//showLectureInfo();
-		/*
-		 * 同时与服务器数据库更新时间比对，先发更新时间对比请求，有更新则保存到本地数据库*/
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
+					//获取数据库中最后一条讲座的 id
 					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
-
-					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
+					//获取服务器返回数据
 					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline ,lastLecureID);
-
+					//解析和处理服务器返回的数据
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
-
+					//处理结果
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -235,25 +230,30 @@ public class MywantedActivity extends BaseActivity {
 		}).start();
 	}
 
+	//显示“我的想看”
 	private void showWantedLecture() {
 
+		//从数据库中查找用户想看的讲座
 		String temp=Utility.getUserWanted(ConstantClass.userOnline,mUserDao);
-		Logger.d(temp);
+		//如果数据库中没有，则想服务器请求
 		if(temp==null || temp.length()==0){
 			MywantedRequest();
 			return;
 		}
+		//将用户想看的讲座转换成字符串数组，方便操作
 		String[] wantedLecture = Utility.getStrings(temp);
 		if(wantedLecture.length==0){
 			Toasty.error(MywantedActivity.this,"解析用户想看的讲座失败，请联系开发者").show();
 			return;
 		}else{
+			//如果想看的讲座列表不为空，则清空
 			if (!lecturelist.isEmpty()) {
 				lecturelist.removeAll(lecturelist);
 			}
+			//依次将用户想看的讲座添加到 lecturelist 中
 			for(int i=0;i<wantedLecture.length;i++){
 				LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(wantedLecture[i])).build().unique();
-
+				//如果数据库中没有对应的讲座，则向服务器请求
 				if(lecture==null){
 					LectureRequest();
 					return;

@@ -51,19 +51,29 @@ import java.io.IOException;
  * Created by zhaoyaobang on 2018/3/6.
  */
 
-public class  MeFragment extends Fragment{
+public class  MeFragment extends BaseFragment{
 
-	TitleLayout titleLayout;
-	LinearLayout meLayout;
-	RelativeLayout mywantedLayout;
-	RelativeLayout myfocuseLayout;
-	RelativeLayout mycommentLayout;
-	Button titleFirstButton;
-	TextView userName;
-	CircleImageView userheadImage;
-	DaoSession daoSession;
-	UserDBDao mUserDao;
-	View rootview;
+	TitleLayout titleLayout;            //标题栏
+
+	LinearLayout meLayout;              //我的资料布局
+
+	RelativeLayout mywantedLayout;      //“我的想看”布局
+
+	RelativeLayout myfocuseLayout;      //“我的关注”布局
+
+	RelativeLayout mycommentLayout;     //“我的点评”布局
+
+	Button titleFirstButton;            //标题栏的第一个按钮
+
+	TextView userName;                  //用户昵称
+
+	CircleImageView userheadImage;      //用户头像
+
+	DaoSession daoSession;              //数据库操作对象
+
+	UserDBDao mUserDao;                 //用户表操作对象
+
+	View rootview;                      //根视图
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,17 +92,35 @@ public class  MeFragment extends Fragment{
 			parent.removeView(rootview);
 		}
 
-		titleLayout= (TitleLayout)rootview.findViewById(R.id.me_title_layout);
-		meLayout=(LinearLayout)rootview.findViewById(R.id.me_myinfo_layout);
-		mywantedLayout=(RelativeLayout)rootview.findViewById(R.id.me_mywanted_layout);
-		myfocuseLayout=(RelativeLayout)rootview.findViewById(R.id.me_myfocuse_layout);
-		mycommentLayout=(RelativeLayout)rootview.findViewById(R.id.me_mycomment_layout);
-		userName=(TextView)rootview.findViewById(R.id.me_username_text);
-		userheadImage=(CircleImageView)rootview.findViewById(R.id.me_userhead_image);
-		titleFirstButton=titleLayout.getFirstButton();
-		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
-		mUserDao=daoSession.getUserDBDao();
+		//初始化控件
+		initWidget();
+		//初始化视图
+		initView();
+		//初始化响应事件
+		initEvent();
 
+		return rootview;
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		// TODO Auto-generated method stub
+		super.onHiddenChanged(hidden);
+		//如果 fragment 显示出来，就更新用户头像与用户名
+		if (!hidden) {
+			UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+			String userHead=user.getUserPhotoUrl();
+			if(userHead.length()!=0 && userHead!=null){
+				Glide.with(getActivity()).load(userHead).into(userheadImage);
+			}else{
+				userheadImage.setImageResource(R.mipmap.ic_launcher);
+			}
+			userName.setText(user.getUserName());
+		}
+	}
+
+	@Override
+	void initView() {
 		titleLayout.setTitle("我的资料");
 		titleLayout.setFirstButtonBackground(R.drawable.ic_title_settings);
 		titleLayout.setSecondButtonVisible(View.GONE);
@@ -113,7 +141,24 @@ public class  MeFragment extends Fragment{
 				Glide.with(getActivity()).load(user.getUserPhotoUrl()).into(userheadImage);
 			}
 		}
+	}
 
+	@Override
+	void initWidget() {
+		titleLayout= (TitleLayout)rootview.findViewById(R.id.me_title_layout);
+		meLayout=(LinearLayout)rootview.findViewById(R.id.me_myinfo_layout);
+		mywantedLayout=(RelativeLayout)rootview.findViewById(R.id.me_mywanted_layout);
+		myfocuseLayout=(RelativeLayout)rootview.findViewById(R.id.me_myfocuse_layout);
+		mycommentLayout=(RelativeLayout)rootview.findViewById(R.id.me_mycomment_layout);
+		userName=(TextView)rootview.findViewById(R.id.me_username_text);
+		userheadImage=(CircleImageView)rootview.findViewById(R.id.me_userhead_image);
+		titleFirstButton=titleLayout.getFirstButton();
+		daoSession=((MyApplication)getActivity().getApplication()).getDaoSession();
+		mUserDao=daoSession.getUserDBDao();
+	}
+
+	@Override
+	void initEvent() {
 		titleFirstButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -153,23 +198,32 @@ public class  MeFragment extends Fragment{
 				startActivity(intent);
 			}
 		});
-		return rootview;
 	}
 
 	@Override
-	public void onHiddenChanged(boolean hidden) {
-		// TODO Auto-generated method stub
-		super.onHiddenChanged(hidden);
-		if (!hidden) {
-			UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-			String userHead=user.getUserPhotoUrl();
-			if(userHead.length()!=0 && userHead!=null){
-				Glide.with(getActivity()).load(userHead).into(userheadImage);
-			}else{
-				userheadImage.setImageResource(R.mipmap.ic_launcher);
-			}
-			userName.setText(user.getUserName());
-		}
+	public void onClick(View v) {
+
 	}
 
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+
+		if(user==null){
+			Logger.d("user is null");
+		}else{
+			if(user.getUserName()==null){
+				userName.setText("讲座萌新");
+			}else {
+				userName.setText(user.getUserName());
+			}
+			if(user.getUserPhotoUrl()==null){
+				userheadImage.setImageResource(R.drawable.ic_defult_userhead);
+			}else{
+				Glide.with(getActivity()).load(user.getUserPhotoUrl()).into(userheadImage);
+			}
+		}
+	}
 }
