@@ -86,6 +86,8 @@ public class RecommentFragment extends BaseFragment {
 
 	Dialog requestLoadDialog;                   //加载对话框
 
+	int recommentOrderResult;       //推荐讲座请求结果
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -180,7 +182,7 @@ public class RecommentFragment extends BaseFragment {
 				recommentOrder = Utility.getStrings(temp);
 
 				if (mAdapter.getCount() == recommentOrder.length) {
-					Toasty.info(getContext(), "讲座信息暂无更新").show();
+					RecommentLectureRequest();
 					return;
 				}
 				//按推荐序列依次添加讲座，
@@ -219,9 +221,9 @@ public class RecommentFragment extends BaseFragment {
 				lecturelist.addAll(0, lectureDBS);
 				listView.setSelection(0);
 				mAdapter.notifyDataSetChanged();
-				DialogUtils.closeDialog(requestLoadDialog);
 			}
 		}
+		DialogUtils.closeDialog(requestLoadDialog);
 	}
 
 	@Override
@@ -248,10 +250,8 @@ public class RecommentFragment extends BaseFragment {
 				switch (msg.what) {
 					case 1:
 						if (lectureRequestResult == 0) {
-
 							Logger.d("获取讲座成功");
 							showLectureInfoToTop();
-							Toasty.success(getContext(), "获取讲座成功").show();
 						} else if (lectureRequestResult == 1) {
 							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.info(getContext(), "讲座信息暂无更新").show();
@@ -260,6 +260,16 @@ public class RecommentFragment extends BaseFragment {
 							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
 						}
 						break;
+					case 2:
+						if(recommentOrderResult==0){
+							showLectureInfoToTop();
+						}else if(recommentOrderResult==3){
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(),"暂无更多推荐讲座").show();
+						}else{
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						}
 				}
 				return true;
 			}
@@ -280,8 +290,7 @@ public class RecommentFragment extends BaseFragment {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-
-				requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
+				requestLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
 
 				showLectureInfoToTop();
 
@@ -300,7 +309,38 @@ public class RecommentFragment extends BaseFragment {
 	}
 
 	@Override
+	public void fetchData() {
+
+	}
+
+	@Override
 	public void onClick(View v) {
 
+	}
+
+	private void RecommentLectureRequest(){
+
+		Logger.d("开始获取推荐的讲座");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					Logger.d("RecommentLectureRequest()");
+
+					String recommentResponse = HttpUtil.RecommentRequest(ConstantClass.ADDRESS, ConstantClass.RECOMMENT_COM, ConstantClass.userOnline);
+
+					recommentOrderResult=Utility.handleRecommentLectureResponse(recommentResponse,mUserDao);
+
+					handler.sendEmptyMessage(2);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

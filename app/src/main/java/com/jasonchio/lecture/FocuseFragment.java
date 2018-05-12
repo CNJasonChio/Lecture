@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -186,16 +188,11 @@ public class FocuseFragment extends BaseFragment {
 		String[] focuseLibrary = Utility.getStrings(userFocuse);
 		//如果获取到了用户关注的讲座信息来源
 		if (focuseLibrary.length != 0) {
-			//清空列表中先有表项
-			if (mAdapter.getCount() != 0) {
-				lecturelist.clear();
-				mAdapter.notifyDataSetChanged();
-			}
 
 			List <LectureDB> lectureDBList = new ArrayList <>();
 			//按用户关注的讲座信息来源，逐个查询符合条件的讲座
 			for (int i = 0; i < focuseLibrary.length; i++) {
-				List <LectureDB> lectureDBS = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LecutreSource.eq(focuseLibrary[i])).build().list();
+				List <LectureDB> lectureDBS = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).where(LectureDBDao.Properties.LecutreSource.eq(focuseLibrary[i])).build().list();
 				//如果数据库中没有该来源的讲座，就查询下一来源的讲座
 				if (lectureDBS.isEmpty()) {
 					continue;
@@ -245,6 +242,10 @@ public class FocuseFragment extends BaseFragment {
 						} else if (myFocuseRequestResult == 3) {
 							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.info(getContext(), "还没有关注的图书馆哟，先去找找自己感兴趣的讲座来源吧！").show();
+							if(!lecturelist.isEmpty()){
+								lecturelist.clear();
+								mAdapter.notifyDataSetChanged();
+							}
 						} else {
 							DialogUtils.closeDialog(requestLoadDialog);
 						}
@@ -253,8 +254,12 @@ public class FocuseFragment extends BaseFragment {
 						if (lectureRequestResult == 0) {
 							DialogUtils.closeDialog(requestLoadDialog);
 							showLectureInfoToTop();
-						}else{
+						}else if (lectureRequestResult == 1) {
 							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(), "没有更多关注发布源的讲座推荐了").show();
+						} else {
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
 						}
 				}
 				return true;
@@ -278,7 +283,6 @@ public class FocuseFragment extends BaseFragment {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-
 				showLectureInfoToTop();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -297,4 +301,10 @@ public class FocuseFragment extends BaseFragment {
 	public void onClick(View v) {
 
 	}
+
+	@Override
+	public void fetchData() {
+		autoRefresh();
+	}
+
 }

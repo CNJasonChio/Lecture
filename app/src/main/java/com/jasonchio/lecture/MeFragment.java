@@ -81,6 +81,11 @@ public class  MeFragment extends BaseFragment{
 	}
 
 	@Override
+	public void fetchData() {
+
+	}
+
+	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View

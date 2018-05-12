@@ -92,20 +92,14 @@ public class HomeFragment extends BaseFragment {
 
 	TitleLayout titleLayout;                //标题栏
 
-	LocationClient locationClient;          //定位
-
 	Handler handler;                        //handler
+
+	boolean sendPosOk = false;                //发送位置信息完成
 
 	double longtituide;                     //用户经度
 	double latituide;                       //用户纬度
 
 	String location;                        //用户所在区县
-
-	int sendPositionResult = 0;               //向服务器发送用户位置的结果
-
-	Rationale mRationale;                   //请求权限被拒绝多次后的提示对象
-
-	boolean sendPosOk = false;                //发送位置信息完成
 
 	View rootView;                          //根视图
 
@@ -113,19 +107,19 @@ public class HomeFragment extends BaseFragment {
 
 	UserDBDao mUserDao;                     //用户表操作对象
 
+	LocationClient locationClient;          //定位
+
+	Rationale mRationale;                   //请求权限被拒绝多次后的提示对象
+
+	int sendPositionResult = 0;               //向服务器发送用户位置的结果
+
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
+	}
 
-		//检查权限
-
-
-		if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission_group.LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			askforPermisson();
-		} else {
-			getPosition();
-		}
-
+	@Override
+	public void fetchData() {
 
 	}
 
@@ -196,7 +190,6 @@ public class HomeFragment extends BaseFragment {
 					case 1:
 						if (sendPositionResult == 0) {
 							if (sendPosOk == false) {
-								Toasty.success(getContext(), "定位成功").show();
 								saveUserPosition();
 								sendPosOk = true;
 							}
@@ -204,6 +197,7 @@ public class HomeFragment extends BaseFragment {
 							Toasty.error(getContext(), "定位失败，请稍候再试或联系开发者").show();
 						}
 						break;
+						default:
 				}
 				return true;
 			}
@@ -286,57 +280,14 @@ public class HomeFragment extends BaseFragment {
 
 	}
 
-	//向服务器发送位置信息
-	private void SendPosition() {
-		sendPosOk = false;
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					String response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_COM, ConstantClass.userOnline, longtituide, latituide);
-
-					sendPositionResult = Utility.handleCommonResponse(response);
-
-					handler.sendEmptyMessage(1);
-
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
-
-	//定位监听器
-	public class MyLocationListener implements BDLocationListener {
-		@Override
-		public void onReceiveLocation(BDLocation bdLocation) {
-			Logger.d("获取位置信息");
-			longtituide = bdLocation.getLongitude();
-			latituide = bdLocation.getLatitude();
-			location = bdLocation.getDistrict();
-			SendPosition();
-		}
-	}
-
 	//获取用户位置
 	private void getPosition() {
 		locationClient = new LocationClient(getContext());
-		locationClient.registerLocationListener(new MyLocationListener());
+		locationClient.registerLocationListener(new HomeFragment.MyLocationListener());
 		LocationClientOption locationClientOption = new LocationClientOption();
 		locationClientOption.setIsNeedAddress(true);
 		locationClient.setLocOption(locationClientOption);
 		locationClient.start();
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		if (locationClient != null) {
-			locationClient.stop();
-		}
 	}
 
 	//申请权限
@@ -406,6 +357,41 @@ public class HomeFragment extends BaseFragment {
 		};
 	}
 
+	//定位监听器
+	public class MyLocationListener implements BDLocationListener {
+		@Override
+		public void onReceiveLocation(BDLocation bdLocation) {
+			Logger.d("获取位置信息");
+			longtituide = bdLocation.getLongitude();
+			latituide = bdLocation.getLatitude();
+			location = bdLocation.getDistrict();
+			SendPosition();
+		}
+	}
+
+	//向服务器发送位置信息
+	private void SendPosition() {
+		sendPosOk = false;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_COM, ConstantClass.userOnline, longtituide, latituide);
+
+					sendPositionResult = Utility.handleCommonResponse(response);
+
+					handler.sendEmptyMessage(1);
+
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
 	//保存用户的位置信息
 	private void saveUserPosition() {
 		UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
@@ -416,4 +402,11 @@ public class HomeFragment extends BaseFragment {
 		mUserDao.update(userDB);
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (locationClient != null) {
+			locationClient.stop();
+		}
+	}
 }

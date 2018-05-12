@@ -100,7 +100,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 						} else if (mywantedResult == 1) {
 							Toasty.error(SelecteLectureCommentActivity.this, "数据库无更新").show();
 						} else if(mywantedResult==3){
-							Toasty.error(SelecteLectureCommentActivity.this, "仅能评论“我的想看”里的讲座,先去找找想看的讲座吧！").show();
+							Toasty.info(SelecteLectureCommentActivity.this, "仅能评论“我的想看”里的讲座,\n先去找找想看的讲座吧！").show();
 						}
 						else {
 							Toasty.error(SelecteLectureCommentActivity.this, "服务器出错，请稍候再试").show();
@@ -174,9 +174,8 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 					long lastLecureID= Utility.lastLetureinDB(mLectureDao);
 
-					//String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_PORT, lastLecureID);
-
 					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 
 					handler.sendEmptyMessage(2);

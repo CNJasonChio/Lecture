@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.google.gson.Gson;
 import com.jasonchio.lecture.greendao.CommentDB;
 import com.jasonchio.lecture.greendao.CommentDBDao;
@@ -34,6 +35,7 @@ import com.jasonchio.lecture.gson.RecommentLectureResult;
 import com.jasonchio.lecture.gson.SigninResult;
 import com.jasonchio.lecture.gson.VercodeResult;
 import com.orhanobut.logger.Logger;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -160,7 +162,7 @@ public class Utility {
 				if (user == null) {
 					Logger.d("将该用户存入数据库");
 					UserDB newUser = new UserDB();
-			 		newUser.setUserId(userID);
+					newUser.setUserId(userID);
 					newUser.setUserPhone(userPhone);
 					mUserDao.insertOrReplace(newUser);
 				} else {
@@ -180,62 +182,71 @@ public class Utility {
 	//解析和处理服务器返回的讲座数据
 	public static int handleLectureResponse(String response, LectureDBDao mLectureDao) {
 
-		Gson gson = new Gson();
+		if (!TextUtils.isEmpty(response)) {
+			Gson gson = new Gson();
 
-		//GSON直接解析成对象
-		LectureRequestResult resultBean = gson.fromJson(response, LectureRequestResult.class);
-		//对象中拿到集合
-		List <LectureRequestResult.LectureBean> lectureBeanList = resultBean.getLecture();
+			//GSON直接解析成对象
+			LectureRequestResult resultBean = gson.fromJson(response, LectureRequestResult.class);
+			//对象中拿到集合
+			List <LectureRequestResult.LectureBean> lectureBeanList = resultBean.getLecture();
 
-		int state = resultBean.getState();
+			int state = resultBean.getState();
 
-		if (state == 0) {
-			for (final LectureRequestResult.LectureBean lecture : lectureBeanList) {
-				final LectureDB lectureDB = new LectureDB();
-				lectureDB.setLectureId(lecture.getLecture_id());
-				lectureDB.setLectureTitle(lecture.getLecture_title());
-				lectureDB.setLectureLocation(lecture.getLecture_location());
-				lectureDB.setLectureTime(lecture.getLecture_time());
-				lectureDB.setLecutreSource(lecture.getLecture_source());
-				lectureDB.setLecutreLikers(lecture.getLecture_fans_amount());
-				lectureDB.setLectureUrl(lecture.getLecture_url());
-				lectureDB.setLectureDistrict(lecture.getRange());
-				lectureDB.setIsWanted(lecture.getUser_want_lecture());
-				lectureDB.setLectureImage(lecture.getLecture_picture());
-				if(lecture.getLecture_information()==null || lecture.getLecture_information().length()==0){
-					lectureDB.setLectureContent("暂无简介，可点击“阅读原文”查看");
-					mLectureDao.insertOrReplace(lectureDB);
-				}else{
-					lectureDB.setLectureContent(lecture.getLecture_information());
-					mLectureDao.insertOrReplace(lectureDB);
-					getLectureContent(lecture.getLecture_id(), lecture.getLecture_information(), mLectureDao);
+			if (state == 0) {
+				for (final LectureRequestResult.LectureBean lecture : lectureBeanList) {
+					final LectureDB lectureDB = new LectureDB();
+					lectureDB.setLectureId(lecture.getLecture_id());
+					lectureDB.setLectureTitle(lecture.getLecture_title());
+					lectureDB.setLectureLocation(lecture.getLecture_location());
+					lectureDB.setLectureTime(lecture.getLecture_time());
+					lectureDB.setLecutreSource(lecture.getLecture_source());
+					lectureDB.setLecutreLikers(lecture.getLecture_fans_amount());
+					lectureDB.setLectureUrl(lecture.getLecture_url());
+					lectureDB.setLectureDistrict(lecture.getRange());
+					lectureDB.setIsWanted(lecture.getUser_want_lecture());
+					lectureDB.setLectureImage(lecture.getLecture_picture());
+					if (lecture.getLecture_information() == null || lecture.getLecture_information().length() == 0) {
+						lectureDB.setLectureContent("暂无简介，可点击“阅读原文”查看");
+						mLectureDao.insertOrReplace(lectureDB);
+					} else {
+						lectureDB.setLectureContent(lecture.getLecture_information());
+						mLectureDao.insertOrReplace(lectureDB);
+						getLectureContent(lecture.getLecture_id(), lecture.getLecture_information(), mLectureDao);
+					}
 				}
 			}
+			return state;
 		}
-		return state;
+		return -1;
 	}
 
 	//解析和处理服务器针对该用户推荐的讲座顺序
-	public static int handleRecommentLectureResponse(String response,UserDBDao mUserDao){
-		int state=1;
+	public static int handleRecommentLectureResponse(String response, UserDBDao mUserDao) {
+		int state = 1;
 
-		Gson gson=new Gson();
+		Gson gson = new Gson();
 
-		RecommentLectureResult result=gson.fromJson(response,RecommentLectureResult.class);
+		RecommentLectureResult result = gson.fromJson(response, RecommentLectureResult.class);
 
-		if(result!=null){
-			state=result.getState();
-			if(state==0){
-				UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-				if(user!=null){
-					List<Integer> recommentLectureOrder=result.getRecommend();
-					String recommentOrder="";
-					if(!recommentLectureOrder.isEmpty()){
-						for(Integer order: recommentLectureOrder){
-							recommentOrder+=Integer.toString(order)+",";
+		if (result != null) {
+			state = result.getState();
+			if (state == 0) {
+				UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+				if (user != null) {
+					List <Integer> recommentLectureOrder = result.getRecommend();
+					String recommentOrder = "";
+					if (!recommentLectureOrder.isEmpty()) {
+						for (Integer order : recommentLectureOrder) {
+							recommentOrder += Integer.toString(order) + ",";
 						}
 					}
-					if(recommentOrder!=null && recommentOrder!=""){
+					if (recommentOrder != null && recommentOrder != "") {
+						if (user.getRecommentLectureOrder() != null) {
+							if (user.getRecommentLectureOrder().length() == recommentOrder.length()) {
+								state = 3;
+								return state;
+							}
+						}
 						user.setRecommentLectureOrder(recommentOrder);
 						mUserDao.update(user);
 					}
@@ -243,7 +254,6 @@ public class Utility {
 			}
 		}
 		return state;
-
 	}
 
 	//解析和处理服务器返回的评论数据
@@ -298,9 +308,9 @@ public class Utility {
 				user.setUserBirthday(userInfoBean.getUser_birthday());
 				user.setUserLatitude(userInfoBean.getUser_latitude());
 				user.setUserLongitude(userInfoBean.getUser_longtitude());
-				if(userInfoBean.getUser_name()==null){
+				if (userInfoBean.getUser_name() == null) {
 					user.setUserName("讲座萌新");
-				}else{
+				} else {
 					user.setUserName(userInfoBean.getUser_name());
 				}
 				user.setUserPhotoUrl(userInfoBean.getUser_face_url());
@@ -429,14 +439,14 @@ public class Utility {
 		List <Integer> myComment = result.getComment_id();
 
 		if (state == 0) {
-				String userComment = "";
-				for (long wanted : myComment) {
-					userComment += Long.toString(wanted) + ",";
-				}
-				UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-				userDB.setUserComment(userComment);
-				mUserDao.update(userDB);
-		}else if(state==1){
+			String userComment = "";
+			for (long wanted : myComment) {
+				userComment += Long.toString(wanted) + ",";
+			}
+			UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+			userDB.setUserComment(userComment);
+			mUserDao.update(userDB);
+		} else if (state == 1) {
 			if (myComment.size() == 0) {
 				state = 3;
 			}
@@ -462,10 +472,10 @@ public class Utility {
 				libraryDB.setLibraryName(library_info.getLibrary_name());
 				libraryDB.setLibraryUrl(library_info.getLibrary_address_url());
 				libraryDB.setIsFocused(library_info.getUser_focus_lib());
-				if(library_info.getLibrary_information()==null || library_info.getLibrary_information().length()==0){
+				if (library_info.getLibrary_information() == null || library_info.getLibrary_information().length() == 0) {
 					libraryDB.setLibraryContent("暂无简介，可点击“查看官网”查看");
 					mLibraryDao.insertOrReplace(libraryDB);
-				}else{
+				} else {
 					libraryDB.setLibraryContent(library_info.getLibrary_information());
 					mLibraryDao.insertOrReplace(libraryDB);
 					getLibraryContent(libraryDB.getLibraryID(), libraryDB.getLibraryContent(), mLibraryDao);
@@ -485,14 +495,14 @@ public class Utility {
 	}
 
 	//解析和处理服务器返回的添加或者取消关注的数据
-	public static int handleFocuseChangeResponse(String response, String libName, UserDBDao mUserDao,LibraryDBDao mLibraryDao, int isFocuse) {
+	public static int handleFocuseChangeResponse(String response, String libName, UserDBDao mUserDao, LibraryDBDao mLibraryDao, int isFocuse) {
 		Gson gson = new Gson();
 		CommonStateResult result = gson.fromJson(response, CommonStateResult.class);
 		int state = result.getState();
 		if (state == 0) {
 			String temp = Utility.getUserFocuse(ConstantClass.userOnline, mUserDao);
-			if(temp!=null && temp!=""){
-				if(isFocuse==0){
+			if (temp != null && temp != "") {
+				if (isFocuse == 0) {
 					String[] focuseLibrary = Utility.getStrings(temp);
 					List <String> focuseStr = new ArrayList <>();
 
@@ -513,15 +523,15 @@ public class Utility {
 					UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 					userDB.setUserFocuseLirary(userFocuseLirary);
 					mUserDao.update(userDB);
-				}else{
-					temp+=libName+",";
+				} else {
+					temp += libName + ",";
 					UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 					userDB.setUserFocuseLirary(temp);
 					mUserDao.update(userDB);
 				}
-				LibraryDB libraryDB=mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
+				LibraryDB libraryDB = mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryName.eq(libName)).build().unique();
 
-				if(libraryDB!=null){
+				if (libraryDB != null) {
 					libraryDB.setIsFocused(isFocuse);
 					mLibraryDao.update(libraryDB);
 				}
@@ -533,36 +543,36 @@ public class Utility {
 	}
 
 	//解析和处理服务器返回的添加或者取消点赞评论的数据
-	public static int handleLikeChangeResponse(String response, long commentID,CommentDBDao mCommentDao, int isLike) {
+	public static int handleLikeChangeResponse(String response, long commentID, CommentDBDao mCommentDao, int isLike) {
 
 		Gson gson = new Gson();
 		CommonStateResult result = gson.fromJson(response, CommonStateResult.class);
 		int state = result.getState();
 		if (state == 0) {
-			CommentDB comment=mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(commentID)).build().unique();
-				comment.setIsLike(isLike);
-				if(isLike==0){
-					comment.setCommentLikers(comment.getCommentLikers()-1);
-				}else {
-					comment.setCommentLikers(comment.getCommentLikers()+1);
-				}
-				mCommentDao.update(comment);
+			CommentDB comment = mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(commentID)).build().unique();
+			comment.setIsLike(isLike);
+			if (isLike == 0) {
+				comment.setCommentLikers(comment.getCommentLikers() - 1);
+			} else {
+				comment.setCommentLikers(comment.getCommentLikers() + 1);
+			}
+			mCommentDao.update(comment);
 		}
 		return state;
 	}
 
 	//解析和处理服务器返回的添加或者取消想看的数据
-	public static int handleWantedChangeResponse(String response, long lectureID, UserDBDao mUserDao, LectureDBDao mLectureDao,int isWanted) {
+	public static int handleWantedChangeResponse(String response, long lectureID, UserDBDao mUserDao, LectureDBDao mLectureDao, int isWanted) {
 
 		Gson gson = new Gson();
 		CommonStateResult result = gson.fromJson(response, CommonStateResult.class);
 		int state = result.getState();
 		if (state == 0) {
 			String temp = Utility.getUserWanted(ConstantClass.userOnline, mUserDao);
-			LectureDB lecture=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
-			if(lecture.getIsWanted()!=isWanted){
-				if (temp != null && temp!="") {
-					if(isWanted==0){
+			LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
+			if (lecture.getIsWanted() != isWanted) {
+				if (temp != null && temp != "") {
+					if (isWanted == 0) {
 						String[] wantedLecture = Utility.getStrings(temp);
 						List <String> wantedStr = new ArrayList <>();
 						for (int i = 0; i < wantedLecture.length; i++) {
@@ -583,14 +593,14 @@ public class Utility {
 						UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 						userDB.setUserWantedLecture(userWantedLecture);
 						mUserDao.update(userDB);
-						lecture.setLecutreLikers(lecture.getLecutreLikers()-1);
-				}else{
-						temp+=Long.toString(lectureID)+",";
+						lecture.setLecutreLikers(lecture.getLecutreLikers() - 1);
+					} else {
+						temp += Long.toString(lectureID) + ",";
 						UserDB userDB = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 
 						userDB.setUserWantedLecture(temp);
 						mUserDao.update(userDB);
-						lecture.setLecutreLikers(lecture.getLecutreLikers()+1);
+						lecture.setLecutreLikers(lecture.getLecutreLikers() + 1);
 					}
 					lecture.setIsWanted(isWanted);
 					mLectureDao.update(lecture);
@@ -658,8 +668,8 @@ public class Utility {
 
 			UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
 
-			if(userComment!=null){
-				userComment+=Long.toString(result.getComment_id())+",";
+			if (userComment != null) {
+				userComment += Long.toString(result.getComment_id()) + ",";
 				user.setUserComment(userComment);
 				mUserDao.update(user);
 			}
@@ -689,7 +699,7 @@ public class Utility {
 	//解析和处理服务器返回的正文数据
 	public static boolean handleLectureContentResponse(String response, long lectureId, LectureDBDao mLectureDao) {
 
-		boolean isSucceed=false;
+		boolean isSucceed = false;
 		if (!TextUtils.isEmpty(response)) {
 
 			LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureId)).build().unique();
@@ -697,11 +707,12 @@ public class Utility {
 			if (lecture != null) {
 				lecture.setLectureContent(response);
 				mLectureDao.update(lecture);
-				isSucceed=true;
+				isSucceed = true;
 			}
 		}
 		return isSucceed;
 	}
+
 	//解析和处理服务器返回的正文数据
 	public static void handleLibraryContentResponse(String response, long libraryID, LibraryDBDao mLibraryDao) {
 
@@ -716,6 +727,7 @@ public class Utility {
 			}
 		}
 	}
+
 	/**
 	 * 判断手机号码是否合理
 	 *
@@ -740,7 +752,7 @@ public class Utility {
 		}
 	}
 
-	private static boolean isMobileNO(String mobileNums)   {
+	private static boolean isMobileNO(String mobileNums) {
 		String telRegex = "[1][345789]\\d{9}";// "[1]"代表第1位为数字1，"[358]"代表第二位可以为3、5、8中的一个，"\\d{9}"代表后面是可以是0～9的数字，有9位。
 		if (TextUtils.isEmpty(mobileNums))
 			return false;
@@ -799,9 +811,9 @@ public class Utility {
 	public static String getUserFocuse(long userID, UserDBDao mUserDao) {
 
 		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(userID)).build().unique();
-		String userFocuse="";
+		String userFocuse = "";
 
-		if(user!=null){
+		if (user != null) {
 			userFocuse = user.getUserFocuseLirary();
 
 		}
@@ -812,9 +824,9 @@ public class Utility {
 
 		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(userID)).build().unique();
 
-		String userComment="";
+		String userComment = "";
 
-		if(user!=null){
+		if (user != null) {
 			userComment = user.getUserComment();
 		}
 
@@ -825,16 +837,16 @@ public class Utility {
 
 		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(userID)).build().unique();
 
-		String userWanted="";
+		String userWanted = "";
 
-		if(user!=null){
+		if (user != null) {
 			userWanted = user.getUserWantedLecture();
 		}
 		return userWanted;
 	}
 
 	public static void getLectureContent(final long lectureID, String lectureInfo, final LectureDBDao mLectureDao) {
-		ContentRequest(lectureInfo,new Callback() {
+		ContentRequest(lectureInfo, new Callback() {
 			@Override
 			public void onFailure(Call call, IOException e) {
 				Logger.d("content获取失败");
@@ -849,7 +861,7 @@ public class Utility {
 
 	public static void getLibraryContent(final long libraryID, String libraryInfo, final LibraryDBDao mLibraryDao) {
 
-		ContentRequest(libraryInfo,new Callback() {
+		ContentRequest(libraryInfo, new Callback() {
 			@Override
 			public void onFailure(Call call, IOException e) {
 				Logger.d("content获取失败");

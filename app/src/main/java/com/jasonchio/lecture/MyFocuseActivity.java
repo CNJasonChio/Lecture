@@ -153,10 +153,13 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 							showFocuseLibrary();
 							Toasty.success(MyFocuseActivity.this,"获取“我的关注”成功").show();
 						} else if (myFocuseLibRequestResult == 1) {
+							DialogUtils.closeDialog(myFocuseLoadDialog);
 							Toasty.error(MyFocuseActivity.this, "数据库无更新").show();
 						} else if (myFocuseLibRequestResult == 3) {
+							DialogUtils.closeDialog(myFocuseLoadDialog);
 							Toasty.info(MyFocuseActivity.this, "还没有关注的图书馆哟，先去找找自己感兴趣的图书馆吧！").show();
 						} else {
+							DialogUtils.closeDialog(myFocuseLoadDialog);
 							Toasty.error(MyFocuseActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -164,6 +167,7 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 						if (libraryRequestResult == 0) {
 							showFocuseLibrary();
 						} else {
+							DialogUtils.closeDialog(myFocuseLoadDialog);
 							Toasty.error(MyFocuseActivity.this, "服务器出错，请联系开发者").show();
 						}
 						break;

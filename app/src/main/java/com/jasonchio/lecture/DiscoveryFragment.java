@@ -248,11 +248,9 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		CommentDB comment = commentList.get(position);
 
 		switch (v.getId()) {
-
-			case R.id.comment_user_layout:
+			/*case R.id.comment_user_layout:
 				Toast.makeText(getActivity(), "查看评论人资料", Toast.LENGTH_SHORT).show();
-				break;
-
+				break;*/
 			case R.id.comment_lecture_layout:
 				//显示对应的讲座详情
 				Intent intent = new Intent(getContext(), LectureDetailActivity.class);
@@ -261,12 +259,10 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 				break;
 			case R.id.comment_like_layout:
 				if (comment.getIsLike() == 1) {
-					Toast.makeText(getActivity(), "取消点赞", Toast.LENGTH_SHORT).show();
 					LikeThisComment(comment.getCommentId(), 0);
 					mAdapter.changeCommentLike(position, 0);
 					//mAdapter.notifyDataSetChanged();
 				} else {
-					Toast.makeText(getActivity(), "点赞", Toast.LENGTH_SHORT).show();
 					LikeThisComment(comment.getCommentId(), 1);
 					mAdapter.changeCommentLike(position, 1);
 

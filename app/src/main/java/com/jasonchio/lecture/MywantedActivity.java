@@ -131,11 +131,14 @@ public class MywantedActivity extends BaseActivity {
 							showWantedLecture();
 						} else if (mywantedResult == 1) {
 							Toasty.error(MywantedActivity.this, "数据库无更新").show();
+							DialogUtils.closeDialog(mywantedLoadDialog);
 						} else if(mywantedResult==3){
 							Toasty.info(MywantedActivity.this,"还没有想看的讲座哟，快去讲座推荐看一看吧！").show();
+							DialogUtils.closeDialog(mywantedLoadDialog);
 							swipeToLoadLayout.setRefreshing(false);
 						}else {
 							Toasty.error(MywantedActivity.this, "服务器出错，请稍候再试").show();
+							DialogUtils.closeDialog(mywantedLoadDialog);
 						}
 						break;
 					case 2:

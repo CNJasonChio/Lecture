@@ -106,9 +106,11 @@ public class LibraryDetailActivity extends BaseActivity {
 			}
 			case R.id.library_original_text:{
 				//打开讲座信息来源原文
-				Intent intent=new Intent(Intent.ACTION_VIEW);
-				intent.setData(Uri.parse(original));
-				startActivity(intent);
+				if(original!=null){
+					Intent intent=new Intent(Intent.ACTION_VIEW);
+					intent.setData(Uri.parse(original));
+					startActivity(intent);
+				}
 				break;
 			}
 			default:

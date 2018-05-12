@@ -124,12 +124,12 @@ public class LectureDetailActivity extends BaseActivity {
 
 				if(isWanted==1){
 					titleSecondButton.setBackgroundResource(R.drawable.ic_lecture_likes);
-					Toast.makeText(LectureDetailActivity.this,"已从“我的想看”移除",Toast.LENGTH_SHORT).show();
+					Toasty.success(LectureDetailActivity.this,"已从“我的想看”移除").show();
 					isWanted =0;
 					WantedChangeRequest();
 				}else{
 					titleSecondButton.setBackgroundResource(R.drawable.ic_myinfo_mywanted);
-					Toast.makeText(LectureDetailActivity.this,"已加入“我的想看”",Toast.LENGTH_SHORT).show();
+					Toasty.success(LectureDetailActivity.this,"已加入“我的想看”").show();
 					isWanted =1;
 					WantedChangeRequest();
 				}

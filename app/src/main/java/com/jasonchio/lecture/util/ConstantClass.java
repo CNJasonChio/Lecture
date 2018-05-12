@@ -32,7 +32,7 @@ public class ConstantClass {
 
 	//服务器地址
 	public static final String ADDRESS="119.29.93.31";
-	//注册端口
+/*	//注册端口
 	public static final int SIGNIN_PORT=2001;
 	//找回密码端口
 	public static final int FINDPWD_PORT=2002;
@@ -67,7 +67,7 @@ public class ConstantClass {
 	//给评论点赞或取消点赞端口
 	public static final int LIKE_COMMENT_PORT=2017;
 	//用户更改头像端口
-	public static final int CHANGE_HEAD_PORT=2018;
+	public static final int CHANGE_HEAD_PORT=2018;*/
 
 
 	//注册命令

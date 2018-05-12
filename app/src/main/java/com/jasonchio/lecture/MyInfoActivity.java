@@ -747,15 +747,31 @@ public class MyInfoActivity extends BaseActivity {
 			return;
 		}else{
 			String userHead=user.getUserPhotoUrl();
-			if(userHead.length()!=0 && userHead!=null){
+			if(userHead!=null && userHead.length()!=0){
 				Glide.with(MyInfoActivity.this).load(userHead).into(photoImage);
 			}else{
-				photoImage.setImageResource(R.mipmap.ic_launcher);
+				photoImage.setImageResource(R.drawable.ic_defult_userhead);
 			}
-			nameText.setText(user.getUserName());
-			sexText.setText(user.getUserSex());
-			schoolText.setText(user.getUserSchool());
-			birthdayText.setText(user.getUserBirthday());
+			if(user.getUserBirthday()!=null && user.getUserBirthday().length()!=0){
+				nameText.setText(user.getUserName());
+			}else{
+				nameText.setText(" 讲座萌新");
+			}
+			if(user.getUserSex()!=null && user.getUserSex().length()!=0){
+				sexText.setText(user.getUserSex());
+			}else{
+				sexText.setText("暂未设置");
+			}
+			if(user.getUserSchool()!=null && user.getUserSchool().length()!=0){
+				schoolText.setText(user.getUserSchool());
+			}else{
+				schoolText.setText("暂未设置");
+			}
+			if(user.getUserBirthday()!=null&& user.getUserBirthday().length()!=0){
+				birthdayText.setText(user.getUserBirthday());
+			}else{
+				birthdayText.setText("暂未设置");
+			}
 			phoneText.setText(user.getUserPhone());
 		}
 

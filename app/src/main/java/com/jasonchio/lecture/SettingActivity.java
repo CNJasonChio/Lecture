@@ -274,9 +274,6 @@ public class SettingActivity extends BaseActivity {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					if (response != null) {
-						Logger.json(response);
-					}
 				} else {
 					Logger.d("localVersion is null");
 				}
@@ -296,7 +293,7 @@ public class SettingActivity extends BaseActivity {
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
-		intent.putExtra(Intent.EXTRA_TEXT, "给你推荐一款敲极好用的讲座信息收集平台，他就是没什么名气的《聚讲座》！！！\n" + updateFileUrl+"\n点击链接下载安装，马上体验一下吧！！！");
+		intent.putExtra(Intent.EXTRA_TEXT, "给你推荐一款敲极好用的讲座信息收集平台，它就是《聚讲座》！！！\n" + updateFileUrl+"\n点击链接下载安装，马上体验一下吧！！！");
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(Intent.createChooser(intent, getTitle()));
 	}

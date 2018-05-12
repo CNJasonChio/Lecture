@@ -110,8 +110,9 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 		//设置注册按钮监听事件
 		signInButton.setOnClickListener(this);
 
-		handler = new Handler() {
-			public void handleMessage(Message msg) {
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
 				if (msg.what == -9) {
 					sendCodeButton.setText("重新发送(" + countdown + ")");
 				} else if (msg.what == -8) {
@@ -164,8 +165,9 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 						}
 					}
 				}
+				return false;
 			}
-		};
+		});
 	}
 
 	//初始化视图
@@ -299,7 +301,9 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 			Toasty.error(SigninWithPhoneActivity.this, "5分钟内校验错误超过3次，验证码失效，请重新获取验证码").show();
 		} else if (vercodeResult == 468) {
 			Toasty.error(SigninWithPhoneActivity.this, "验证码错误").show();
-		} else {
+		} else if(vercodeResult==477){
+			Toasty.error(SigninWithPhoneActivity.this, "每天仅能请求十次验证码，明天再来吧").show();
+		}else {
 			Toasty.error(SigninWithPhoneActivity.this, "验证码系统错误，请稍候再试").show();
 			handler.sendEmptyMessage(-8);
 		}
@@ -312,8 +316,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 			public void run() {
 				try {
 					//获取服务器返回数据
-					//response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_PORT, userPhone, userPwd);
-					//response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_PORT, userPhone, userPwd);
+
 					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_COM, userPhone, userPwd);
 					//解析和处理服务器返回的数据
 					signinResult = Utility.handleSigninRespose(response);

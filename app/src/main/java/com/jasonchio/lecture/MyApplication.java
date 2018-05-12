@@ -42,10 +42,6 @@ public class MyApplication extends Application{
 	public void onCreate() {
 		super.onCreate();
 
-		/*DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture-db");
-		Database db = helper.getWritableDb();
-		daoSession = new DaoMaster(db).newSession();*/
-
 		//创建数据库lecture.db"
 		DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture", null);
 		//获取可写数据库
