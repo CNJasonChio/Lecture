@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.CommentDB;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
@@ -97,6 +98,7 @@ public class LectureAdapter extends BaseAdapter {
 		}else{
 			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_lecture_likes);
 		}
+		Logger.d(lecture.getIsWanted());
 		return view;
 	}
 

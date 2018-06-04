@@ -15,6 +15,7 @@ import android.widget.ImageView;
 
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.MD5Util;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
 import com.orhanobut.logger.Logger;
@@ -312,7 +313,7 @@ public class ForgetPwdActivity extends BaseActivity {
 			public void run() {
 				try {
 					//获取服务器返回数据
-					String response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_COM, phone, password);
+					String response = HttpUtil.FindPwdRequest(ConstantClass.ADDRESS, ConstantClass.FINDPWD_COM, phone, MD5Util.md5encrypt(password));
 					//解析和处理服务器返回的数据
 					findPwdResult = Utility.handleFindPwdRespose(response);
 					//处理结果

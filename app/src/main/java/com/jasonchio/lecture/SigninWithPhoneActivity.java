@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.MD5Util;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
 import org.json.JSONException;
@@ -143,7 +144,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 						// 提交验证码成功
 						if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {
 							//发送注册请求
-							SigninRequest(phoneNum, password);
+							SigninRequest(phoneNum, MD5Util.md5encrypt(password));
 
 						} else if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
 							Toasty.success(SigninWithPhoneActivity.this, "验证码发送成功").show();
@@ -316,8 +317,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 			public void run() {
 				try {
 					//获取服务器返回数据
-
-					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_COM, userPhone, userPwd);
+					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_COM, userPhone, MD5Util.md5encrypt(userPwd));
 					//解析和处理服务器返回的数据
 					signinResult = Utility.handleSigninRespose(response);
 

@@ -49,6 +49,7 @@ public class WelcomeActivity extends BaseActivity {
 	boolean isRemPwd=false;
 
 	DaoSession mDaoSession ;
+
 	UserDBDao mUserDao;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -65,7 +66,7 @@ public class WelcomeActivity extends BaseActivity {
 
 		//渐变背景图片
 		AlphaAnimation aa = new AlphaAnimation(0.3f, 1.0f);
-		aa.setDuration(2000);//设置动画持续时间
+		aa.setDuration(1500);//设置动画持续时间
 		view.startAnimation(aa);
 		aa.setAnimationListener(new Animation.AnimationListener() {
 			@Override
@@ -162,6 +163,7 @@ public class WelcomeActivity extends BaseActivity {
 						} else if (loginResult == 1) {
 							Toasty.error(WelcomeActivity.this, "密码已过期，请重新登录").show();
 							Intent intent=new Intent(WelcomeActivity.this,LoginActivity.class);
+							intent.putExtra("login_result",false);
 							startActivity(intent);
 							finish();
 						} else {

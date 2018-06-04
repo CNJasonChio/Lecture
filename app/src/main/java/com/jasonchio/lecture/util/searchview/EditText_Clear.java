@@ -114,7 +114,5 @@ public class EditText_Clear extends android.support.v7.widget.AppCompatEditText 
         }
         return super.onTouchEvent(event);
     }
-
-
 }
 

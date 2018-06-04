@@ -1,7 +1,10 @@
 package com.jasonchio.lecture;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTabHost;
+import android.support.v7.app.AlertDialog;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -19,9 +22,11 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
+import es.dmoral.toasty.Toasty;
+
 import static com.orhanobut.logger.Logger.addLogAdapter;
 
-public class MainPageActivity extends BaseActivity {
+public class MainPageActivity extends BaseActivity{
 
 	public FragmentTabHost fragmentTabHost;     //FragmentTabHost对象
 
@@ -43,6 +48,8 @@ public class MainPageActivity extends BaseActivity {
 
 	LectureDBDao mLectureDao;       //讲座表操作对象
 
+	long startTime = 0;
+
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//初始化 Logger
@@ -59,35 +66,6 @@ public class MainPageActivity extends BaseActivity {
 		MyinfoRequest();
 		//初始化事件响应
 		initEvent();
-		//初始化导航栏值
-		initValue();
-		//设置监听器
-		setLinstener();
-		//填充数据
-		fillDate();
-	}
-
-
-	private void initValue() {
-		InitTanView();
-	}
-
-	private void setLinstener() {
-		// imv_back.setOnClickListener(this);
-	}
-
-	private void fillDate() {
-
-	}
-
-	private void InitTanView() {
-		Bundle bundle = new Bundle();
-
-		for (int i = 0; i < TabTags.length; i++) {
-			View indicator = getIndicatorView(i);
-			fragmentTabHost.addTab(fragmentTabHost.newTabSpec(TabTags[i]).setIndicator(indicator), ClassTab[i], bundle);
-		}
-		fragmentTabHost.getTabWidget().setDividerDrawable(R.color.white);
 	}
 
 	private View getIndicatorView(int i) {
@@ -102,6 +80,14 @@ public class MainPageActivity extends BaseActivity {
 		//BaseActivity方法，隐藏系统标题栏
 		HideSysTitle();
 		fragmentTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
+
+		Bundle bundle = new Bundle();
+
+		for (int i = 0; i < TabTags.length; i++) {
+			View indicator = getIndicatorView(i);
+			fragmentTabHost.addTab(fragmentTabHost.newTabSpec(TabTags[i]).setIndicator(indicator), ClassTab[i], bundle);
+		}
+		fragmentTabHost.getTabWidget().setDividerDrawable(R.color.white);
 	}
 
 	@Override
@@ -114,11 +100,6 @@ public class MainPageActivity extends BaseActivity {
 
 	@Override
 	void initEvent() {
-
-	}
-
-	@Override
-	public void onClick(View v) {
 
 	}
 
@@ -166,5 +147,25 @@ public class MainPageActivity extends BaseActivity {
 				}
 			}
 		}).start();
+	}
+
+	@Override
+	public void onClick(View v) {
+
+	}
+
+	/**
+	 * 重写点击返回建的事件处理，连续点击返回键两次退出APP
+	 * */
+
+	@Override
+	public void onBackPressed() {
+		long currentTime = System.currentTimeMillis();
+		if ((currentTime - startTime) >= 2000) {
+			Toasty.info(MainPageActivity.this,"再按一次退出程序").show();
+			startTime = currentTime;
+		} else {
+			finish();
+		}
 	}
 }

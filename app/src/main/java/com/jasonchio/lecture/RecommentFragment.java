@@ -1,7 +1,9 @@
 package com.jasonchio.lecture;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.dmoral.toasty.Toasty;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * /**
@@ -86,8 +90,9 @@ public class RecommentFragment extends BaseFragment {
 
 	Dialog requestLoadDialog;                   //加载对话框
 
-	int recommentOrderResult;       //推荐讲座请求结果
+	int recommentOrderResult;                   //推荐讲座请求结果
 
+	long lastViewedLectureID;                   //
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 
@@ -101,6 +106,11 @@ public class RecommentFragment extends BaseFragment {
 		if (parent != null) {
 			parent.removeView(rootview);
 		}
+
+		//加载上次记录的位置
+		SharedPreferences sharedPreferences=getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE);
+		lastViewedLectureID=sharedPreferences.getLong("last_viewed_lectureID",0);
+		Logger.d("lastViewedLectureID onCreateView"+lastViewedLectureID);
 
 		//初始化控件
 		initWidget();
@@ -342,5 +352,16 @@ public class RecommentFragment extends BaseFragment {
 				}
 			}
 		}).start();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		//保存上次浏览的位置
+		SharedPreferences.Editor editor=getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE).edit();
+		editor.putLong("last_viewed_lectureID",lecturelist.get(0).getLectureId());
+		Logger.d("lastViewedLectureID onDestory"+lecturelist.get(0).getLectureId());
+		editor.apply();
 	}
 }

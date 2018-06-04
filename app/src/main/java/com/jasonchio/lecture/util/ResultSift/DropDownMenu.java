@@ -44,7 +44,7 @@ public class DropDownMenu extends LinearLayout {
     //遮罩颜色
     private int maskColor = 0x88888888;
     //tab字体大小
-    private int menuTextSize = 14;
+    private int menuTextSize = 16;
 
     //tab选中图标
     private int menuSelectedIcon;
@@ -84,7 +84,7 @@ public class DropDownMenu extends LinearLayout {
         tabMenuView = new LinearLayout(context);
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         tabMenuView.setOrientation(HORIZONTAL);
-        tabMenuView.setBackgroundColor(menuBackgroundColor);
+        //tabMenuView.setBackgroundColor(menuBackgroundColor);
         tabMenuView.setLayoutParams(params);
         addView(tabMenuView, 0);
 

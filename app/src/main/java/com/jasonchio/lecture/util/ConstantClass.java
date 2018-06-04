@@ -86,29 +86,29 @@ public class ConstantClass {
 	public static final int CHANGE_MYINFO_REQUEST_COM=7;
 	//查找讲座
 	public static final int SEARCH_LECTURE_REQUEST_COM=8;
-	//d
+	//请求"我的想看"
 	public static final int MYWANTED_LECTURE_REQUEST_COM=9;
-	//
+	//请求"我的关注"
 	public static final int MYFOCUSE_LIBRARY_REQUEST_COM=10;
-	//
+	//请求"我的评论"
 	public static final int MYCOMMENT_REQUEST_COM=11;
-	//
+	//添加或取消想看
 	public static final int ADD_CANCEL_WANTED_REQUEST_COM=12;
-	//
+	//添加或取消关注
 	public static final int ADD_CANCEL_FOCUSE_REQUEST_COM=13;
-	//
+	//请求讲座来源的详细信息
 	public static final int LIBRARY_REQUEST_COM=14;
-	//
+	//发送位置信息
 	public static final int SEND_POSITION_COM=15;
-	//
+	//添加评论
 	public static final int ADD_COMMENT_COM=16;
-	//
+	//给评论点赞或取消点赞
 	public static final int LIKE_COMMENT_COM=17;
-	//
+	//修改用户头像
 	public static final int CHANGE_HEAD_COM=18;
-	//
+	//请求推荐讲座的顺序
 	public static final int RECOMMENT_COM=19;
-	//
+	//检查更新
 	public static final int UPDATE_COM=20;
 
 }

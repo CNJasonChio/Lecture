@@ -20,6 +20,7 @@ import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.MD5Util;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
@@ -70,12 +71,16 @@ public class LoginActivity extends BaseActivity {
 
 	Dialog loginLoadDialog;             //加载对话框
 
+	boolean autoLoginResult;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//初始化Logger 适配器
 		addLogAdapter(new AndroidLogAdapter());
 		setContentView(R.layout.activity_login);
+
+		Intent intent=getIntent();
+		autoLoginResult=intent.getBooleanExtra("login_result",false);
 
 		//初始化控件
 		initWidget();
@@ -100,7 +105,9 @@ public class LoginActivity extends BaseActivity {
 
 		if(isRemPwd){
 			accountEdit.setText(preferences.getString("account",""));
-			passwordEdit.setText(preferences.getString("password",""));
+			if(autoLoginResult==false){
+				passwordEdit.setText(preferences.getString("password",""));
+			}
 			remPwdBox.setChecked(true);
 		}
 	}
@@ -142,6 +149,15 @@ public class LoginActivity extends BaseActivity {
 					case 1:
 						if (loginResult == 0) {
 							DialogUtils.closeDialog(loginLoadDialog);
+							editor=preferences.edit();
+							if(remPwdBox.isChecked()){
+								editor.putBoolean("remember_password",true);
+								editor.putString("account", userPhone);
+								editor.putString("password",MD5Util.md5encrypt(userPwd));
+							}else{
+								editor.clear();
+							}
+							editor.apply();
 							Toasty.success(LoginActivity.this, "登录成功").show();
 							Intent intent = new Intent(LoginActivity.this, MainPageActivity.class);
 							startActivity(intent);
@@ -194,21 +210,11 @@ public class LoginActivity extends BaseActivity {
 			case R.id.login_button: {
 				userPhone = accountEdit.getText().toString();
 				userPwd = passwordEdit.getText().toString();
-
 				if(userPhone.isEmpty() | userPwd.isEmpty()){
 					Toasty.error(LoginActivity.this,"用户名和密码不能为空");
 				}else{
-					loginRequest();
 					loginLoadDialog = DialogUtils.createLoadingDialog(LoginActivity.this,"正在登录");
-					editor=preferences.edit();
-					if(remPwdBox.isChecked()){
-						editor.putBoolean("remember_password",true);
-						editor.putString("account",userPhone);
-						editor.putString("password",userPwd);
-					}else{
-						editor.clear();
-					}
-					editor.apply();
+					loginRequest();
 				}
 				break;
 			}
@@ -227,8 +233,8 @@ public class LoginActivity extends BaseActivity {
 			@Override
 			public void run() {
 				try {
-					//获取服务器返回的结果
-					String response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, userPwd);
+					//获取服务器返回的结果 
+					String response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone,MD5Util.md5encrypt(userPwd));
 					//解析和处理服务器返回的结果
 					loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
 					//处理结果
