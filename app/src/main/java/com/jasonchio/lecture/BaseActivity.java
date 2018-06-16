@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -20,7 +21,10 @@ import android.text.style.AbsoluteSizeSpan;
 import android.view.View;
 import android.widget.EditText;
 import com.jasonchio.lecture.util.ActivityCollector;
+import com.jasonchio.lecture.util.NetworkUtil;
 import com.orhanobut.logger.AndroidLogAdapter;
+
+import es.dmoral.toasty.Toasty;
 
 import static com.orhanobut.logger.Logger.addLogAdapter;
 
@@ -54,6 +58,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
 	SignOutReceiver receiver;   //退出登录广播接收器对象
 
+	NetworkChangedReceiver networkChangedReceiver;  //网络状态改变监听器
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -61,6 +66,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 		ActivityCollector.addActivity(this);
 		//禁止屏幕旋转
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+		IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+		registerReceiver(networkChangedReceiver, intentFilter);
 	}
 
 	//隐藏标题栏
@@ -100,6 +108,8 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 		super.onDestroy();
 		//activity 销毁掉后，将其从 activity 列表中删除
 		ActivityCollector.removeActivity(this);
+		//注销网络状态改变监听器
+		unregisterReceiver(networkChangedReceiver);
 	}
 
 	@Override
@@ -108,8 +118,11 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 		//注册广播接收器
 		IntentFilter intentFilter=new IntentFilter();
 		intentFilter.addAction("com.jasonchio.lecture.SIGNOUT");
+
 		receiver=new SignOutReceiver();
 		registerReceiver(receiver,intentFilter);
+
+		networkChangedReceiver = new NetworkChangedReceiver();
 	}
 
 	@Override
@@ -144,4 +157,25 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 		}
 	}
 
+	public class NetworkChangedReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			int netWorkStates = NetworkUtil.getNetWorkStates(context);
+			switch (netWorkStates) {
+				case NetworkUtil.TYPE_NONE:
+					Toasty.error(context,"进入了无网络的异次元，请打开移动网络或WiFi").show();
+					//断网了
+					break;
+				case NetworkUtil.TYPE_MOBILE:
+					//打开了移动网络
+					break;
+				case NetworkUtil.TYPE_WIFI:
+					//打开了WIFI
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
 }
