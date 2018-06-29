@@ -12,14 +12,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.MD5Util;
+import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
+
 import org.json.JSONException;
+
 import java.io.IOException;
+
 import com.orhanobut.logger.Logger;
+
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
 import es.dmoral.toasty.Toasty;
@@ -52,7 +58,9 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 	String vercode;                 //验证码
 	String phoneNum;                //手机号
 
-	int signinResult = -1;            //注册结果
+	int signinResult = -1;          //注册结果
+
+	int networkState;               //网络状态
 
 	@SuppressLint("HandlerLeak")
 	@Override
@@ -225,55 +233,55 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 				break;
 			}
 			case R.id.signin_send_vercode: {
-				String phone = phoneEdit.getText().toString();
-				// 判断输入号码是否正确
-				if (!Utility.judgePhoneNums(phone)) {
-					Toasty.error(SigninWithPhoneActivity.this, "手机号码不正确");
-				}
-				SMSSDK.getVerificationCode("86", phone); // 调用sdk发送短信验证
-				sendCodeButton.setClickable(false);// 设置按钮不可点击 显示倒计时
-				sendCodeButton.setText("重新发送(" + countdown + ")");
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						for (countdown = 30; countdown > 0; countdown--) {
-							handler.sendEmptyMessage(-9);
-							if (countdown <= 0) {
-								break;
-							}
-							try {
-								Thread.sleep(1000);// 线程休眠实现读秒功能
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-						handler.sendEmptyMessage(-8);// 在30秒后重新显示为获取验证码
+					String phone = phoneEdit.getText().toString();
+					// 判断输入号码是否正确
+					if (!Utility.judgePhoneNums(phone)) {
+						Toasty.error(SigninWithPhoneActivity.this, "手机号码不正确");
 					}
-				}).start();
+					SMSSDK.getVerificationCode("86", phone); // 调用sdk发送短信验证
+					sendCodeButton.setClickable(false);// 设置按钮不可点击 显示倒计时
+					sendCodeButton.setText("重新发送(" + countdown + ")");
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							for (countdown = 30; countdown > 0; countdown--) {
+								handler.sendEmptyMessage(-9);
+								if (countdown <= 0) {
+									break;
+								}
+								try {
+									Thread.sleep(1000);// 线程休眠实现读秒功能
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+							handler.sendEmptyMessage(-8);// 在30秒后重新显示为获取验证码
+						}
+					}).start();
 				break;
 			}
 			case R.id.signin: {
-				//获取界面输入信息
-				password = passwordEdit.getText().toString();
-				repassword = confirmPwdEdit.getText().toString();
-				vercode = verCodeEdit.getText().toString();
-				phoneNum = phoneEdit.getText().toString();
-				repassword = confirmPwdEdit.getText().toString();
-				//输入信息验证
-				if (!isPwdsame(password, repassword)) {
-					Toasty.error(SigninWithPhoneActivity.this, "两次密码不一致").show();
-				} else if (password.isEmpty() | phoneNum.isEmpty() | repassword.isEmpty() | vercode.isEmpty()) {
-					Toasty.error(SigninWithPhoneActivity.this, "手机号、密码、确认密码、验证码为必填项").show();
-				} else {
-					//验证短信验证码是否正确
-					SMSSDK.submitVerificationCode("86", phoneNum, vercode);
-				}
+					//获取界面输入信息
+					password = passwordEdit.getText().toString();
+					repassword = confirmPwdEdit.getText().toString();
+					vercode = verCodeEdit.getText().toString();
+					phoneNum = phoneEdit.getText().toString();
+					repassword = confirmPwdEdit.getText().toString();
+					//输入信息验证
+					if (!isPwdsame(password, repassword)) {
+						Toasty.error(SigninWithPhoneActivity.this, "两次密码不一致").show();
+					} else if (password.isEmpty() | phoneNum.isEmpty() | repassword.isEmpty() | vercode.isEmpty()) {
+						Toasty.error(SigninWithPhoneActivity.this, "手机号、密码、确认密码、验证码为必填项").show();
+					} else {
+						//验证短信验证码是否正确
+						SMSSDK.submitVerificationCode("86", phoneNum, vercode);
+					}
+
 				break;
 			}
 			default:
 				break;
 		}
-
 	}
 
 	//判断两次输入的密码是否相同
@@ -302,9 +310,9 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 			Toasty.error(SigninWithPhoneActivity.this, "5分钟内校验错误超过3次，验证码失效，请重新获取验证码").show();
 		} else if (vercodeResult == 468) {
 			Toasty.error(SigninWithPhoneActivity.this, "验证码错误").show();
-		} else if(vercodeResult==477){
+		} else if (vercodeResult == 477) {
 			Toasty.error(SigninWithPhoneActivity.this, "每天仅能请求十次验证码，明天再来吧").show();
-		}else {
+		} else {
 			Toasty.error(SigninWithPhoneActivity.this, "验证码系统错误，请稍候再试").show();
 			handler.sendEmptyMessage(-8);
 		}
@@ -316,6 +324,7 @@ public class SigninWithPhoneActivity extends BaseActivity implements View.OnClic
 			@Override
 			public void run() {
 				try {
+					Logger.d("password：signin" + MD5Util.md5encrypt(userPwd));
 					//获取服务器返回数据
 					response = HttpUtil.SigninRequest(ConstantClass.ADDRESS, ConstantClass.SIGNIN_COM, userPhone, MD5Util.md5encrypt(userPwd));
 					//解析和处理服务器返回的数据

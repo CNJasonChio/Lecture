@@ -52,8 +52,8 @@ public class MainPageActivity extends BaseActivity{
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//初始化 Logger
-		addLogAdapter(new AndroidLogAdapter());
+		/*//初始化 Logger
+		addLogAdapter(new AndroidLogAdapter());*/
 		setContentView(R.layout.tabmaintabs);
 
 		//初始化控件

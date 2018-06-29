@@ -172,7 +172,7 @@ public class HttpUtil {
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
 
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			Logger.e(e, "UnknownHostException");
@@ -526,7 +526,7 @@ public class HttpUtil {
 			bufferedReader = new BufferedReader(reader);
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -595,7 +595,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("接收服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -665,8 +665,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -734,8 +733,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -804,7 +802,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -874,7 +872,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -947,7 +945,7 @@ public class HttpUtil {
 			response = bufferedReader.readLine();
 
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -1016,7 +1014,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 
-			Logger.d(response);
+			Logger.json(response);
 			Logger.d("获取服务器数据完毕");
 			return response;
 		} catch (UnknownHostException e) {
@@ -1089,7 +1087,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -1160,7 +1158,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -1231,7 +1229,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -1310,7 +1308,7 @@ public class HttpUtil {
 
 			response=sendUserHeadFile(response, userHead);
 
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 
 		} catch (UnknownHostException e) {
@@ -1391,7 +1389,7 @@ public class HttpUtil {
 			//通过输入流读取器对象 接收服务器发送过来的数据
 			response = bufferedReader.readLine();
 			Logger.d("获取服务器数据完毕");
-			Logger.d(response);
+			Logger.json(response);
 			return response;
 		} catch (UnknownHostException e) {
 			Logger.e(e, "UnknownHostException");
@@ -1538,7 +1536,7 @@ public class HttpUtil {
 					response = bufferedReader.readLine();
 					Logger.d("获取服务器数据完毕");
 
-					Logger.d(response);
+					Logger.json(response);
 					return response;
 
 				} catch (UnknownHostException e) {

@@ -151,7 +151,6 @@ public class MyFocuseActivity extends BaseActivity implements FocuseLibraryAdapt
 					case 1:
 						if (myFocuseLibRequestResult == 0) {
 							showFocuseLibrary();
-							Toasty.success(MyFocuseActivity.this,"获取“我的关注”成功").show();
 						} else if (myFocuseLibRequestResult == 1) {
 							DialogUtils.closeDialog(myFocuseLoadDialog);
 							Toasty.error(MyFocuseActivity.this, "数据库无更新").show();

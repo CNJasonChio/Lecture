@@ -717,8 +717,6 @@ public class Utility {
 	public static void handleLibraryContentResponse(String response, long libraryID, LibraryDBDao mLibraryDao) {
 
 		if (!TextUtils.isEmpty(response)) {
-			Logger.d(response);
-
 			LibraryDB library = mLibraryDao.queryBuilder().where(LibraryDBDao.Properties.LibraryID.eq(libraryID)).build().unique();
 
 			if (library != null) {

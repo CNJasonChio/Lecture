@@ -20,7 +20,9 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.MD5Util;
 import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
@@ -56,7 +58,7 @@ public class WelcomeActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		final View view = View.inflate(this, R.layout.activity_welcome, null);
 		setContentView(view);
-
+		Logger.addLogAdapter(new AndroidLogAdapter());
 		//初始化控件
 		initWidget();
 		//初始化视图
@@ -156,7 +158,6 @@ public class WelcomeActivity extends BaseActivity {
 				switch (msg.what){
 					case 1:
 						if (loginResult == 0) {
-							Toasty.success(WelcomeActivity.this, "登录成功").show();
 							Intent intent = new Intent(WelcomeActivity.this, MainPageActivity.class);
 							startActivity(intent);
 							finish();
@@ -189,7 +190,8 @@ public class WelcomeActivity extends BaseActivity {
 			public void run() {
 				try {
 					//response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_PORT, userPhone, userPwd);
-					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, userPwd);
+					response = HttpUtil.LoginRequest(ConstantClass.ADDRESS, ConstantClass.LOGIN_COM, userPhone, MD5Util.md5encrypt(userPwd));
+					Logger.d(response);
 					loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
 					handler.sendEmptyMessage(1);
 				} catch (IOException e) {

@@ -66,7 +66,7 @@ public class DropDownMenu extends LinearLayout {
         setOrientation(VERTICAL);
 
         //为DropDownMenu添加自定义属性
-        int menuBackgroundColor = 0xffffffff;
+        int menuBackgroundColor = 0xfff8f8f8;
         int underlineColor = 0xffcccccc;
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DropDownMenu);
         underlineColor = a.getColor(R.styleable.DropDownMenu_ddunderlineColor, underlineColor);

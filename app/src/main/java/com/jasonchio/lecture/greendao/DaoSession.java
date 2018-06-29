@@ -11,12 +11,14 @@ import org.greenrobot.greendao.internal.DaoConfig;
 import com.jasonchio.lecture.greendao.CommentDB;
 import com.jasonchio.lecture.greendao.InterimLectureDB;
 import com.jasonchio.lecture.greendao.LectureDB;
+import com.jasonchio.lecture.greendao.LectureMessageDB;
 import com.jasonchio.lecture.greendao.LibraryDB;
 import com.jasonchio.lecture.greendao.UserDB;
 
 import com.jasonchio.lecture.greendao.CommentDBDao;
 import com.jasonchio.lecture.greendao.InterimLectureDBDao;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.greendao.LectureMessageDBDao;
 import com.jasonchio.lecture.greendao.LibraryDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
 
@@ -32,12 +34,14 @@ public class DaoSession extends AbstractDaoSession {
     private final DaoConfig commentDBDaoConfig;
     private final DaoConfig interimLectureDBDaoConfig;
     private final DaoConfig lectureDBDaoConfig;
+    private final DaoConfig lectureMessageDBDaoConfig;
     private final DaoConfig libraryDBDaoConfig;
     private final DaoConfig userDBDaoConfig;
 
     private final CommentDBDao commentDBDao;
     private final InterimLectureDBDao interimLectureDBDao;
     private final LectureDBDao lectureDBDao;
+    private final LectureMessageDBDao lectureMessageDBDao;
     private final LibraryDBDao libraryDBDao;
     private final UserDBDao userDBDao;
 
@@ -54,6 +58,9 @@ public class DaoSession extends AbstractDaoSession {
         lectureDBDaoConfig = daoConfigMap.get(LectureDBDao.class).clone();
         lectureDBDaoConfig.initIdentityScope(type);
 
+        lectureMessageDBDaoConfig = daoConfigMap.get(LectureMessageDBDao.class).clone();
+        lectureMessageDBDaoConfig.initIdentityScope(type);
+
         libraryDBDaoConfig = daoConfigMap.get(LibraryDBDao.class).clone();
         libraryDBDaoConfig.initIdentityScope(type);
 
@@ -63,12 +70,14 @@ public class DaoSession extends AbstractDaoSession {
         commentDBDao = new CommentDBDao(commentDBDaoConfig, this);
         interimLectureDBDao = new InterimLectureDBDao(interimLectureDBDaoConfig, this);
         lectureDBDao = new LectureDBDao(lectureDBDaoConfig, this);
+        lectureMessageDBDao = new LectureMessageDBDao(lectureMessageDBDaoConfig, this);
         libraryDBDao = new LibraryDBDao(libraryDBDaoConfig, this);
         userDBDao = new UserDBDao(userDBDaoConfig, this);
 
         registerDao(CommentDB.class, commentDBDao);
         registerDao(InterimLectureDB.class, interimLectureDBDao);
         registerDao(LectureDB.class, lectureDBDao);
+        registerDao(LectureMessageDB.class, lectureMessageDBDao);
         registerDao(LibraryDB.class, libraryDBDao);
         registerDao(UserDB.class, userDBDao);
     }
@@ -77,6 +86,7 @@ public class DaoSession extends AbstractDaoSession {
         commentDBDaoConfig.clearIdentityScope();
         interimLectureDBDaoConfig.clearIdentityScope();
         lectureDBDaoConfig.clearIdentityScope();
+        lectureMessageDBDaoConfig.clearIdentityScope();
         libraryDBDaoConfig.clearIdentityScope();
         userDBDaoConfig.clearIdentityScope();
     }
@@ -91,6 +101,10 @@ public class DaoSession extends AbstractDaoSession {
 
     public LectureDBDao getLectureDBDao() {
         return lectureDBDao;
+    }
+
+    public LectureMessageDBDao getLectureMessageDBDao() {
+        return lectureMessageDBDao;
     }
 
     public LibraryDBDao getLibraryDBDao() {

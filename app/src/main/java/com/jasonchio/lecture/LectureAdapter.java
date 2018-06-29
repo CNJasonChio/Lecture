@@ -98,7 +98,6 @@ public class LectureAdapter extends BaseAdapter {
 		}else{
 			viewHolder.lectureWantedImage.setImageResource(R.drawable.ic_lecture_likes);
 		}
-		Logger.d(lecture.getIsWanted());
 		return view;
 	}
 

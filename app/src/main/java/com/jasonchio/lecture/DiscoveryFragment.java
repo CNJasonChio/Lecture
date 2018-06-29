@@ -6,14 +6,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
@@ -23,7 +21,6 @@ import com.jasonchio.lecture.greendao.CommentDBDao;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
-import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
@@ -69,41 +66,24 @@ import static com.mob.tools.utils.DeviceHelper.getApplication;
 public class DiscoveryFragment extends Fragment implements View.OnClickListener, CommentAdapter.InnerItemOnclickListener, AdapterView.OnItemClickListener {
 
 	View rootview;                              //根视图
-
 	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
-
 	CommentAdapter mAdapter;                    //评论适配器
-
 	TitleLayout titleLayout;                    //标题栏
-
 	Button titleSecondButton;                   //标题栏的第二个按钮
-
 	ListView listView;                          //要显示的listview
-
 	List <CommentDB> commentList = new ArrayList <>();  //评论列表
-
 	List <LectureDB> lectureList = new ArrayList <>();  //评论对应的讲座列表
-
 	Handler handler;                            //Handler 对象
-
 	int commentRequestResult;                   //评论信息请求的服务器返回结果
-
 	int lectureRequestResult;                   //评论对应的讲座信息请求的服务器返回结果
-
 	int likeThisCommentRequest;                 //点赞或取消点赞的服务器返回结果
-
 	DaoSession daoSession;                      //数据库操作对象
-
 	LectureDBDao mLectureDao;                   //讲座表操作对象
-
 	CommentDBDao mCommentDao;                   //评论表操作对象
-
 	Dialog commentLoadDialog;                   //加载对话框
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-
-	                         Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
@@ -164,7 +144,7 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				commentLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
+				commentLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
 				showCommentInfoToTop();
 				swipeToLoadLayout.setRefreshing(false);
 			}
@@ -195,15 +175,15 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 					case 2:
 						if (lectureRequestResult == 0) {
 							showCommentInfoToTop();
-						}else{
+						} else {
 							Toasty.error(getActivity(), "动态加载失败，请稍候再试").show();
 							DialogUtils.closeDialog(commentLoadDialog);
 						}
 						break;
 					case 3:
-						if(likeThisCommentRequest==0){
+						if (likeThisCommentRequest == 0) {
 							Logger.d("点赞或取消点赞成功");
-						} else{
+						} else {
 							Logger.d("点赞或取消点赞失败");
 						}
 						break;
@@ -329,11 +309,11 @@ public class DiscoveryFragment extends Fragment implements View.OnClickListener,
 		if (commentDBList == null || commentDBList.isEmpty()) {
 			CommentRequest();
 			return;
-		}else{
+		} else {
 			commentDBList.clear();
 			lectureList.clear();
 			mAdapter.notifyDataSetChanged();
-			commentDBS=mCommentDao.queryBuilder().orderDesc(CommentDBDao.Properties.CommentId).build().list();
+			commentDBS = mCommentDao.queryBuilder().orderDesc(CommentDBDao.Properties.CommentId).build().list();
 		}
 
 		for (CommentDB commentDB : commentDBS) {

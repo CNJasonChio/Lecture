@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginTop="20dp">
+
+    <com.jasonchio.lecture.util.CircleImageView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:id="@+id/lecture_message_userhead"
+        android:src="@drawable/test_oliver" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/lecture_message_userhead"
+        android:orientation="vertical"
+        android:layout_marginLeft="10dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/lecture_message_usertitle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                android:text="李晨"
+                android:layout_alignParentLeft="true"
+                android:id="@+id/lecture_message_username"/>
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:background="@drawable/ic_lecture_likes"
+                android:id="@+id/lecture_message_like_image"
+                android:layout_toLeftOf="@+id/lecture_message_liker_num"
+                android:layout_marginRight="5dp"
+                android:clickable="true"
+                android:layout_centerVertical="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:text="8"
+                android:layout_alignParentRight="true"
+                android:id="@+id/lecture_message_liker_num"
+                android:gravity="center"/>
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textSize="10sp"
+            android:id="@+id/lecture_message_content"
+            android:textColor="#101010"
+            android:maxLines="6"
+            android:text="测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试"/>
+    </LinearLayout>
+</RelativeLayout>

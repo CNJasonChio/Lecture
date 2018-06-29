@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +21,7 @@ import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
@@ -285,6 +283,7 @@ public class FocuseFragment extends BaseFragment {
 			public void onRefresh() {
 				showLectureInfoToTop();
 				swipeToLoadLayout.setRefreshing(false);
+
 			}
 		});
 

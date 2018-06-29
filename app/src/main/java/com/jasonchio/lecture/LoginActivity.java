@@ -21,62 +21,47 @@ import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.MD5Util;
+import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
+import com.orhanobut.logger.PrettyFormatStrategy;
+
 import org.json.JSONException;
 import java.io.IOException;
 import es.dmoral.toasty.Toasty;
-import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public class LoginActivity extends BaseActivity {
 
 	EditText passwordEdit;      //填写密码的编辑框
-
 	EditText accountEdit;       //填写帐号的编辑框
-
 	Button loginButton;         //登录按钮
-
 	TextView fgtpwdText;        //忘记密码
-
 	TextView signinText;        //新用户注册
-
 	CheckBox remPwdBox;         //记住密码选择框
-
 	ImageView isCanSee;         //密码是否可见
-
-/*	ImageView wechatLoginImage; //微信登录
-	ImageView qqLoginImage;     //QQ登录
-	ImageView sinaLoginImage;   //新浪微博登录*/
-
 	boolean cansee = false;     //密码是否可见状态
-
 	boolean isRemPwd=false;     //是否记住密码
-
 	String userPhone;           //手机号
-
 	String userPwd;             //密码
-
 	int loginResult = -1;       //登录结果
-
 	Handler handler;            //handler 对象
-
 	DaoSession mDaoSession ;    //数据库操作对象
-
 	UserDBDao mUserDao;         //用户表操作对象
-
 	SharedPreferences preferences;      //SharedPreferences 对象
-
 	SharedPreferences.Editor editor;    //SharedPreferences.Editor对象
-
 	Dialog loginLoadDialog;             //加载对话框
-
 	boolean autoLoginResult;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//初始化Logger 适配器
-		addLogAdapter(new AndroidLogAdapter());
+		/*//初始化Logger 适配器
+		FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
+				.showThreadInfo(false)  // 是否显示线程信息，默认为ture
+				.tag("LECTURE")   // 每个日志的全局标记。默认PRETTY_LOGGER
+				.build();*/
+
 		setContentView(R.layout.activity_login);
 
 		Intent intent=getIntent();
@@ -102,14 +87,13 @@ public class LoginActivity extends BaseActivity {
 
 		//默认密码不可见
 		passwordEdit.setTransformationMethod(PasswordTransformationMethod.getInstance());
-
-		if(isRemPwd){
-			accountEdit.setText(preferences.getString("account",""));
-			if(autoLoginResult==false){
-				passwordEdit.setText(preferences.getString("password",""));
+			if(isRemPwd){
+				accountEdit.setText(preferences.getString("account",""));
+				if(autoLoginResult==false){
+					passwordEdit.setText(preferences.getString("password",""));
+				}
+				remPwdBox.setChecked(true);
 			}
-			remPwdBox.setChecked(true);
-		}
 	}
 
 	@Override
@@ -153,12 +137,11 @@ public class LoginActivity extends BaseActivity {
 							if(remPwdBox.isChecked()){
 								editor.putBoolean("remember_password",true);
 								editor.putString("account", userPhone);
-								editor.putString("password",MD5Util.md5encrypt(userPwd));
+								editor.putString("password",userPwd);
 							}else{
 								editor.clear();
 							}
 							editor.apply();
-							Toasty.success(LoginActivity.this, "登录成功").show();
 							Intent intent = new Intent(LoginActivity.this, MainPageActivity.class);
 							startActivity(intent);
 							finish();
@@ -186,6 +169,7 @@ public class LoginActivity extends BaseActivity {
 			case R.id.login_signin_text: {
 				Intent intent = new Intent(LoginActivity.this, SigninWithPhoneActivity.class);
 				startActivity(intent);
+
 				break;
 			}
 			case R.id.login_fgtpwd_text: {
@@ -213,8 +197,8 @@ public class LoginActivity extends BaseActivity {
 				if(userPhone.isEmpty() | userPwd.isEmpty()){
 					Toasty.error(LoginActivity.this,"用户名和密码不能为空");
 				}else{
-					loginLoadDialog = DialogUtils.createLoadingDialog(LoginActivity.this,"正在登录");
-					loginRequest();
+						loginLoadDialog = DialogUtils.createLoadingDialog(LoginActivity.this,"正在登录");
+						loginRequest();
 				}
 				break;
 			}

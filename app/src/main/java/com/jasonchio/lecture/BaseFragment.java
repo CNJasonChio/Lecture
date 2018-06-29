@@ -3,6 +3,16 @@ package com.jasonchio.lecture;
 import android.os.Bundle;
 import android.view.View;
 
+import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
+
+import org.json.JSONException;
+
+import java.io.IOException;
+
 /**
  * /**
  * <p>
@@ -86,4 +96,6 @@ public abstract class BaseFragment extends android.support.v4.app.Fragment imple
 	public void setVisibleToUser(boolean visibleToUser) {
 		isVisibleToUser = visibleToUser;
 	}
+
+
 }

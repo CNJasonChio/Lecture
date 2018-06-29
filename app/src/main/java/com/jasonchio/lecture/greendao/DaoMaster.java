@@ -24,6 +24,7 @@ public class DaoMaster extends AbstractDaoMaster {
         CommentDBDao.createTable(db, ifNotExists);
         InterimLectureDBDao.createTable(db, ifNotExists);
         LectureDBDao.createTable(db, ifNotExists);
+        LectureMessageDBDao.createTable(db, ifNotExists);
         LibraryDBDao.createTable(db, ifNotExists);
         UserDBDao.createTable(db, ifNotExists);
     }
@@ -33,6 +34,7 @@ public class DaoMaster extends AbstractDaoMaster {
         CommentDBDao.dropTable(db, ifExists);
         InterimLectureDBDao.dropTable(db, ifExists);
         LectureDBDao.dropTable(db, ifExists);
+        LectureMessageDBDao.dropTable(db, ifExists);
         LibraryDBDao.dropTable(db, ifExists);
         UserDBDao.dropTable(db, ifExists);
     }
@@ -56,6 +58,7 @@ public class DaoMaster extends AbstractDaoMaster {
         registerDaoClass(CommentDBDao.class);
         registerDaoClass(InterimLectureDBDao.class);
         registerDaoClass(LectureDBDao.class);
+        registerDaoClass(LectureMessageDBDao.class);
         registerDaoClass(LibraryDBDao.class);
         registerDaoClass(UserDBDao.class);
     }

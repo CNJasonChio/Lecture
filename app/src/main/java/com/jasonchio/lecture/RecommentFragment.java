@@ -1,20 +1,16 @@
 package com.jasonchio.lecture;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
@@ -74,7 +70,7 @@ public class RecommentFragment extends BaseFragment {
 
 	LectureAdapter mAdapter;                    //讲座适配器
 
-	List <LectureDB> lecturelist = new ArrayList < >();     //讲座列表
+	List <LectureDB> lecturelist = new ArrayList <>();     //讲座列表
 
 	ListView listView;                          //要显示的 listview
 
@@ -92,11 +88,12 @@ public class RecommentFragment extends BaseFragment {
 
 	int recommentOrderResult;                   //推荐讲座请求结果
 
-	long lastViewedLectureID;                   //
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	long lastViewedLectureID;                   //记录上次看到的位置
 
-	                         Bundle savedInstanceState) {
+	//HttpResponse httpResponse;
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
@@ -108,14 +105,15 @@ public class RecommentFragment extends BaseFragment {
 		}
 
 		//加载上次记录的位置
-		SharedPreferences sharedPreferences=getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE);
-		lastViewedLectureID=sharedPreferences.getLong("last_viewed_lectureID",0);
-		Logger.d("lastViewedLectureID onCreateView"+lastViewedLectureID);
+		SharedPreferences sharedPreferences = getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE);
+		lastViewedLectureID = sharedPreferences.getLong("last_viewed_lectureID", 0);
+		Logger.d("lastViewedLectureID onCreateView" + lastViewedLectureID);
 
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
+
 		//初始化响应事件
 		initEvent();
 		//自动刷新
@@ -174,6 +172,8 @@ public class RecommentFragment extends BaseFragment {
 				List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 				//如果数据库中无讲座待显示，则向服务器请求新的讲座
 				if (lectureDBList.isEmpty()) {
+					/*BaseFragment.lectureRequest(httpResponse,mLectureDao);
+					updateLocateHttpResponse();*/
 					LectureRequest();
 					return;
 				} else {
@@ -205,6 +205,8 @@ public class RecommentFragment extends BaseFragment {
 							//若该条讲座不在数据库中，则向服务器请求
 							if (lectureDB == null) {
 								LectureRequest();
+								/*BaseFragment.lectureRequest(httpResponse,mLectureDao);
+								updateLocateHttpResponse();*/
 								return;
 							} else {
 								lectureDBS.add(lectureDB);
@@ -219,11 +221,12 @@ public class RecommentFragment extends BaseFragment {
 							if (lectureDB == null) {
 								//若该条讲座不在数据库中，则向服务器请求
 								LectureRequest();
+								/*BaseFragment.lectureRequest(httpResponse,mLectureDao);
+								updateLocateHttpResponse();*/
 								return;
 							} else {
 								lectureDBS.add(lectureDB);
 							}
-
 						}
 					}
 				}
@@ -271,12 +274,12 @@ public class RecommentFragment extends BaseFragment {
 						}
 						break;
 					case 2:
-						if(recommentOrderResult==0){
+						if (recommentOrderResult == 0) {
 							showLectureInfoToTop();
-						}else if(recommentOrderResult==3){
+						} else if (recommentOrderResult == 3) {
 							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(),"暂无更多推荐讲座").show();
-						}else{
+							Toasty.error(getContext(), "暂无更多推荐讲座").show();
+						} else {
 							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
 						}
@@ -300,11 +303,9 @@ public class RecommentFragment extends BaseFragment {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				requestLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
-
-				showLectureInfoToTop();
-
-				swipeToLoadLayout.setRefreshing(false);
+					requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
+					showLectureInfoToTop();
+					swipeToLoadLayout.setRefreshing(false);
 			}
 		});
 
@@ -328,7 +329,7 @@ public class RecommentFragment extends BaseFragment {
 
 	}
 
-	private void RecommentLectureRequest(){
+	private void RecommentLectureRequest() {
 
 		Logger.d("开始获取推荐的讲座");
 		new Thread(new Runnable() {
@@ -340,7 +341,7 @@ public class RecommentFragment extends BaseFragment {
 
 					String recommentResponse = HttpUtil.RecommentRequest(ConstantClass.ADDRESS, ConstantClass.RECOMMENT_COM, ConstantClass.userOnline);
 
-					recommentOrderResult=Utility.handleRecommentLectureResponse(recommentResponse,mUserDao);
+					recommentOrderResult = Utility.handleRecommentLectureResponse(recommentResponse, mUserDao);
 
 					handler.sendEmptyMessage(2);
 				} catch (IOException e) {
@@ -359,9 +360,20 @@ public class RecommentFragment extends BaseFragment {
 		super.onDestroy();
 
 		//保存上次浏览的位置
-		SharedPreferences.Editor editor=getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE).edit();
-		editor.putLong("last_viewed_lectureID",lecturelist.get(0).getLectureId());
-		Logger.d("lastViewedLectureID onDestory"+lecturelist.get(0).getLectureId());
+		SharedPreferences.Editor editor = getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE).edit();
+		editor.putLong("last_viewed_lectureID", lecturelist.get(0).getLectureId());
+		Logger.d("lastViewedLectureID onDestory" + lecturelist.get(0).getLectureId());
 		editor.apply();
 	}
+
+/*
+	public void initHttpResponse(){
+		httpResponse.setLectureRequestResult(lectureRequestResult);
+	}
+
+	public void updateLocateHttpResponse(){
+		lectureRequestResult=httpResponse.getLectureRequestResult();
+		handler.sendEmptyMessageDelayed(1, 1000);
+	}
+*/
 }

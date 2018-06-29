@@ -31,12 +31,21 @@ import android.net.NetworkInfo;
  */
 
 
-public class NetworkUtil {
-	public static final int TYPE_NONE = -1;
-	public static final int TYPE_MOBILE = 0;
-	public static final int TYPE_WIFI = 1;
+public class NetUtil {
+	/**
+	 * 没有网络
+	 */
+	private static final int NETWORK_NONE = -1;
+	/**
+	 * 移动网络
+	 */
+	private static final int NETWORK_MOBILE = 0;
+	/**
+	 * 无线网络
+	 */
+	private static final int NETWORK_WIFI = 1;
 
-	private NetworkUtil() {
+	private NetUtil() {
 	}
 
 	/**
@@ -46,23 +55,24 @@ public class NetworkUtil {
 	 * @return one of TYPE_NONE, TYPE_MOBILE, TYPE_WIFI
 	 * @permission android.permission.ACCESS_NETWORK_STATE
 	 */
-	public static final int getNetWorkStates(Context context) {
-		ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-		if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()) {
-			return TYPE_NONE;//没网
+	public static int getNetWorkState(Context context) {
+		//得到连接管理器对象
+		ConnectivityManager connectivityManager = (ConnectivityManager) context
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager
+				.getActiveNetworkInfo();
+		//如果网络连接，判断该网络类型
+		if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
+			if (activeNetworkInfo.getType() == (ConnectivityManager.TYPE_WIFI)) {
+				return NETWORK_WIFI;//wifi
+			} else if (activeNetworkInfo.getType() == (ConnectivityManager.TYPE_MOBILE)) {
+				return NETWORK_MOBILE;//mobile
+			}
+		} else {
+			//网络异常
+			return NETWORK_NONE;
 		}
-
-		int type = activeNetworkInfo.getType();
-		switch (type) {
-			case ConnectivityManager.TYPE_MOBILE:
-				return TYPE_MOBILE;//移动数据
-			case ConnectivityManager.TYPE_WIFI:
-				return TYPE_WIFI;//WIFI
-			default:
-				break;
-		}
-		return TYPE_NONE;
+		return NETWORK_NONE;
 	}
 }
 

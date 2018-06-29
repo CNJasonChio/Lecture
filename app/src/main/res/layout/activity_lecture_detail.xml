@@ -1,70 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView
-    android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_width="match_parent"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <com.jasonchio.lecture.TitleLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:id="@+id/lecture_detail_title_layout">
+    </com.jasonchio.lecture.TitleLayout>
 
-        <com.jasonchio.lecture.TitleLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/lecture_detail_title_layout">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:layout_marginTop="13dp"
+        android:background="#BBBBBB">
+    </View>
 
-        </com.jasonchio.lecture.TitleLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2dip"
-            android:layout_marginTop="13dp"
-            android:background="#BBBBBB">
-        </View>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/lecture_detail_title_text"
-            android:textSize="18sp"
-            android:layout_marginTop="13dp"
-            android:layout_marginLeft="13dp"
-            android:layout_marginRight="13dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/lecture_detail_source_text"
-            android:textSize="10sp"
-            android:background="@drawable/textview_frame"
-            android:textColor="#4BD5B9"
-            android:layout_marginTop="15dp"
-            android:layout_marginLeft="13dp"
-            android:layout_marginRight="13dp"
-            android:padding="4dp"
-            android:clickable="true"/>
-
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="13dp"
-            android:layout_marginTop="5dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="时间："
-                android:textColor="#101010"/>
+                android:id="@+id/lecture_detail_title_text"
+                android:textSize="18sp"
+                android:layout_marginTop="13dp"
+                android:layout_marginLeft="13dp"
+                android:layout_marginRight="13dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/lecture_detail_time_text"
-                android:textSize="13sp"/>
-        </LinearLayout>
+                android:id="@+id/lecture_detail_source_text"
+                android:textSize="10sp"
+                android:background="@drawable/textview_frame"
+                android:textColor="#4BD5B9"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="13dp"
+                android:layout_marginRight="13dp"
+                android:padding="4dp"
+                android:clickable="true"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginStart="13dp"
+                android:layout_marginTop="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="时间："
+                    android:textColor="#101010"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/lecture_detail_time_text"
+                    android:textSize="13sp"/>
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -104,8 +106,63 @@
                 android:layout_marginLeft="13dp"
                 android:layout_marginRight="13dp"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
                 android:clickable="true"/>
-        </LinearLayout>
 
-</ScrollView>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+                <RelativeLayout
+                    android:layout_marginTop="18dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:id="@+id/lecture_message_title">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:text="精选留言"
+                        android:textColor="#888888"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"/>
+                    <Button
+                        android:id="@+id/lecture_add_message"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:background="@null"
+                        android:minHeight="0dp"
+                        android:text="写留言"
+                        android:textSize="14sp"
+                        android:textColor="#888888"/>
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.aspsine.swipetoloadlayout.SwipeToLoadLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@id/swipe_target"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#f8f8f8" />
+
+            <com.jasonchio.lecture.util.SelfLoadMoreFooterView
+                android:id="@id/swipe_load_more_footer"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:gravity="center" />
+        </com.aspsine.swipetoloadlayout.SwipeToLoadLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -20,6 +20,7 @@ import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 import org.json.JSONException;
@@ -83,38 +84,39 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()){
-			case R.id.library_title_first_button:{
-				finish();
-				break;
-			}
-			case R.id.library_title_second_button:{
-				if(isFocuse ==1){
-					titleSecondButton.setText("点击关注");
-					titleSecondButton.setTextColor(Color.argb(255,16,16,16));
-					titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
-					isFocuse =0;
-					FocuseChangeRequest();
-				}else {
-					titleSecondButton.setText("已关注");
-					titleSecondButton.setTextColor(Color.argb(255,255,157,0));
-					titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
-					isFocuse =1;
-					FocuseChangeRequest();
+			switch (v.getId()){
+				case R.id.library_title_first_button:{
+					finish();
+					break;
 				}
-				break;
-			}
-			case R.id.library_original_text:{
-				//打开讲座信息来源原文
-				if(original!=null){
-					Intent intent=new Intent(Intent.ACTION_VIEW);
-					intent.setData(Uri.parse(original));
-					startActivity(intent);
+				case R.id.library_title_second_button:{
+					if(isFocuse ==1){
+						titleSecondButton.setText("点击关注");
+						titleSecondButton.setTextColor(Color.argb(255,16,16,16));
+						titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
+						isFocuse =0;
+						FocuseChangeRequest();
+					}else {
+						titleSecondButton.setText("已关注");
+						titleSecondButton.setTextColor(Color.argb(255,255,157,0));
+						titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
+						isFocuse =1;
+						FocuseChangeRequest();
+					}
+					break;
 				}
-				break;
+				case R.id.library_original_text:{
+					//打开讲座信息来源原文
+					if(original!=null){
+						Intent intent=new Intent(Intent.ACTION_VIEW);
+						intent.setData(Uri.parse(original));
+						startActivity(intent);
+					}
+					break;
+				}
+				default:
 			}
-			default:
-		}
+
 	}
 
 	@Override

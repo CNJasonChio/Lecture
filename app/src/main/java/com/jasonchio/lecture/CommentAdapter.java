@@ -1,6 +1,5 @@
 package com.jasonchio.lecture;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -16,10 +15,8 @@ import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.CommentDB;
 import com.jasonchio.lecture.greendao.CommentDBDao;
 import com.jasonchio.lecture.greendao.LectureDB;
-import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
 import java.util.List;
-import com.orhanobut.logger.*;
 
 /**
  * /**

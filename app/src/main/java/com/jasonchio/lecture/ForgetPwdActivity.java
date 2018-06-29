@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.MD5Util;
+import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
 import com.orhanobut.logger.Logger;
@@ -221,31 +222,31 @@ public class ForgetPwdActivity extends BaseActivity {
 				break;
 			}
 			case R.id.fgtpwd_send_vercode: {
-				phone = fgtpwdaccountEdit.getText().toString();
-				if (!Utility.judgePhoneNums(phone)) {// 判断输入号码是否正确
-					Toasty.error(ForgetPwdActivity.this, "手机号码不正确");
-					break;
-				}
-				SMSSDK.getVerificationCode("86", phone); // 调用sdk发送短信验证
-				sendForpwdVercodeButton.setClickable(false);// 设置按钮不可点击 显示倒计时
-				sendForpwdVercodeButton.setText("重新发送(" + countdown + ")");
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						for (countdown = 30; countdown > 0; countdown--) {
-							handler.sendEmptyMessage(-9);
-							if (countdown <= 0) {
-								break;
-							}
-							try {
-								Thread.sleep(1000);// 线程休眠实现读秒功能
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-						handler.sendEmptyMessage(-8);// 在30秒后重新显示为获取验证码
+					phone = fgtpwdaccountEdit.getText().toString();
+					if (!Utility.judgePhoneNums(phone)) {// 判断输入号码是否正确
+						Toasty.error(ForgetPwdActivity.this, "手机号码格式不正确");
+						break;
 					}
-				}).start();
+					SMSSDK.getVerificationCode("86", phone); // 调用sdk发送短信验证
+					sendForpwdVercodeButton.setClickable(false);// 设置按钮不可点击 显示倒计时
+					sendForpwdVercodeButton.setText("重新发送(" + countdown + ")");
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							for (countdown = 30; countdown > 0; countdown--) {
+								handler.sendEmptyMessage(-9);
+								if (countdown <= 0) {
+									break;
+								}
+								try {
+									Thread.sleep(1000);// 线程休眠实现读秒功能
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+							handler.sendEmptyMessage(-8);// 在30秒后重新显示为获取验证码
+						}
+					}).start();
 				break;
 			}
 			case R.id.fgtpwd_change_password: {
@@ -264,8 +265,9 @@ public class ForgetPwdActivity extends BaseActivity {
 					Toasty.error(ForgetPwdActivity.this, "手机号、密码、确认密码、验证码为必填项").show();
 					break;
 				} else {
-					//验证手机验证码是否正确
-					SMSSDK.submitVerificationCode("86", phone, vercode);
+						//验证手机验证码是否正确
+						SMSSDK.submitVerificationCode("86", phone, vercode);
+
 				}
 				break;
 			}

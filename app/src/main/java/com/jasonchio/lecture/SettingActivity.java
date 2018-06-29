@@ -26,6 +26,7 @@ import com.jasonchio.lecture.util.CleanCache;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
+import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 import com.yanzhenjie.permission.Action;
@@ -198,7 +199,6 @@ public class SettingActivity extends BaseActivity {
 				break;
 			}
 			case R.id.setting_signout_button:
-				Logger.d("you click signout button");
 				Intent intent = new Intent("com.jasonchio.lecture.SIGNOUT");
 				sendBroadcast(intent);
 				break;
@@ -216,7 +216,7 @@ public class SettingActivity extends BaseActivity {
 				break;
 			case R.id.setting_update_layout:
 				checkUpdateDialog = DialogUtils.createLoadingDialog(SettingActivity.this, "正在检查更新");
-				checkUpdate();
+					checkUpdate();
 				break;
 			case R.id.setting_updatelog_layout:
 				Intent intent2 = new Intent(SettingActivity.this, UpdateLogActivity.class);
@@ -368,7 +368,6 @@ public class SettingActivity extends BaseActivity {
 	}
 
 	private void getAPKdownloadUrl() {
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
