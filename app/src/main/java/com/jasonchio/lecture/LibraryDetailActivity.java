@@ -91,8 +91,8 @@ public class LibraryDetailActivity extends BaseActivity {
 				}
 				case R.id.library_title_second_button:{
 					if(isFocuse ==1){
-						titleSecondButton.setText("点击关注");
-						titleSecondButton.setTextColor(Color.argb(255,16,16,16));
+						titleSecondButton.setText("关注");
+						titleSecondButton.setTextColor(Color.argb(255,63,63,63));
 						titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
 						isFocuse =0;
 						FocuseChangeRequest();
@@ -148,12 +148,11 @@ public class LibraryDetailActivity extends BaseActivity {
 				switch (msg.what) {
 					case 1:
 						if (libraryRequestResult == 0) {
-							Toasty.success(LibraryDetailActivity.this, "获取图书馆详情成功").show();
 							initLibrary(libName);
 							DialogUtils.closeDialog(libraryDialog);
 						} else if (libraryRequestResult == 1) {
 							DialogUtils.closeDialog(libraryDialog);
-							Toasty.error(LibraryDetailActivity.this, "暂无图书馆信息").show();
+							Toasty.error(LibraryDetailActivity.this, "暂无讲座来源的信息").show();
 						} else{
 							DialogUtils.closeDialog(libraryDialog);
 							Toasty.error(LibraryDetailActivity.this, "服务器出错，请稍候再试").show();
@@ -169,7 +168,7 @@ public class LibraryDetailActivity extends BaseActivity {
 	void initView(){
 		//隐藏标题栏
 		HideSysTitle();
-		titleLayoutTitleText.setText("图书馆详情");
+		titleLayoutTitleText.setText("来源详情");
 	}
 
 	//改变关注请求
@@ -239,7 +238,7 @@ public class LibraryDetailActivity extends BaseActivity {
 				titleSecondButton.setTextColor(Color.argb(255,255,157,0));
 				titleSecondButton.setBackgroundResource(R.drawable.button_shape_origin);
 			}else {
-				titleSecondButton.setText("点击关注");
+				titleSecondButton.setText("关注");
 				titleSecondButton.setTextColor(Color.argb(255,16,16,16));
 				titleSecondButton.setBackgroundResource(R.drawable.button_shape_black);
 			}

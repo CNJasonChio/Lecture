@@ -67,4 +67,5 @@ dependencies {
     implementation 'com.github.GrenderG:Toasty:1.2.8'
     implementation 'com.yanzhenjie:permission:2.0.0-rc4'
     implementation 'org.greenrobot:greendao:3.2.2'
+    implementation 'q.rorbin:badgeview:1.1.3'
 }

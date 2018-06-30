@@ -14,14 +14,16 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.LectureMessageDB;
+import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.NetUtil;
+import com.jasonchio.lecture.util.KeyboardUtils;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +67,12 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 
 	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
 
-	RecyclerView recyclerView;
+	RecyclerView lectureMsgRecyclerView;
+
+	TextView leaveMessgeText;
+
+	int isLikeOrNot=0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -102,12 +109,16 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		mLectureDao = daoSession.getLectureDBDao();
 		mUserDao = daoSession.getUserDBDao();
 
-		recyclerView=(RecyclerView)findViewById(R.id.swipe_target);
+		lectureMsgRecyclerView =(RecyclerView)findViewById(R.id.swipe_target);
 		LinearLayoutManager layoutManager=new LinearLayoutManager(this);
-		recyclerView.setLayoutManager(layoutManager);
+		lectureMsgRecyclerView.setLayoutManager(layoutManager);
 		lectureMessageAdapter=new LectureMessageAdapter(messageDBList,LectureDetailActivity.this);
-		recyclerView.setNestedScrollingEnabled(false);
-		recyclerView.setAdapter(lectureMessageAdapter);
+		lectureMsgRecyclerView.setNestedScrollingEnabled(false);
+		lectureMsgRecyclerView.setAdapter(lectureMessageAdapter);
+
+		leaveMessgeText=(TextView)findViewById(R.id.lecture_leave_message_text);
+		leaveMessgeText.setOnClickListener(this);
+
 	}
 
 	@Override
@@ -171,6 +182,8 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 					}
 					break;
 				}
+				case R.id.lecture_leave_message_text:
+					leaveMessage();
 				default:
 			}
 
@@ -230,12 +243,16 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 	}
 
 	@Override
-	public void onItemClick(int position) {
-		Toasty.info(LectureDetailActivity.this,"you clicked"+position).show();
+	public void onItemClick(View view,int position) {
+		switch(view.getId()){
+			case R.id.lecture_message_like_image:
+				likeOrNotLike(position);
+				break;
+		}
 	}
 
 	public void initMessage(){
-		for(int i=0;i<2;i++){
+		for(int i=0;i<4;i++){
 			LectureMessageDB messageDB=new LectureMessageDB();
 			messageDB.setMessageContent("测试测试https://nanbusuidao.com/link/C4EGvGaCKFfzaJDq?mu=1https://nanbusuidao.com/link/C4EGvGaCKFfzaJDq?mu=1https://nanbusuidao.com/link/C4EGvGaCKFfzaJDq?mu=1" +
 					"https://nanbusuidao.com/link/C4EGvGaCKFfzaJDq?mu=1");
@@ -247,5 +264,41 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 			}
 			messageDBList.add(messageDB);
 		}
+	}
+
+	//添加留言
+	private void leaveMessage(){
+		KeyboardUtils.showCommentEdit(LectureDetailActivity.this, leaveMessgeText, new KeyboardUtils.liveCommentResult() {
+			@Override
+			public void onResult(boolean confirmed, String comment) {
+				if (confirmed) {
+					UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+					LectureMessageDB lectureMessageDB=new LectureMessageDB();
+					lectureMessageDB.setUserHead(userDB.getUserPhotoUrl());
+					lectureMessageDB.setUserName(userDB.getUserName());
+					lectureMessageDB.setMessageLikeorNot(0);
+					lectureMessageDB.setMessageLikersNum(0);
+					lectureMessageDB.setMessageContent(comment);
+					messageDBList.add(0,lectureMessageDB);
+					lectureMessageAdapter.notifyItemInserted(0);
+				}
+			}
+		});
+	}
+
+	private void likeOrNotLike(int position){
+		LectureMessageDB messageDB=messageDBList.get(position);
+		isLikeOrNot=messageDB.getMessageLikeorNot();
+		if(isLikeOrNot==0){
+			isLikeOrNot=1;
+			messageDB.setMessageLikeorNot(1);
+			messageDB.setMessageLikersNum(messageDB.getMessageLikersNum()+1);
+		}else{
+			isLikeOrNot=0;
+			messageDB.setMessageLikeorNot(0);
+			messageDB.setMessageLikersNum(messageDB.getMessageLikersNum()-1);
+		}
+		messageDBList.set(position,messageDB);
+		lectureMessageAdapter.notifyItemChanged(position);
 	}
 }

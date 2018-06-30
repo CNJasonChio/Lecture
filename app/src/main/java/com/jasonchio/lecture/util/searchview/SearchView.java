@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
@@ -270,10 +271,11 @@ public class SearchView extends LinearLayout {
 
         // 3. 搜索框背景颜色
         search_block = (LinearLayout)findViewById(R.id.search_block);
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) search_block.getLayoutParams();
+        search_block.setBackgroundResource(R.drawable.button_shape_light_grey);
+       /* LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) search_block.getLayoutParams();
         params.height = searchBlockHeight;
         search_block.setBackgroundColor(searchBlockColor);
-        search_block.setLayoutParams(params);
+        search_block.setLayoutParams(params);*/
 
         // 4. 历史搜索记录 = ListView显示
         listView = (SearchListView) findViewById(R.id.listView);

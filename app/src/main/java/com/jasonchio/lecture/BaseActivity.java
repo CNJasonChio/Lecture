@@ -162,7 +162,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 	public void onChangeListener(int netMobile) {
 		// TODO Auto-generated method stub
 		this.netType = netMobile;
-		Logger.d("netType:" + netMobile);
 		if (!isNetConnect()) {
 			showNetDialog();
 			isNetDisable=true;

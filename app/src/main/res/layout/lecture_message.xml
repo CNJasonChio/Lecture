@@ -5,11 +5,12 @@
     android:layout_height="wrap_content"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
-    android:layout_marginTop="20dp">
+    android:layout_marginTop="20dp"
+    android:id="@+id/lecture_message_layout">
 
     <com.jasonchio.lecture.util.CircleImageView
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:id="@+id/lecture_message_userhead"
         android:src="@drawable/test_oliver" />
 
@@ -28,14 +29,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#888888"
-                android:textSize="12sp"
+                android:textSize="16sp"
                 android:text="李晨"
                 android:layout_alignParentLeft="true"
                 android:id="@+id/lecture_message_username"/>
 
             <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:background="@drawable/ic_lecture_likes"
                 android:id="@+id/lecture_message_like_image"
                 android:layout_toLeftOf="@+id/lecture_message_liker_num"
@@ -46,7 +47,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="15sp"
                 android:text="8"
                 android:layout_alignParentRight="true"
                 android:id="@+id/lecture_message_liker_num"
@@ -57,7 +58,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:textSize="10sp"
+            android:textSize="15sp"
             android:id="@+id/lecture_message_content"
             android:textColor="#101010"
             android:maxLines="6"

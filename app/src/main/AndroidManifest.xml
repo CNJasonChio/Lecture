@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BAIDU_LOCATION_SERVICE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name=".MyApplication"
@@ -24,8 +24,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LoginActivity"
-            android:windowSoftInputMode="stateHidden|adjustResize"  />
+        <activity
+            android:name=".LoginActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name="com.mob.tools.MobUIShell"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -45,7 +46,8 @@
 
         <activity android:name=".SigninWithPhoneActivity" />
         <activity android:name=".MainPageActivity" />
-        <activity android:name=".WelcomeActivity"
+        <activity
+            android:name=".WelcomeActivity"
             android:icon="@drawable/ic_logo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -84,10 +86,10 @@
 
         <activity android:name=".HelpActivity" />
         <activity android:name=".UpdateLogActivity" />
-        <activity android:name=".AboutActivity"></activity>
+        <activity android:name=".AboutActivity" />
 
         <service
-            android:name="com.jasonchio.lecture.service.DownloadApkService"
+            android:name=".service.DownloadApkService"
             android:exported="true" />
 
         <receiver android:name=".NetBroadcastReceiver">
@@ -96,6 +98,10 @@
             </intent-filter>
         </receiver>
 
+        <activity android:name=".NoticeActivity" />
+        <activity
+            android:name=".DynamicsDetailActivity">
+        </activity>
     </application>
 
 </manifest>

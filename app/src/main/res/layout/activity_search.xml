@@ -14,7 +14,8 @@
         app:textColorSearch="#101010"
         app:textHintSearch="查询"
         app:searchBlockHeight="100"
-        app:searchBlockColor="#FFFFFF" />
-
+        app:searchBlockColor="#e5e5e5"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"/>
 
 </LinearLayout>

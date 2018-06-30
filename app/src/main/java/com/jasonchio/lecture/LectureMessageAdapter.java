@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.LectureMessageDB;
@@ -49,6 +50,7 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 		TextView msgLikersNumText;
 		TextView messageContentText;
 		ImageView messageLikeImage;
+		RelativeLayout relativeLayout;
 
 		public ViewHolder(View itemView) {
 			super(itemView);
@@ -57,6 +59,7 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 			msgLikersNumText=(TextView)itemView.findViewById(R.id.lecture_message_liker_num);
 			messageContentText=(TextView)itemView.findViewById(R.id.lecture_message_content);
 			messageLikeImage=(ImageView)itemView.findViewById(R.id.lecture_message_like_image);
+			relativeLayout=(RelativeLayout)itemView.findViewById(R.id.lecture_message_layout);
 		}
 	}
 
@@ -67,7 +70,6 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		Logger.d("onCreateViewHolder");
 		View view= LayoutInflater.from(parent.getContext())
 				.inflate(R.layout.lecture_message,parent,false);
 		ViewHolder holder=new ViewHolder(view);
@@ -77,15 +79,17 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int position) {
-		Logger.d("onBindViewHolder");
+		holder.relativeLayout.setTag(position);
 		LectureMessageDB messageDB=messageDBList.get(position);
+		holder.messageLikeImage.setTag(position);
+		holder.messageLikeImage.setOnClickListener(this);
 		if(messageDB.getMessageLikeorNot()==0){
 			holder.messageLikeImage.setImageResource(R.drawable.ic_lecture_likes);
 		}else{
 			holder.messageLikeImage.setImageResource(R.drawable.ic_lecture_likes_selected);
 		}
 		//加载评论对应的用户头像
-		if (messageDB.getUserHead() != null || messageDB.getUserHead() != "") {
+		if (messageDB.getUserHead() != null && messageDB.getUserHead() != "") {
 			Glide.with(context).load(messageDB.getUserHead()).into(holder.userheadImage);
 		} else {
 			holder.userheadImage.setImageResource(R.drawable.ic_defult_userhead);
@@ -93,23 +97,21 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 		holder.messageContentText.setText(messageDB.getMessageContent());
 		holder.msgLikersNumText.setText(String.valueOf(messageDB.getMessageLikersNum()));
 		holder.userNameText.setText(messageDB.getUserName());
-		holder.messageLikeImage.setTag(position);
 	}
 
 	@Override
 	public int getItemCount() {
-		Logger.d("messageList size"+messageDBList.size());
 		return messageDBList.size();
 	}
 
 	public interface OnItemClickListener{
-		void onItemClick(int position);
+		void onItemClick(View view,int position);
 	}
 
 	@Override
 	public void onClick(View v) {
 		if (mItemClickListener!=null){
-			mItemClickListener.onItemClick((Integer) v.getTag());
+			mItemClickListener.onItemClick(v,(Integer) v.getTag());
 		}
 	}
 

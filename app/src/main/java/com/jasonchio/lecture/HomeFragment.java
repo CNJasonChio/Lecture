@@ -1,10 +1,8 @@
 package com.jasonchio.lecture;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,15 +10,14 @@ import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-
+import android.widget.EditText;
+import android.widget.ImageView;
 import com.astuetz.PagerSlidingTabStrip;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -39,13 +36,11 @@ import com.yanzhenjie.permission.Permission;
 import com.yanzhenjie.permission.Rationale;
 import com.yanzhenjie.permission.RequestExecutor;
 import com.yanzhenjie.permission.SettingService;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.util.List;
-
 import es.dmoral.toasty.Toasty;
+import q.rorbin.badgeview.QBadgeView;
 
 /**
  * /**
@@ -82,15 +77,17 @@ public class HomeFragment extends BaseFragment {
 
 	NearFragment fragmentNear;              //附近 fragment
 
-	Button titleSecondButton;               //标题栏的第二个按钮
+	EditText titleSearchEdit;
 
-	Button titleFirstButton;                //标题栏的第一个按钮
+	ImageView titleSearchImage;
+
+	ImageView titleNoticeImage;
 
 	PagerSlidingTabStrip tabStrip;          //导航栏
 
 	DisplayMetrics displayMetrics;          //显示单位
 
-	TitleLayout titleLayout;                //标题栏
+	SearchTitleLayout titleLayout;          //标题栏
 
 	Handler handler;                        //handler
 
@@ -111,10 +108,10 @@ public class HomeFragment extends BaseFragment {
 
 	Rationale mRationale;                   //请求权限被拒绝多次后的提示对象
 
-	int sendPositionResult = 0;               //向服务器发送用户位置的结果
+	int sendPositionResult = 0;              //向服务器发送用户位置的结果
 
+	QBadgeView badgeView;                   //消息数量对象
 	public void onCreate(Bundle savedInstanceState) {
-
 		super.onCreate(savedInstanceState);
 	}
 
@@ -160,9 +157,6 @@ public class HomeFragment extends BaseFragment {
 
 	@Override
 	void initView() {
-		titleLayout.setTitle("首页");
-		titleLayout.setSecondButtonBackground(R.drawable.ic_title_search);
-		titleLayout.setFirstButtonBackground(R.drawable.ic_title_location);
 		displayMetrics = getResources().getDisplayMetrics();
 		ViewPager pager = (ViewPager) rootView.findViewById(R.id.pager);
 		pager.setOffscreenPageLimit(2);// 设置缓存页面，当前页面的相邻两个页面都会被缓存
@@ -170,15 +164,20 @@ public class HomeFragment extends BaseFragment {
 		pager.setAdapter(new MyPagerAdapter(getChildFragmentManager()));
 		setTabValue();
 		tabStrip.setViewPager(pager);
+
+		titleSearchEdit.setFocusable(false);
+		titleSearchEdit.setFocusableInTouchMode(false);
 	}
 
 	@Override
 	void initWidget() {
-		titleLayout = (TitleLayout) rootView.findViewById(R.id.home_title_layout);
-		titleSecondButton = titleLayout.getSecondButton();
-		titleFirstButton = titleLayout.getFirstButton();
+		titleLayout = (SearchTitleLayout) rootView.findViewById(R.id.home_title_layout);
+		titleNoticeImage=rootView.findViewById(R.id.search_title_notice_image);
+		titleSearchImage=rootView.findViewById(R.id.search_title_search_image);
+		titleSearchEdit=rootView.findViewById(R.id.title_search_edit);
 		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
 		mUserDao = daoSession.getUserDBDao();
+		//badgeView= (QBadgeView) new QBadgeView(getContext()).bindTarget(titleNoticeImage).setBadgeNumber(12).setBadgePadding(3,true);
 	}
 
 	@Override
@@ -203,7 +202,7 @@ public class HomeFragment extends BaseFragment {
 			}
 		});
 
-		titleSecondButton.setOnClickListener(new View.OnClickListener() {
+		titleSearchImage.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(getContext(), SearchActivity.class);
@@ -211,15 +210,19 @@ public class HomeFragment extends BaseFragment {
 			}
 		});
 
-		titleFirstButton.setOnClickListener(new View.OnClickListener() {
+		titleNoticeImage.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission_group.LOCATION) != PackageManager.PERMISSION_GRANTED) {
-					askforPermisson();
-				} else {
-					getPosition();
-				}
+				Intent intent=new Intent(getContext(),NoticeActivity.class);
+				startActivity(intent);
+			}
+		});
 
+		titleSearchEdit.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(getContext(), SearchActivity.class);
+				startActivity(intent);
 			}
 		});
 	}

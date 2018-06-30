@@ -3,6 +3,7 @@ package com.jasonchio.lecture;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ public class SearchActivity extends BaseActivity {
 	EditText searchEdit;        //搜索条件
 
 	String searchStr;           //搜索条件
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -52,6 +54,11 @@ public class SearchActivity extends BaseActivity {
 
 	@Override
 	void initEvent() {
+
+		searchEdit.setFocusable(true);
+		searchEdit.setFocusableInTouchMode(true);
+		searchEdit.requestFocus();
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 		//进行搜索
 		searchView.setOnClickSearch(new ICallBack() {
 			@Override

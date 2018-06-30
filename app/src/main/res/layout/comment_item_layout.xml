@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp">
+
+    <com.jasonchio.lecture.util.CircleImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/comment_userhead_image"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="6dp"
+        android:src="@drawable/ic_defult_userhead"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+            <TextView
+                android:id="@+id/comment_userName_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#888888"
+                android:textSize="16sp"
+                android:text="沐风"
+                android:layout_alignParentTop="true"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true">
+
+                <TextView
+                    android:id="@+id/comment_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1小时前"
+                    android:textSize="12sp"
+                    android:layout_marginTop="3dp"
+                    android:textColor="#989898"
+                    android:layout_centerVertical="true"/>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_dynamics_comment"
+                    android:clickable="true"
+                    android:id="@+id/comment_reply_image"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:id="@+id/comment_reply_num_text"
+                    android:layout_toLeftOf="@+id/comment_reply_image"
+                    android:layout_marginRight="3dp"
+                    android:text="0"
+                    android:layout_centerVertical="true"/>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_dynamics_like"
+                    android:clickable="true"
+                    android:id="@+id/comment_like_image"
+                    android:layout_toLeftOf="@+id/comment_reply_num_text"
+                    android:layout_marginRight="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:id="@+id/comment_like_num_text"
+                    android:layout_toLeftOf="@+id/comment_like_image"
+                    android:layout_marginRight="3dp"
+                    android:text="0"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/comment_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="6dp"
+            android:textColor="#484848"
+            android:textSize="14sp"
+            android:text="从前有座山，山里有座庙，庙里有个老和尚从前有座山，山里有座庙，庙里有个老和尚从前有座山，山里有座庙，庙里有个老和尚"/>
+    </LinearLayout>
+</LinearLayout>

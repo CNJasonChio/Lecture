@@ -31,7 +31,7 @@ public class AboutActivity extends BaseActivity {
 		HideSysTitle();
 		titleLayout.setSecondButtonVisible(View.GONE);
 		titleLayout.setTitle("关于");
-		aboutText.setText("\t整合武汉各大发布源的发布讲座信息，内容均来自官网并附原网页链接，可以放心查看。\n" + "\t人性化讲座收藏、图书馆关注功能，让你更方便留意喜爱的讲座信息。");
+		aboutText.setText("\t精心整理来自武汉各高校图书馆、社会书店等发布源发布的讲座信息，帮你轻松获取学习信息；\n" + "对感兴趣的讲座发表评论，与更多人分享你的见解；\n" + "人性化的讲座收藏、图书馆关注功能，让你更方便留意喜爱的讲座信息；\n" + "即时动态发表，与更多用户分享你的见闻......\n" + "更多功能敬请期待。\n" + "聚讲座，你想看的，都在这里。");
 	}
 
 	@Override

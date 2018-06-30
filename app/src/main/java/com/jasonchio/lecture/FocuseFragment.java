@@ -305,5 +305,4 @@ public class FocuseFragment extends BaseFragment {
 	public void fetchData() {
 		autoRefresh();
 	}
-
 }

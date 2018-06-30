@@ -1,10 +1,7 @@
 package com.jasonchio.lecture;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTabHost;
-import android.support.v7.app.AlertDialog;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -14,8 +11,6 @@ import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
-import com.mob.MobSDK;
-import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
@@ -23,8 +18,6 @@ import org.json.JSONException;
 import java.io.IOException;
 
 import es.dmoral.toasty.Toasty;
-
-import static com.orhanobut.logger.Logger.addLogAdapter;
 
 public class MainPageActivity extends BaseActivity{
 
@@ -34,7 +27,7 @@ public class MainPageActivity extends BaseActivity{
 
 	private Integer[] ImgTab = {R.layout.tab_main_home, R.layout.tab_main_discovery, R.layout.tab_main_me};
 
-	private Class[] ClassTab = {HomeFragment.class, DiscoveryFragment.class, MeFragment.class};
+	private Class[] ClassTab = {HomeFragment.class, DynamicsFragment.class, MeFragment.class};
 
 	private Integer[] StyleTab = {R.color.white, R.color.white, R.color.white, R.color.white};
 
@@ -168,4 +161,5 @@ public class MainPageActivity extends BaseActivity{
 			finish();
 		}
 	}
+
 }

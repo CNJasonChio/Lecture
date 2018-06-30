@@ -1,12 +1,19 @@
 package com.jasonchio.lecture;
 
+import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
@@ -15,8 +22,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.CheckUpdateResult;
+import com.jasonchio.lecture.service.DownloadApkService;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
@@ -27,9 +38,17 @@ import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
 import com.orhanobut.logger.PrettyFormatStrategy;
+import com.yanzhenjie.permission.Action;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.Permission;
+import com.yanzhenjie.permission.Rationale;
+import com.yanzhenjie.permission.RequestExecutor;
+import com.yanzhenjie.permission.SettingService;
 
 import org.json.JSONException;
 import java.io.IOException;
+import java.util.List;
+
 import es.dmoral.toasty.Toasty;
 
 public class LoginActivity extends BaseActivity {
@@ -53,6 +72,12 @@ public class LoginActivity extends BaseActivity {
 	SharedPreferences.Editor editor;    //SharedPreferences.Editor对象
 	Dialog loginLoadDialog;             //加载对话框
 	boolean autoLoginResult;
+
+	int checkUpdateResult;
+	String localVersion = null;
+	String response = null;
+	String updateFileUrl;
+	Rationale mRationale;               //申请权限多次被拒绝后提示对象
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,7 +98,8 @@ public class LoginActivity extends BaseActivity {
 		initView();
 		//初始化点击等事件
 		initEvent();
-
+		//检查更新
+		checkUpdate();
 	}
 
 	@Override
@@ -156,6 +182,43 @@ public class LoginActivity extends BaseActivity {
 							Toasty.error(LoginActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
+					case 2:
+						if (checkUpdateResult == 0) {
+							Gson gson = new Gson();
+							final CheckUpdateResult result = gson.fromJson(response, CheckUpdateResult.class);
+
+							updateFileUrl = result.getUpdateurl();
+							AlertDialog.Builder mDialog = new AlertDialog.Builder(LoginActivity.this);
+							mDialog.setTitle("版本更新:" + result.getVersion());
+							if(Double.valueOf(result.getVersion())-Double.valueOf(localVersion)>=0.5){
+								mDialog.setTitle("版本更新:" + result.getVersion()+"\n"+"当前版本过低，请下载最新版体验");
+							}
+							mDialog.setMessage(result.getUpgradeinfo());
+							mDialog.setNegativeButton("暂不更新", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									if(Double.valueOf(result.getVersion())-Double.valueOf(localVersion)>=0.5){
+										dialog.dismiss();
+										finish();
+									}else{
+										dialog.dismiss();
+									}
+								}
+							}).setPositiveButton("立即更新", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.dismiss();
+									if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission_group.STORAGE) != PackageManager.PERMISSION_GRANTED) {
+										askforPermisson();
+									} else {
+										Logger.d("开始下载");
+										goToDownloadApk(updateFileUrl);
+									}
+								}
+							}).create().show();
+						}
+						break;
+						default:
 				}
 				return true;
 			}
@@ -232,5 +295,108 @@ public class LoginActivity extends BaseActivity {
 				}
 			}
 		}).start();
+	}
+
+	private void checkUpdate() {
+		try {
+			PackageInfo packageInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+			localVersion = packageInfo.versionName;
+			Logger.d("本软件的版本号 " + localVersion);
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if (localVersion != null) {
+					try {
+						response = HttpUtil.UpdateRequest(ConstantClass.ADDRESS, ConstantClass.UPDATE_COM, localVersion);
+						checkUpdateResult = Utility.handleUpdateResponse(response);
+						handler.sendEmptyMessage(2);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					Logger.d("localVersion is null");
+				}
+			}
+		}).start();
+	}
+
+	private void goToDownloadApk(String downloadUrl) {
+		Intent intent = new Intent(LoginActivity.this, DownloadApkService.class);
+		intent.putExtra("apkUrl", downloadUrl);
+		Logger.d("启动下载 service");
+		startService(intent);
+	}
+
+	//申请权限
+	private void askforPermisson() {
+
+		AndPermission.with(this).permission(Permission.Group.STORAGE).rationale(mRationale).onGranted(new Action() {
+			@Override
+			public void onAction(List<String> permissions) {
+				Logger.d("开始下载");
+				goToDownloadApk(updateFileUrl);
+			}
+		}).onDenied(new Action() {
+			@Override
+			public void onAction(List <String> permissions) {
+				Toasty.error(LoginActivity.this, "获取权限失败");
+				if (AndPermission.hasAlwaysDeniedPermission(LoginActivity.this, permissions)) {
+					// 这里使用一个Dialog展示没有这些权限应用程序无法继续运行，询问用户是否去设置中授权。
+					final SettingService settingService = AndPermission.permissionSetting(LoginActivity.this);
+					android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(LoginActivity.this);
+					builder.setTitle("权限请求");
+					builder.setMessage("小的需要您的存储权限来为您更改头像，不然小主会可能体验不到最新版的功能了");
+					builder.setCancelable(true);
+					builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// 如果用户同意去设置：
+							settingService.execute();
+						}
+					});
+					builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// 如果用户不同意去设置：
+							settingService.cancel();
+						}
+					});
+					builder.show();
+				}
+
+			}
+		}).start();
+
+		mRationale = new Rationale() {
+			@Override
+			public void showRationale(Context context, List <String> permissions, final RequestExecutor executor) {
+				// 这里使用一个Dialog询问用户是否继续授权。
+				android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(LoginActivity.this);
+				builder.setTitle("权限请求");
+				builder.setMessage("小的需要您的存储权限来为您更改头像，不然小主会可能体验不到最新版的功能了");
+				builder.setCancelable(true);
+				builder.setPositiveButton("准了", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// 如果用户继续：
+						executor.execute();
+					}
+				});
+				builder.setNegativeButton("还是不准", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// 如果用户中断：
+						executor.cancel();
+					}
+				});
+				builder.show();
+			}
+		};
 	}
 }

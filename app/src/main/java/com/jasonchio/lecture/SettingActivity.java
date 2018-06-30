@@ -216,7 +216,7 @@ public class SettingActivity extends BaseActivity {
 				break;
 			case R.id.setting_update_layout:
 				checkUpdateDialog = DialogUtils.createLoadingDialog(SettingActivity.this, "正在检查更新");
-					checkUpdate();
+				checkUpdate();
 				break;
 			case R.id.setting_updatelog_layout:
 				Intent intent2 = new Intent(SettingActivity.this, UpdateLogActivity.class);
@@ -252,7 +252,7 @@ public class SettingActivity extends BaseActivity {
 		}
 	}
 
-	private void checkUpdate() {
+	public void checkUpdate() {
 		try {
 			PackageInfo packageInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
 			localVersion = packageInfo.versionName;
