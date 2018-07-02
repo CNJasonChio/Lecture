@@ -84,6 +84,7 @@
             android:layout_height="20dp"
             android:clickable="true"
             android:id="@+id/dynamics_comment_like_image"
+            android:src="@drawable/ic_dynamics_like"
             android:layout_toLeftOf="@id/dynamics_comment_num_text"
             android:layout_marginRight="10dp"/>
 

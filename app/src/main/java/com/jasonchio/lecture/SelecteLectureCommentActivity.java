@@ -12,7 +12,6 @@ import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
-import com.jasonchio.lecture.gson.MyWantedResult;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.Utility;
@@ -121,7 +120,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				LectureDB lecture=lecturelist.get(position);
-				Intent intent=new Intent(SelecteLectureCommentActivity.this,AddCommentActivity.class);
+				Intent intent=new Intent(SelecteLectureCommentActivity.this,AddDynamicsActivity.class);
 				intent.putExtra("lecture_id",(int) lecture.getLectureId());
 				startActivity(intent);
 				finish();

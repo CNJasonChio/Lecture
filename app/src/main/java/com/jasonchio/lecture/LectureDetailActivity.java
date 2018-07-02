@@ -1,24 +1,38 @@
 package com.jasonchio.lecture;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.google.gson.Gson;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.LectureMessageDB;
 import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.CommonStateResult;
+import com.jasonchio.lecture.gson.LeaveMessageResult;
+import com.jasonchio.lecture.gson.LectureMessageResult;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.KeyboardUtils;
+import com.jasonchio.lecture.util.MD5Util;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
@@ -31,7 +45,7 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
-public class LectureDetailActivity extends BaseActivity implements LectureMessageAdapter.OnItemClickListener {
+public class LectureDetailActivity extends BaseActivity implements LectureMessageAdapter.OnItemClickListener, LectureMessageAdapter.OnItemLongClickListener {
 
 	TitleLayout titleLayout;        //标题栏
 
@@ -73,6 +87,9 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 
 	int isLikeOrNot=0;
 
+	Handler handler;                            // handler 对象
+
+	LectureMessageDB newMessageDB;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,7 +99,8 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		Intent intent = getIntent();
 		lectureId = intent.getIntExtra("lecture_id", 1);
 
-		initMessage();
+		//initMessage();
+		lectureMessageRequest();
 		//初始化控件
 		initWidget();
 		//初始化视图
@@ -91,6 +109,7 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		initEvent();
 		//初始化讲座详情
 		initLectureDetail();
+
 	}
 
 	@Override
@@ -118,7 +137,6 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 
 		leaveMessgeText=(TextView)findViewById(R.id.lecture_leave_message_text);
 		leaveMessgeText.setOnClickListener(this);
-
 	}
 
 	@Override
@@ -132,6 +150,28 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		//设置讲座详情页的发布图书馆按钮点击监听事件
 		lectureSource.setOnClickListener(this);
 		lectureMessageAdapter.setItemClickListener(this);
+		lectureMessageAdapter.setItemLongClickListener(this);
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						lectureMsgRecyclerView.setAdapter(lectureMessageAdapter);
+						break;
+					case 2:
+						messageDBList.add(0,newMessageDB);
+						lectureMessageAdapter.notifyItemInserted(0);
+						break;
+					case 3:
+						messageDBList.remove(msg.arg1);
+						lectureMessageAdapter.notifyItemRemoved(msg.arg1);
+						break;
+						default:
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -242,15 +282,6 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		}
 	}
 
-	@Override
-	public void onItemClick(View view,int position) {
-		switch(view.getId()){
-			case R.id.lecture_message_like_image:
-				likeOrNotLike(position);
-				break;
-		}
-	}
-
 	public void initMessage(){
 		for(int i=0;i<4;i++){
 			LectureMessageDB messageDB=new LectureMessageDB();
@@ -270,17 +301,9 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 	private void leaveMessage(){
 		KeyboardUtils.showCommentEdit(LectureDetailActivity.this, leaveMessgeText, new KeyboardUtils.liveCommentResult() {
 			@Override
-			public void onResult(boolean confirmed, String comment) {
+			public void onResult(boolean confirmed, String messageContent) {
 				if (confirmed) {
-					UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-					LectureMessageDB lectureMessageDB=new LectureMessageDB();
-					lectureMessageDB.setUserHead(userDB.getUserPhotoUrl());
-					lectureMessageDB.setUserName(userDB.getUserName());
-					lectureMessageDB.setMessageLikeorNot(0);
-					lectureMessageDB.setMessageLikersNum(0);
-					lectureMessageDB.setMessageContent(comment);
-					messageDBList.add(0,lectureMessageDB);
-					lectureMessageAdapter.notifyItemInserted(0);
+					leaveMessageRequest(messageContent);
 				}
 			}
 		});
@@ -300,5 +323,176 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		}
 		messageDBList.set(position,messageDB);
 		lectureMessageAdapter.notifyItemChanged(position);
+
+		LikeOrNotChange(ConstantClass.TYPE_MESSAGE,isLikeOrNot);
+	}
+
+	private void leaveMessageRequest(final String messageContent) {
+
+		//开启新线程
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回的结果
+					String response = HttpUtil.LeaveMessageRequest(ConstantClass.ADDRESS, ConstantClass.LEAVE_MESSAGE_COM,messageContent,ConstantClass.userOnline,lectureId,Utility.getNowTime());
+
+					Gson gson = new Gson();
+					LeaveMessageResult result = gson.fromJson(response, LeaveMessageResult.class);
+					int state = result.getState();
+					if (state == 0) {
+						UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+						newMessageDB=new LectureMessageDB();
+						newMessageDB.setMessageId(result.getMessage_id());
+						newMessageDB.setUserHead(userDB.getUserPhotoUrl());
+						newMessageDB.setUserName(userDB.getUserName());
+						newMessageDB.setMessageLikeorNot(0);
+						newMessageDB.setMessageLikersNum(0);
+						newMessageDB.setMessageContent(messageContent);
+						handler.sendEmptyMessage(2);
+					}
+							//解析和处理服务器返回的结果
+					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
+					//处理结果*/
+
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	@Override
+	public void onItemClick(View view,int position) {
+		switch(view.getId()){
+			case R.id.lecture_message_like_image:
+				likeOrNotLike(position);
+				break;
+		}
+	}
+
+	@Override
+	public void onItemLongClick(View view, final int position) {
+		switch(view.getId()){
+			case R.id.lecture_message_layout:
+				AlertDialog.Builder mDialog = new AlertDialog.Builder(LectureDetailActivity.this);
+				mDialog.setTitle("删除留言");
+				mDialog.setMessage("确认要删除这条留言吗？");
+				mDialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						deteleRequest(messageDBList.get(position).getMessageId(),position);
+					}
+				}).create().show();
+
+				break;
+		}
+	}
+
+	private void deteleRequest(final long objectID, final int position) {
+		//开启新线程
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回的结果
+					String response = HttpUtil.DeleteRequest(ConstantClass.ADDRESS, ConstantClass.DELETE_COM,objectID,ConstantClass.TYPE_MESSAGE,ConstantClass.userOnline);
+					Gson gson = new Gson();
+					CommonStateResult result = gson.fromJson(response, CommonStateResult .class);
+					//解析和处理服务器返回的结果
+					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
+					//处理结果*/
+					if (result.getState()==0){
+						Message message=new Message();
+						message.what=3;
+						message.arg1=position;
+						handler.sendMessage(message);
+					}
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	private void lectureMessageRequest() {
+		//开启新线程
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回的结果
+					String response = HttpUtil.MessageRequest(ConstantClass.ADDRESS, ConstantClass.MESSAGE_REQUEST_COM,ConstantClass.userOnline,lectureId);
+					Gson gson = new Gson();
+					LectureMessageResult result = gson.fromJson(response, LectureMessageResult.class);
+					int state = result.getState();
+					if (state == 0) {
+						List <LectureMessageResult.MessageListBean> messageList = result.getMessageList();
+						if(messageList.size()!=0){
+							for(LectureMessageResult.MessageListBean messageBean:messageList){
+								LectureMessageDB lectureMessageDB=new LectureMessageDB();
+								lectureMessageDB.setMessageLikersNum(messageBean.getGood_amount());
+								lectureMessageDB.setMessageLikeorNot(messageBean.getUserLike());
+								lectureMessageDB.setMessageContent(messageBean.getContent());
+								lectureMessageDB.setUserName(messageBean.getUserName());
+								lectureMessageDB.setUserHead(messageBean.getUserHead());
+								lectureMessageDB.setMessageId(messageBean.getMessageId());
+								messageDBList.add(lectureMessageDB);
+								handler.sendEmptyMessage(1);
+							}
+						}
+					}
+					//解析和处理服务器返回的结果
+					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);*/
+					//处理结果
+
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//点赞或者取消点赞
+	private void LikeOrNotChange(final int objectType, final int isLikeOrNot) {
+		//开启新线程
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回的结果
+					String response = HttpUtil.LikeOrNotChangeRequest(ConstantClass.ADDRESS, ConstantClass.LIKEORNOT_CHAGNE_COM,ConstantClass.userOnline,objectType,ConstantClass.TYPE_MESSAGE,isLikeOrNot);
+
+					//解析和处理服务器返回的结果
+					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
+					//处理结果
+					handler.sendEmptyMessage(1);*/
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }

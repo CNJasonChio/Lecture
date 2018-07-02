@@ -5,19 +5,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.AddDynamicsResult;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
@@ -29,7 +31,7 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
-public class AddCommentActivity extends BaseActivity {
+public class AddDynamicsActivity extends BaseActivity {
 
 	TitleLayout titleLayout;        //标题栏
 
@@ -70,16 +72,16 @@ public class AddCommentActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_comment);
 
-		//获得上文传递的要评论的讲座 ID
+		/*//获得上文传递的要评论的讲座 ID
 		Intent intent = getIntent();
-		lectureID = intent.getIntExtra("lecture_id", 1);
+		lectureID = intent.getIntExtra("lecture_id", 1);*/
 
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
-		//显示要评论的讲座信息
-		showLecture();
+		//显示要评论的讲座信息.
+		/*showLecture();*/
 		//初始化事件
 		initEvent();
 	}
@@ -88,7 +90,7 @@ public class AddCommentActivity extends BaseActivity {
 	void initView() {
 		//BaseActivity方法，隐藏系统标题栏
 		HideSysTitle();
-		titleLayout.setTitle("发表我的评论");
+		titleLayout.setTitle("发表动态");
 		titleSecondButton.setBackgroundResource(R.drawable.ic_title_send_comment);
 	}
 
@@ -98,9 +100,9 @@ public class AddCommentActivity extends BaseActivity {
 		titleFirstButton = titleLayout.getFirstButton();
 		titleSecondButton = titleLayout.getSecondButton();
 		comment_text = (TextView) findViewById(R.id.comment_edit);
-		listView = (ListView) findViewById(R.id.comment_lecture_selected_list);
-		lectureAdapter = new LectureAdapter(AddCommentActivity.this,lectureList);
-		listView.setAdapter(lectureAdapter);
+/*		listView = (ListView) findViewById(R.id.comment_lecture_selected_list);
+		lectureAdapter = new LectureAdapter(AddDynamicsActivity.this,lectureList);
+		listView.setAdapter(lectureAdapter);*/
 		daoSession = ((MyApplication) getApplication()).getDaoSession();
 		mLectureDao = daoSession.getLectureDBDao();
 		mUserDao = daoSession.getUserDBDao();
@@ -119,14 +121,14 @@ public class AddCommentActivity extends BaseActivity {
 					case 1:
 						if (addCommentResult == 0) {
 							DialogUtils.closeDialog(addCommentLoadDialog);
-							Toasty.success(AddCommentActivity.this, "发表成功").show();
+							Toasty.success(AddDynamicsActivity.this, "发表成功").show();
 							finish();
 						} else if (addCommentResult == 1) {
 							DialogUtils.closeDialog(addCommentLoadDialog);
-							Toasty.error(AddCommentActivity.this, "发表失败，请稍候再试").show();
+							Toasty.error(AddDynamicsActivity.this, "发表失败，请稍候再试").show();
 						} else {
 							DialogUtils.closeDialog(addCommentLoadDialog);
-							Toasty.error(AddCommentActivity.this, "服务器出错，请稍候再试").show();
+							Toasty.error(AddDynamicsActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
 				}
@@ -144,7 +146,14 @@ public class AddCommentActivity extends BaseActivity {
 			}
 			case R.id.title_second_button: {
 				commentTime = Utility.getNowTime();
-				AddCommentRequest();
+			/*	AddCommentRequest();*/
+				//获得评论的内容
+				contents = comment_text.getText().toString();
+				ADDDynamicsRequest(contents);
+				Intent intent=new Intent();
+				intent.putExtra("addDynamicsResult","有新动态");
+				setResult(RESULT_OK,intent);
+				finish();
 				break;
 			}
 			default:
@@ -155,7 +164,7 @@ public class AddCommentActivity extends BaseActivity {
 	private void AddCommentRequest() {
 
 		//显示加载对话框
-		addCommentLoadDialog= DialogUtils.createLoadingDialog(AddCommentActivity.this,"正在发表评论");
+		addCommentLoadDialog= DialogUtils.createLoadingDialog(AddDynamicsActivity.this,"正在发表评论");
 		//获得评论的内容
 		contents = comment_text.getText().toString();
 
@@ -181,9 +190,38 @@ public class AddCommentActivity extends BaseActivity {
 		}).start();
 	}
 
-	//显示要评论的讲座
+	//发表动态请求
+	private void ADDDynamicsRequest(final String dynamicsContent) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					/*//获取数据库中最后一条讲座 id
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
+					//获取服务器返回的数据
+					String response = HttpUtil.AddDynamicsRequest(ConstantClass.ADDRESS, ConstantClass.ADD_DYNAMICS_COM,dynamicsContent, ConstantClass.userOnline, Utility.getNowTime());
+					Gson gson=new Gson();
+					AddDynamicsResult result=gson.fromJson(response,AddDynamicsResult.class);
+					if(result.getState()==0){
+						handler.sendEmptyMessage(1);
+					}
+					/*//解析和处理服务器返回的数据
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
+					//处理结果
+					handler.sendEmptyMessageDelayed(1, 1000);*/
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+/*	//显示要评论的讲座
 	private void showLecture() {
 		LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
 		lectureList.add(lecture);
-	}
+	}*/
 }

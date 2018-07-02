@@ -92,6 +92,8 @@ public class RecommentFragment extends BaseFragment {
 
 	//HttpResponse httpResponse;
 
+	boolean isFirstLoad;                        //是否是第一次加载界面
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -116,9 +118,11 @@ public class RecommentFragment extends BaseFragment {
 
 		//初始化响应事件
 		initEvent();
-		//自动刷新
-		autoRefresh();
 
+		//自动刷新
+		if(isFirstLoad==true){
+			autoRefresh();
+		}
 		return rootview;
 	}
 
@@ -253,6 +257,7 @@ public class RecommentFragment extends BaseFragment {
 		mLectureDao = daoSession.getLectureDBDao();
 		mUserDao = daoSession.getUserDBDao();
 		listView.setAdapter(mAdapter);
+		isFirstLoad=true;
 	}
 
 	@Override

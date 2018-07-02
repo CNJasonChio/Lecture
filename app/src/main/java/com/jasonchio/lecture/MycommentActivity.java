@@ -102,7 +102,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		HideSysTitle();
 
 		titleLayout.setSecondButtonVisible(View.GONE);
-		titleLayout.setTitle("我的点评");
+		titleLayout.setTitle("我的动态");
 	}
 
 	@Override
@@ -220,11 +220,11 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 					Toast.makeText(MycommentActivity.this, "取消点赞", Toast.LENGTH_SHORT).show();
 					Logger.d(position);
 					mAdapter.changeCommentLike(position, 0);
-					LikeThisComment(comment.getCommentId(), 0);
+					/*LikeThisComment(comment.getCommentId(), 0);*/
 				} else {
 					Toast.makeText(MycommentActivity.this, "点赞", Toast.LENGTH_SHORT).show();
 					Logger.d(position);
-					LikeThisComment(comment.getCommentId(), 1);
+					/*LikeThisComment(comment.getCommentId(), 1);*/
 					mAdapter.changeCommentLike(position, 1);
 				}
 				break;
@@ -233,7 +233,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 	}
 
 	//“我的点评”请求
-	private void MyCommentRequest() {
+/*	private void MyCommentRequest() {
 
 		new Thread(new Runnable() {
 			@Override
@@ -254,9 +254,9 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				}
 			}
 		}).start();
-	}
+	}*/
 
-	//评论请求
+/*	//评论请求
 	private void CommentRequest() {
 
 		new Thread(new Runnable() {
@@ -279,7 +279,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				}
 			}
 		}).start();
-	}
+	}*/
 
 	//评论对应的讲座请求
 	private void LectureRequest() {
@@ -313,7 +313,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 		String userComment = Utility.getUserComment(ConstantClass.userOnline, mUserDao);
 		//如果本地没有就从服务器请求
 		if (userComment == null || userComment.length() == 0) {
-			MyCommentRequest();
+			/*MyCommentRequest();*/
 			return;
 		}
 		//将用户的评论 id 解析成字符串数组，方便操作
@@ -332,7 +332,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				comment = mCommentDao.queryBuilder().where(CommentDBDao.Properties.CommentId.eq(myComment[i])).build().unique();
 				//如果数据库中没有该条评论，就从服务器请求
 				if (comment == null) {
-					CommentRequest();
+					/*CommentRequest();*/
 					return;
 				} else {
 					//从数据库中查找该评论对应的讲座信息
@@ -357,7 +357,7 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 
 	}
 
-	//给评论点赞或取消
+	/*//给评论点赞或取消
 	private void LikeThisComment(final long commentID, final int islike) {
 		new Thread(new Runnable() {
 			@Override
@@ -377,5 +377,5 @@ public class MycommentActivity extends BaseActivity implements CommentAdapter.In
 				}
 			}
 		}).start();
-	}
+	}*/
 }

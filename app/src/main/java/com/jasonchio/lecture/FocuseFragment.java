@@ -21,7 +21,6 @@ import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
@@ -85,6 +84,8 @@ public class FocuseFragment extends BaseFragment {
 	LectureDBDao mLectureDao;               //讲座表操作对象
 
 	Dialog requestLoadDialog;               //加载对话框
+
+	boolean isFirstLoad;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -223,6 +224,7 @@ public class FocuseFragment extends BaseFragment {
 		listView = (ListView) rootview.findViewById(R.id.swipe_target);
 		mAdapter = new LectureAdapter(getActivity(), lecturelist);
 		listView.setAdapter(mAdapter);
+		isFirstLoad=true;
 	}
 
 	@Override
@@ -303,6 +305,10 @@ public class FocuseFragment extends BaseFragment {
 
 	@Override
 	public void fetchData() {
-		autoRefresh();
+		//自动刷新
+		if(isFirstLoad==true){
+			autoRefresh();
+			isFirstLoad=false;
+		}
 	}
 }

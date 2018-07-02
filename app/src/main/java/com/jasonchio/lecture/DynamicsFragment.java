@@ -2,8 +2,11 @@ package com.jasonchio.lecture;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,17 +14,24 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
+import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.google.gson.Gson;
 import com.jasonchio.lecture.greendao.DynamicsDB;
-import com.jasonchio.lecture.greendao.LectureMessageDB;
-import com.jasonchio.lecture.greendao.UserDB;
-import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.AddCommentResult;
+import com.jasonchio.lecture.gson.CommonStateResult;
+import com.jasonchio.lecture.gson.DynamicsRequestResult;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.KeyboardUtils;
+import com.jasonchio.lecture.util.Utility;
+import com.orhanobut.logger.Logger;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import es.dmoral.toasty.Toasty;
 
 /**
@@ -348,12 +358,15 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 	ImageView commentImage;
 	ImageView likeImage;
 	int isLikeOrNot=0;
+	Handler handler;                            //Handler 对象
 
+	//测试
 	String test="测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试" +
 			"测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试" +
 			"测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试" +
 			"测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试" +
 			"测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试";
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -366,7 +379,8 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			parent.removeView(rootview);
 		}
 
-		initDynamicData();
+		DynamicsRequest();
+		//initDynamicData();
 		//初始化控件
 		initWidget();
 		//初始化视图
@@ -374,7 +388,10 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 		//初始化事件
 		initEvent();
 		//自动刷新
-		//autoRefresh();
+		autoRefresh();
+
+
+		DynamicsRequest();
 
 		return rootview;
 	}
@@ -383,8 +400,8 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 	public void onClick(View v) {
 		switch (v.getId()){
 			case R.id.title_second_button:
-				Intent intent = new Intent(getActivity(), SelecteLectureCommentActivity.class);
-				startActivity(intent);
+				Intent intent = new Intent(getActivity(), AddDynamicsActivity.class);
+				startActivityForResult(intent,100);
 				break;
 		}
 	}
@@ -414,10 +431,53 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 	void initEvent() {
 		titleSecondButton.setOnClickListener(this);
 
+		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				swipeToLoadLayout.setRefreshing(false);
+				DynamicsRequest();
+			}
+		});
+
 		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
 			@Override
 			public void onLoadMore() {
 				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						recyclerView.setAdapter(dynamicsAdapter);
+						break;
+					case 2:
+						int pos=msg.arg1;
+						DynamicsDB dynamics=dynamicsDBList.get(pos);
+						dynamics.setCommentNum(dynamics.getCommentNum()+1);
+						dynamicsDBList.set(pos,dynamics);
+						dynamicsAdapter.notifyItemChanged(pos);
+						Toasty.success(getContext(),"评论成功"+pos).show();
+						break;
+					case 3:
+						int position=msg.arg1;
+						DynamicsDB dynamicsDB=dynamicsDBList.get(position);
+						if(dynamicsDB.getIsLikeorNot()==0){
+							isLikeOrNot=1;
+							dynamicsDB.setIsLikeorNot(1);
+							dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()+1);
+						}else{
+							isLikeOrNot=0;
+							dynamicsDB.setIsLikeorNot(0);
+							dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()-1);
+						}
+						dynamicsDBList.set(position,dynamicsDB);
+						dynamicsAdapter.notifyItemChanged(position);
+						default:
+				}
+				return true;
 			}
 		});
 	}
@@ -452,7 +512,12 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 				addComment(position);
 				break;
 			case R.id.dynamics_comment_like_image:
-				likeOrNot(position);
+				isLikeOrNot=dynamicsDB.getIsLikeorNot();
+				if(isLikeOrNot==0){
+					LikeOrNotChange(dynamicsDBList.indexOf(dynamicsDB),ConstantClass.TYPE_COMMENT,1);
+				}else{
+					LikeOrNotChange(dynamicsDBList.indexOf(dynamicsDB),ConstantClass.TYPE_COMMENT,0);
+				}
 				break;
 			case R.id.dynamics_layout:
 				Intent intent=new Intent(getContext(),DynamicsDetailActivity.class);
@@ -470,34 +535,145 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 	}
 
 	private void likeOrNot(int positon){
-		DynamicsDB dynamicsDB=dynamicsDBList.get(positon);
-		isLikeOrNot=dynamicsDB.getIsLikeorNot();
-		if(isLikeOrNot==0){
-			isLikeOrNot=1;
-			dynamicsDB.setIsLikeorNot(1);
-			dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()+1);
-		}else{
-			isLikeOrNot=0;
-			dynamicsDB.setIsLikeorNot(0);
-			dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()-1);
-		}
-		dynamicsDBList.set(positon,dynamicsDB);
-		dynamicsAdapter.notifyItemChanged(positon);
+
 	}
 
 	//添加留言
 	private void addComment(final int position){
 		KeyboardUtils.showCommentEdit(getActivity(), recyclerView, new KeyboardUtils.liveCommentResult() {
 			@Override
-			public void onResult(boolean confirmed, String comment) {
+			public void onResult(boolean confirmed, String commentContent) {
 				if (confirmed) {
-					DynamicsDB dynamicsDB=dynamicsDBList.get(position);
-					dynamicsDB.setCommentNum(dynamicsDB.getCommentNum()+1);
-					dynamicsDBList.set(position,dynamicsDB);
-					dynamicsAdapter.notifyItemChanged(position);
+					CommentDynamicsRequest(position,commentContent);
 				}
 			}
 		});
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+			case 100:
+				if(resultCode==-1){
+					Toasty.success(getContext(),"发表动态成功").show();
+					autoRefresh();
+				}
+				break;
+				default:
+		}
+	}
+
+
+	//请求动态信息
+	private void DynamicsRequest() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					/*//获取数据库中最后一条讲座 id
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
+					//获取服务器返回的数据
+					String response = HttpUtil.DynamicsRequest(ConstantClass.ADDRESS, ConstantClass.DYNAMICS_REQUEST_COM, ConstantClass.userOnline, dynamicsDBList.size());
+					Gson gson=new Gson();
+					DynamicsRequestResult requestResult=gson.fromJson(response,DynamicsRequestResult.class);
+					if(requestResult.getState()==0){
+						for(DynamicsRequestResult.DynamicBean dynamicBean:requestResult.getDynamic()){
+							DynamicsDB dynamicsDB=new DynamicsDB();
+							dynamicsDB.setCommentNum(dynamicBean.getDynamic_comment_amount());
+							dynamicsDB.setLikerNum(dynamicBean.getDynamic_good_amount());
+							dynamicsDB.setIsLikeorNot(dynamicBean.getDynamic_user_like());
+							dynamicsDB.setTime(dynamicBean.getDynamic_time());
+							dynamicsDB.setDynamicsContent(dynamicBean.getDynamic_information());
+							if(dynamicBean.getDynamic_user()==null){
+								dynamicBean.setDynamic_user("无名氏");
+							}
+							dynamicsDB.setUserName(dynamicBean.getDynamic_user());
+							dynamicsDB.setUserHead(dynamicBean.getDynamic_user_face_url());
+							dynamicsDBList.add(dynamicsDB);
+						}
+						handler.sendEmptyMessage(1);
+					}
+					/*//解析和处理服务器返回的数据
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
+					//处理结果
+					*/
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//评论动态
+	private void CommentDynamicsRequest(final int position, final String dynamicsContent) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					/*//获取数据库中最后一条讲座 id
+					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
+					//获取服务器返回的数据
+					String response = HttpUtil.CommentDynamicsRequest(ConstantClass.ADDRESS, ConstantClass.ADD_COMMENT_COM, dynamicsDBList.get(position).getId(), ConstantClass.userOnline,dynamicsContent, Utility.getNowTime());
+					Gson gson=new Gson();
+					AddCommentResult result=gson.fromJson(response,AddCommentResult.class);
+					if(result.getState()==0){
+						Message message=new Message();
+						message.arg1=position;
+						message.what=2;
+						handler.sendMessage(message);
+					}
+					/*//解析和处理服务器返回的数据
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
+					//处理结果
+					*/
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//点赞或者取消点赞
+	private void LikeOrNotChange(final int position,final int objectType, final int isLikeOrNot) {
+		//开启新线程
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					//获取服务器返回的结果
+					String response = HttpUtil.LikeOrNotChangeRequest(ConstantClass.ADDRESS, ConstantClass.LIKEORNOT_CHAGNE_COM,ConstantClass.userOnline,dynamicsDBList.get(position).getId(),objectType,isLikeOrNot);
+					Log.d("lecture",response);
+					Gson gson=new Gson();
+					CommonStateResult result=gson.fromJson(response,CommonStateResult.class);
+					if(result.getState()==0) {
+						Message message=new Message();
+						message.what=3;
+						message.arg1=position;
+						handler.sendMessage(message);
+					}
+					//解析和处理服务器返回的结果
+					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
+					//处理结果
+					;*/
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 }
 

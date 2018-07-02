@@ -47,7 +47,6 @@
                 android:paddingBottom="2dp"/>
 
             <LinearLayout
-                android:id="@+id/detail_page_comment_container"
                 android:layout_below="@+id/dynamics_layout"
                 android:layout_marginTop="40dp"
                 android:layout_width="match_parent"

@@ -159,7 +159,7 @@
             android:layout_marginLeft="17dp"
             android:textColor="#101010"
             android:textSize="16sp"
-            android:text="我的点评"/>
+            android:text="我的动态"/>
 
         <ImageView
             android:layout_width="20dp"

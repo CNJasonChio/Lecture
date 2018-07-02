@@ -65,7 +65,7 @@
         <activity android:name=".ResultSiftActivity" />
         <activity android:name=".SettingActivity" />
         <activity android:name=".SelecteLectureCommentActivity" />
-        <activity android:name=".AddCommentActivity" />
+        <activity android:name=".AddDynamicsActivity" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

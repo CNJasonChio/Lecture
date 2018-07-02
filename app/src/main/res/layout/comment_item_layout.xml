@@ -47,7 +47,7 @@
                     android:textColor="#989898"
                     android:layout_centerVertical="true"/>
 
-                <ImageView
+<!--                <ImageView
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@drawable/ic_dynamics_comment"
@@ -64,18 +64,18 @@
                     android:layout_toLeftOf="@+id/comment_reply_image"
                     android:layout_marginRight="3dp"
                     android:text="0"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"/>-->
 
                 <ImageView
                     android:layout_width="18dp"
                     android:layout_height="18dp"
-                    android:src="@drawable/ic_dynamics_like"
+                    android:src="@drawable/ic_comment_like"
                     android:clickable="true"
                     android:id="@+id/comment_like_image"
-                    android:layout_toLeftOf="@+id/comment_reply_num_text"
+                    android:layout_alignParentEnd="true"
                     android:layout_marginRight="10dp"/>
 
-                <TextView
+<!--                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="14sp"
@@ -83,7 +83,7 @@
                     android:layout_toLeftOf="@+id/comment_like_image"
                     android:layout_marginRight="3dp"
                     android:text="0"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"-->/>
             </RelativeLayout>
         </RelativeLayout>
 
@@ -91,7 +91,7 @@
             android:id="@+id/comment_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="4dp"
             android:layout_marginTop="6dp"
             android:textColor="#484848"
             android:textSize="14sp"

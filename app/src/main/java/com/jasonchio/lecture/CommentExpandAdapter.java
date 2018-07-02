@@ -67,7 +67,6 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 		}else {
 			return commentBeanList.get(i).getReplyList().size()>0 ? commentBeanList.get(i).getReplyList().size():0;
 		}
-
 	}
 
 	@Override
@@ -94,7 +93,6 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 	public boolean hasStableIds() {
 		return true;
 	}
-	boolean isLike = false;
 
 	@Override
 	public View getGroupView(final int groupPosition, boolean isExpand, View convertView, ViewGroup viewGroup) {
@@ -115,19 +113,23 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 			groupHolder.commentTime.setText(commentBeanList.get(groupPosition).getCreateDate());
 		}
 		groupHolder.commentContent.setText(commentBeanList.get(groupPosition).getContent());
+
 		groupHolder.commentLike.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if(isLike){
-					isLike = false;
+				if(commentBeanList.get(groupPosition).getIsLikeOrNot()==1){
+					commentBeanList.get(groupPosition).setIsLikeOrNot(0);
 					groupHolder.commentLike.setColorFilter(Color.parseColor("#aaaaaa"));
+					//groupHolder.commentLikeNum.setText(String.valueOf(commentBeanList.get(groupPosition).getLikeNum()));
 				}else {
-					isLike = true;
-					groupHolder.commentLike.setColorFilter(Color.parseColor("#FF5C5C"));
+					commentBeanList.get(groupPosition).setIsLikeOrNot(1);
+					groupHolder.commentLike.setColorFilter(Color.parseColor("#FF9D00"));
+					//groupHolder.commentLikeNum.setText(String.valueOf(commentBeanList.get(groupPosition).getLikeNum()));
 				}
 			}
 		});
-
+		/*groupHolder.commentLikeNum.setText(String.valueOf(commentBeanList.get(groupPosition).getLikeNum()));
+		groupHolder.commentReplyNum.setText(String.valueOf(commentBeanList.get(groupPosition).getReplyTotal()));*/
 		return convertView;
 	}
 
@@ -149,7 +151,6 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 		}else {
 			childHolder.replyUserName.setText("无名"+":");
 		}
-
 		childHolder.replyContent.setText(commentBeanList.get(groupPosition).getReplyList().get(childPosition).getContent());
 
 		return convertView;
@@ -172,8 +173,8 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 			commentUserName = (TextView) view.findViewById(R.id.comment_userName_text);
 			commentTime = (TextView) view.findViewById(R.id.comment_time_text);
 			commentLike = (ImageView) view.findViewById(R.id.comment_like_image);
-			commentLikeNum =(TextView)view.findViewById(R.id.comment_like_num_text);
-			commentReplyNum =(TextView)view.findViewById(R.id.comment_reply_num_text);
+/*			commentLikeNum =(TextView)view.findViewById(R.id.comment_like_num_text);
+			commentReplyNum =(TextView)view.findViewById(R.id.comment_reply_num_text);*/
 		}
 	}
 
@@ -193,7 +194,6 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 	 */
 	public void addTheCommentData(CommentDetailBean commentDetailBean){
 		if(commentDetailBean!=null){
-
 			commentBeanList.add(commentDetailBean);
 			notifyDataSetChanged();
 		}else {
@@ -209,6 +209,7 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 	public void addTheReplyData(ReplyDetailBean replyDetailBean, int groupPosition){
 		if(replyDetailBean!=null){
 			Logger.d("addTheReplyData: >>>>该刷新回复列表了:"+replyDetailBean.toString());
+			commentBeanList.get(groupPosition).setReplyTotal(commentBeanList.get(groupPosition).getReplyTotal()+1);
 			if(commentBeanList.get(groupPosition).getReplyList() != null ){
 				commentBeanList.get(groupPosition).getReplyList().add(replyDetailBean);
 			}else {
@@ -233,10 +234,8 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 			commentBeanList.get(groupPosition).getReplyList().clear();
 			commentBeanList.get(groupPosition).getReplyList().addAll(replyBeanList);
 		}else {
-
 			commentBeanList.get(groupPosition).setReplyList(replyBeanList);
 		}
-
 		notifyDataSetChanged();
 	}
 

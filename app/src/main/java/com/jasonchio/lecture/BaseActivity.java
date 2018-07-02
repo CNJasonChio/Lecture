@@ -1,20 +1,16 @@
 package com.jasonchio.lecture;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -22,13 +18,10 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.style.AbsoluteSizeSpan;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import com.jasonchio.lecture.util.ActivityCollector;
-import com.jasonchio.lecture.util.NetUtil;
-import com.orhanobut.logger.AndroidLogAdapter;
-import com.orhanobut.logger.Logger;
+import com.jasonchio.lecture.util.NetStateUtil;
 
 import es.dmoral.toasty.Toasty;
 
@@ -145,7 +138,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 	 * 初始化时判断有没有网络
 	 */
 	public boolean checkNet() {
-		this.netType = NetUtil.getNetWorkState(BaseActivity.this);
+		this.netType = NetStateUtil.getNetWorkState(BaseActivity.this);
 		if (!isNetConnect()) {
 			//网络异常，请检查网络
 			showNetDialog();

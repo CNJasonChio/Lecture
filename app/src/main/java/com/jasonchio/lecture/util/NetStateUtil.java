@@ -31,7 +31,7 @@ import android.net.NetworkInfo;
  */
 
 
-public class NetUtil {
+public class NetStateUtil {
 	/**
 	 * 没有网络
 	 */
@@ -45,7 +45,7 @@ public class NetUtil {
 	 */
 	private static final int NETWORK_WIFI = 1;
 
-	private NetUtil() {
+	private NetStateUtil() {
 	}
 
 	/**

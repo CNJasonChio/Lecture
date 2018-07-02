@@ -18,8 +18,9 @@ public class CommentDetailBean {
     private String imgId;
     private int replyTotal;
     private String createDate;
+    private int isLikeOrNot;
+    private int likeNum;
     private List <ReplyDetailBean> replyList;
-
 
     public CommentDetailBean(String nickName, String content, String createDate) {
         this.nickName = nickName;
@@ -133,5 +134,21 @@ public class CommentDetailBean {
 
     public void setReplyList(List <ReplyDetailBean> replyList) {
         this.replyList = replyList;
+    }
+
+    public int getIsLikeOrNot() {
+        return isLikeOrNot;
+    }
+
+    public void setIsLikeOrNot(int isLikeOrNot) {
+        this.isLikeOrNot = isLikeOrNot;
+    }
+
+    public int getLikeNum() {
+        return likeNum;
+    }
+
+    public void setLikeNum(int likeNum) {
+        this.likeNum = likeNum;
     }
 }

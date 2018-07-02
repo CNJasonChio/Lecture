@@ -239,7 +239,6 @@
         android:layout_width="match_parent"
         android:layout_height="2dip"
         android:background="#BBBBBB"
-        android:id="@+id/myinfo_view7"
         android:layout_marginTop="10dp"
         android:layout_below="@id/myinfo_phone_layout">
     </View>

@@ -32,12 +32,8 @@ import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.MD5Util;
-import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
-import com.orhanobut.logger.AndroidLogAdapter;
-import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
-import com.orhanobut.logger.PrettyFormatStrategy;
 import com.yanzhenjie.permission.Action;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Permission;
@@ -99,7 +95,7 @@ public class LoginActivity extends BaseActivity {
 		//初始化点击等事件
 		initEvent();
 		//检查更新
-		checkUpdate();
+		//checkUpdate();
 	}
 
 	@Override

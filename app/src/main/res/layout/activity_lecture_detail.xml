@@ -115,8 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:id="@+id/lecture_message_title">
+                    android:layout_marginLeft="10dp">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -145,7 +144,8 @@
                     android:id="@id/swipe_target"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#f8f8f8" />
+                    android:background="#f8f8f8"
+                    android:layout_marginBottom="20dp"/>
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>

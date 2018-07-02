@@ -115,6 +115,8 @@ public class NearFragment extends BaseFragment {
 
 	LocationClient locationClient;          //定位
 
+	boolean isFirstLoad;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -216,6 +218,7 @@ public class NearFragment extends BaseFragment {
 		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
 		mLectureDao = daoSession.getLectureDBDao();
 		mUserDao=daoSession.getUserDBDao();
+		isFirstLoad=true;
 	}
 
 	@Override
@@ -270,7 +273,11 @@ public class NearFragment extends BaseFragment {
 								Toasty.success(getContext(), "定位成功").show();
 								saveUserPosition();
 								if(getUserVisibleHint()){
-									autoRefresh();
+									//自动刷新
+									if(isFirstLoad==true){
+										autoRefresh();
+										isFirstLoad=false;
+									}
 								}
 								sendPosOk = true;
 							}

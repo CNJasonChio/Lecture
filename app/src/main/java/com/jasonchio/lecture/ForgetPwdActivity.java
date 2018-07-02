@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.MD5Util;
-import com.jasonchio.lecture.util.NetUtil;
 import com.jasonchio.lecture.util.Utility;
 import com.mob.MobSDK;
 import com.orhanobut.logger.Logger;

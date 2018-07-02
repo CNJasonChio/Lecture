@@ -9,11 +9,6 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="MyTabLayoutTextAppearance" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <item name="android:textSize">5sp</item>
-        <item name="android:textColor">@color/colorAAA</item>
-    </style>
-
     <!-- popup window 显示消失动画-->
     <style name="PopWindowAnimStyle">
         <item name="android:windowShowAnimation">@anim/dialog_enter</item>

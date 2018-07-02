@@ -23,6 +23,7 @@ import com.jasonchio.lecture.gson.CheckUpdateResult;
 import com.jasonchio.lecture.gson.CommentRequestResult;
 import com.jasonchio.lecture.gson.CommonStateResult;
 import com.jasonchio.lecture.gson.FindPwdResult;
+import com.jasonchio.lecture.gson.LectureMessageResult;
 import com.jasonchio.lecture.gson.LectureRequestResult;
 import com.jasonchio.lecture.gson.LectureSearchResult;
 import com.jasonchio.lecture.gson.LibraryRequestResult;
@@ -892,4 +893,21 @@ public class Utility {
 		return bitmap.getRowBytes() * bitmap.getHeight();                //earlier version
 	}
 
+
+	//解析和处理服务器返回的讲座留言数据
+	public static int handleLectureMessageResponse(String response) {
+
+		int state = -1;
+		if (!TextUtils.isEmpty(response)) {
+			Gson gson = new Gson();
+			LectureMessageResult result = gson.fromJson(response, LectureMessageResult.class);
+			state = result.getState();
+
+			if (state == 0) {
+				List <LectureMessageResult.MessageListBean> commentBeanList = result.getMessageList();
+			}
+
+		}
+		return state;
+	}
 }

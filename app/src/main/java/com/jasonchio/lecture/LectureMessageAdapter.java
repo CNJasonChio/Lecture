@@ -39,10 +39,12 @@ import java.util.List;
  * <p>
  * Created by zhaoyaobang on 2018/6/26.
  */
-public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAdapter.ViewHolder> implements View.OnClickListener {
+public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener {
 	List<LectureMessageDB> messageDBList;
 	Context context;
 	OnItemClickListener mItemClickListener;
+	OnItemLongClickListener mItemLongClickListener;
+
 
 	static class ViewHolder extends RecyclerView.ViewHolder{
 		CircleImageView userheadImage;
@@ -74,6 +76,7 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 				.inflate(R.layout.lecture_message,parent,false);
 		ViewHolder holder=new ViewHolder(view);
 		view.setOnClickListener(this);
+		view.setOnLongClickListener(this);
 		return holder;
 	}
 
@@ -108,6 +111,10 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 		void onItemClick(View view,int position);
 	}
 
+	public interface OnItemLongClickListener{
+		void onItemLongClick(View view,int position);
+	}
+
 	@Override
 	public void onClick(View v) {
 		if (mItemClickListener!=null){
@@ -115,7 +122,19 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 		}
 	}
 
+	@Override
+	public boolean onLongClick(View v) {
+		if (mItemLongClickListener!=null){
+			mItemLongClickListener.onItemLongClick(v,(Integer) v.getTag());
+		}
+		return true;
+	}
 	public void setItemClickListener(OnItemClickListener itemClickListener) {
 		mItemClickListener = itemClickListener;
 	}
+
+	public void setItemLongClickListener(OnItemLongClickListener itemLongClickListener) {
+		mItemLongClickListener = itemLongClickListener;
+	}
+
 }
