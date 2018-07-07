@@ -29,6 +29,7 @@ import com.orhanobut.logger.Logger;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,9 +91,7 @@ public class RecommentFragment extends BaseFragment {
 
 	long lastViewedLectureID;                   //记录上次看到的位置
 
-	//HttpResponse httpResponse;
-
-	boolean isFirstLoad;                        //是否是第一次加载界面
+	boolean haveRequestedLecture;               //第一次使用软件时，是否已经做过讲座请求
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -109,7 +108,8 @@ public class RecommentFragment extends BaseFragment {
 		//加载上次记录的位置
 		SharedPreferences sharedPreferences = getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE);
 		lastViewedLectureID = sharedPreferences.getLong("last_viewed_lectureID", 0);
-		Logger.d("lastViewedLectureID onCreateView" + lastViewedLectureID);
+		Logger.d("record_lectureID"+lastViewedLectureID);
+
 
 		//初始化控件
 		initWidget();
@@ -119,10 +119,10 @@ public class RecommentFragment extends BaseFragment {
 		//初始化响应事件
 		initEvent();
 
-		//自动刷新
-		if(isFirstLoad==true){
+		if(lecturelist.size()==0){
 			autoRefresh();
 		}
+
 		return rootview;
 	}
 
@@ -135,20 +135,134 @@ public class RecommentFragment extends BaseFragment {
 		});
 	}
 
+	@Override
+	void initView() {
+
+	}
+
+	@Override
+	void initWidget() {
+		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
+		listView = (ListView) rootview.findViewById(R.id.swipe_target);
+		mAdapter = new LectureAdapter(getActivity(), lecturelist);
+		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
+		mLectureDao = daoSession.getLectureDBDao();
+		mUserDao = daoSession.getUserDBDao();
+		listView.setAdapter(mAdapter);
+	}
+
+	@Override
+	void initEvent() {
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						if (lectureRequestResult == 0) {
+							//showLectureInfoToTop();
+							DialogUtils.closeDialog(requestLoadDialog);
+							showNewLectureToTop();
+						} else if (lectureRequestResult == 1) {
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.info(getContext(), "讲座信息暂无更新").show();
+						} else {
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 2:
+						if (recommentOrderResult == 0) {
+							//showLectureInfoToTop();
+							showNewLectureToTop();
+						} else {
+							DialogUtils.closeDialog(requestLoadDialog);
+							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						}
+						break;
+					case 3:
+						Toasty.normal(getContext(),"你已经看完了所有最新的讲座了，试试上拉加载更多吧！").show();
+						DialogUtils.closeDialog(requestLoadDialog);
+						break;
+					case 4:
+						Toasty.normal(getContext(),"没有更多讲座了，试试下拉刷新一下吧！").show();
+						DialogUtils.closeDialog(requestLoadDialog);
+						break;
+					case 5:
+						DialogUtils.closeDialog(requestLoadDialog);
+					default:
+				}
+				return true;
+			}
+		});
+
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+
+				LectureDB lecture = lecturelist.get(position);
+				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
+				intent.putExtra("lecture_id", (int) lecture.getLectureId());
+				startActivity(intent);
+
+			}
+		});
+
+		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
+				//showLectureInfoToTop();
+				showNewLectureToTop();
+				swipeToLoadLayout.setRefreshing(false);
+			}
+		});
+
+		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
+			@Override
+			public void onLoadMore() {
+				requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
+				showMoreLectureToBottom();
+				swipeToLoadLayout.setLoadingMore(false);
+			}
+		});
+
+	}
+
+	@Override
+	public void fetchData() {
+
+	}
+
+	@Override
+	public void onClick(View v) {
+
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		//保存上次浏览的位置
+		SharedPreferences.Editor editor = getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE).edit();
+		lastViewedLectureID=lecturelist.get(0).getLectureId();
+		editor.putLong("last_viewed_lectureID",lastViewedLectureID);
+		Logger.d("last_viewed_lectureID"+lastViewedLectureID);
+		editor.apply();
+	}
+
 	//讲座信息请求
-	private void LectureRequest() {
+	private void LectureRequest(final int requestType, final long lectureID) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					//获取数据库中最后一条讲座 id
-					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
+
 					//获取服务器返回的数据
-					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
+					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lectureID,requestType);
 					//解析和处理服务器返回的数据
 					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 					//处理结果
-					handler.sendEmptyMessageDelayed(1, 1000);
+					handler.sendEmptyMessageDelayed(1, 1200);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -160,7 +274,7 @@ public class RecommentFragment extends BaseFragment {
 		}).start();
 	}
 
-	//将讲座显示到界面中
+/*	//将讲座显示到界面中
 	private void showLectureInfoToTop() {
 
 		//推荐讲座序列
@@ -176,9 +290,7 @@ public class RecommentFragment extends BaseFragment {
 				List <LectureDB> lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
 				//如果数据库中无讲座待显示，则向服务器请求新的讲座
 				if (lectureDBList.isEmpty()) {
-					/*BaseFragment.lectureRequest(httpResponse,mLectureDao);
-					updateLocateHttpResponse();*/
-					LectureRequest();
+					LectureRequest(ConstantClass.REQUEST_NEW,0);
 					return;
 				} else {
 					//否则将数据库中已有讲座添加到显示列表中
@@ -208,9 +320,9 @@ public class RecommentFragment extends BaseFragment {
 							LectureDB lectureDB = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(Long.valueOf(recommentOrder[j]))).build().unique();
 							//若该条讲座不在数据库中，则向服务器请求
 							if (lectureDB == null) {
-								LectureRequest();
-								/*BaseFragment.lectureRequest(httpResponse,mLectureDao);
-								updateLocateHttpResponse();*/
+								//获取数据库中最后一条讲座 id
+								long lastLecureID = Utility.lastLetureinDB(mLectureDao);
+								LectureRequest(ConstantClass.REQUEST_NEW,lastLecureID);
 								return;
 							} else {
 								lectureDBS.add(lectureDB);
@@ -218,15 +330,15 @@ public class RecommentFragment extends BaseFragment {
 						}
 					} else {
 						//如果待显示的讲座大于7条，则只新增7条到界面中
-
 						//依次添加讲座
 						for (int j = 0; j < 7; j++) {
 							LectureDB lectureDB = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(Long.valueOf(recommentOrder[i + j]))).build().unique();
 							if (lectureDB == null) {
 								//若该条讲座不在数据库中，则向服务器请求
-								LectureRequest();
-								/*BaseFragment.lectureRequest(httpResponse,mLectureDao);
-								updateLocateHttpResponse();*/
+								//获取数据库中最后一条讲座 id
+								long lastLecureID = Utility.lastLetureinDB(mLectureDao);
+								LectureRequest(ConstantClass.REQUEST_NEW,lastLecureID);
+
 								return;
 							} else {
 								lectureDBS.add(lectureDB);
@@ -241,109 +353,13 @@ public class RecommentFragment extends BaseFragment {
 			}
 		}
 		DialogUtils.closeDialog(requestLoadDialog);
-	}
-
-	@Override
-	void initView() {
-
-	}
-
-	@Override
-	void initWidget() {
-		swipeToLoadLayout = (SwipeToLoadLayout) rootview.findViewById(R.id.swipeToLoadLayout);
-		listView = (ListView) rootview.findViewById(R.id.swipe_target);
-		mAdapter = new LectureAdapter(getActivity(), lecturelist);
-		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
-		mLectureDao = daoSession.getLectureDBDao();
-		mUserDao = daoSession.getUserDBDao();
-		listView.setAdapter(mAdapter);
-		isFirstLoad=true;
-	}
-
-	@Override
-	void initEvent() {
-		handler = new Handler(new Handler.Callback() {
-			@Override
-			public boolean handleMessage(Message msg) {
-				switch (msg.what) {
-					case 1:
-						if (lectureRequestResult == 0) {
-							Logger.d("获取讲座成功");
-							showLectureInfoToTop();
-						} else if (lectureRequestResult == 1) {
-							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.info(getContext(), "讲座信息暂无更新").show();
-						} else {
-							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
-						}
-						break;
-					case 2:
-						if (recommentOrderResult == 0) {
-							showLectureInfoToTop();
-						} else if (recommentOrderResult == 3) {
-							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(), "暂无更多推荐讲座").show();
-						} else {
-							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
-						}
-				}
-				return true;
-			}
-		});
-
-		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
-
-				LectureDB lecture = lecturelist.get(position);
-				Intent intent = new Intent(getActivity(), LectureDetailActivity.class);
-				intent.putExtra("lecture_id", (int) lecture.getLectureId());
-				startActivity(intent);
-
-			}
-		});
-
-		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-					requestLoadDialog = DialogUtils.createLoadingDialog(getContext(), "正在加载");
-					showLectureInfoToTop();
-					swipeToLoadLayout.setRefreshing(false);
-			}
-		});
-
-		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
-			@Override
-			public void onLoadMore() {
-
-				swipeToLoadLayout.setLoadingMore(false);
-			}
-		});
-
-	}
-
-	@Override
-	public void fetchData() {
-
-	}
-
-	@Override
-	public void onClick(View v) {
-
-	}
+	}*/
 
 	private void RecommentLectureRequest() {
-
-		Logger.d("开始获取推荐的讲座");
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
-					Logger.d("RecommentLectureRequest()");
-
 					String recommentResponse = HttpUtil.RecommentRequest(ConstantClass.ADDRESS, ConstantClass.RECOMMENT_COM, ConstantClass.userOnline);
 
 					recommentOrderResult = Utility.handleRecommentLectureResponse(recommentResponse, mUserDao);
@@ -360,25 +376,128 @@ public class RecommentFragment extends BaseFragment {
 		}).start();
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
+	public void showNewLectureToTop() {
+		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+		String temp = user.getRecommentLectureOrder();
+		Logger.d("讲座的推荐顺序为："+temp);
+		if(temp==null){
+			RecommentLectureRequest();
+			return;
+		}
+		String[] recommentOrder = new String[0];
+		if (temp != null && !temp.isEmpty()) {
+			recommentOrder = Utility.getStrings(temp);
+		}
+		Logger.d("上次浏览到 "+lastViewedLectureID);
+		//如果是没有浏览记录并且没有本次使用请求过讲座
+		if (lastViewedLectureID == 0 && haveRequestedLecture==false) {
+			haveRequestedLecture=true;
+			Logger.d("没有浏览记录并且没有本次使用请求过讲座");
+			LectureRequest(ConstantClass.REQUEST_FIRST,0);
+			return;
 
-		//保存上次浏览的位置
-		SharedPreferences.Editor editor = getActivity().getSharedPreferences("last_viewed_lecture", MODE_PRIVATE).edit();
-		editor.putLong("last_viewed_lectureID", lecturelist.get(0).getLectureId());
-		Logger.d("lastViewedLectureID onDestory" + lecturelist.get(0).getLectureId());
-		editor.apply();
+		} else if(haveRequestedLecture==true &&lastViewedLectureID==0){
+			//如果没有浏览记录但已经请求了讲座
+			Logger.d("没有浏览记录但已经请求了讲座");
+			lecturelist.addAll(mLectureDao.loadAll());
+			lastViewedLectureID=lecturelist.get(0).getLectureId();
+		}else {
+			//如果有浏览记录，判断是否已经有讲座被展示
+			int position = getLecturePosInRecommentList(lastViewedLectureID);
+			Logger.d("上次看到的讲座在推荐顺序表中的位置为 "+position);
+			Logger.d("lectureListd的长度为 "+lecturelist.size());
+			//如果有讲座被展示，就从展示的第一个讲座在推荐顺序中的位置开始，继续展示七个推荐顺序更靠前的讲座
+			if(lecturelist.size()!=0){
+				//每次加载七条讲座，如果不够七条就加载全部（i-上一次浏览到的讲座的ID在推荐讲座列表中的位置，i--表示加载推荐顺序靠前的讲座
+				// consts记录推进的次数，每次最多推进七条）
+				if(position==0){
+					handler.sendEmptyMessage(3);
+					return;
+				}
+				for (int i = position-1, consts = 0; i >= 0 && consts <= 6; i--, consts++) {
+					LectureDB lectureDB = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i])).build().unique();
+					//如果数据库中没有该条讲座，请求返回最新讲座
+					if (lectureDB == null) {
+						LectureRequest(ConstantClass.REQUEST_OLD,Long.parseLong(recommentOrder[i+1]));
+						return;
+					} else {
+						Logger.d("加载第"+consts+"个更新的讲座，ID为 "+lectureDB.getLectureId());
+						//将数据库查到的讲座添加到讲座列表中
+						lecturelist.add(0, lectureDB);
+					}
+				}
+				lastViewedLectureID = lecturelist.get(0).getLectureId();
+			}else{
+				//如果没有讲座被展示，就从上次浏览到的讲座在推荐顺序中的位置开始，添加七个上次浏览过的讲座
+				for(int i=position,consts=0;i<recommentOrder.length&&consts<=7;i++,consts++){
+					LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i])).build().unique();
+					if (lectureDB == null) {
+						LectureRequest(ConstantClass.REQUEST_NEW,Long.parseLong(recommentOrder[i]));
+						return;
+					} else {
+						Logger.d("加载第"+consts+"个之前看过的讲座，ID为 "+lectureDB.getLectureId());
+						//将数据库查到的讲座添加到讲座列表中
+						lecturelist.add(lectureDB);
+					}
+				}
+			}
+		}
+		handler.sendEmptyMessage(5);
+		mAdapter.notifyDataSetChanged();
 	}
 
-/*
-	public void initHttpResponse(){
-		httpResponse.setLectureRequestResult(lectureRequestResult);
+	public void showMoreLectureToBottom(){
+		if (lecturelist.size()==0){
+			showNewLectureToTop();
+			return;
+		}else{
+			UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+			String temp = user.getRecommentLectureOrder();
+			Logger.d("讲座的推荐顺序为："+temp);
+
+			String[] recommentOrder = new String[0];
+			if (temp != null && !temp.isEmpty()) {
+				recommentOrder = Utility.getStrings(temp);
+			}
+
+			long lastLectureInList=lecturelist.get(lecturelist.size()-1).getLectureId();
+			int position=getLecturePosInRecommentList(lastLectureInList);
+			if(position==recommentOrder.length-1){
+				handler.sendEmptyMessage(4);
+				return;
+			}
+			for(int i=position+1,consts=0;i<recommentOrder.length&&consts<=7;i++,consts++){
+				LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i-1])).build().unique();
+				if (lectureDB == null) {
+					LectureRequest(ConstantClass.REQUEST_NEW,Long.parseLong(recommentOrder[i]));
+					return;
+				} else {
+					Logger.d("加载第"+consts+"个更多的讲座，ID为 "+lectureDB.getLectureId());
+					//将数据库查到的讲座添加到讲座列表中
+					lecturelist.add(lectureDB);
+				}
+			}
+			handler.sendEmptyMessage(5);
+			mAdapter.notifyDataSetChanged();
+			listView.setSelection(position
+			);
+		}
 	}
 
-	public void updateLocateHttpResponse(){
-		lectureRequestResult=httpResponse.getLectureRequestResult();
-		handler.sendEmptyMessageDelayed(1, 1000);
+	public int getLecturePosInRecommentList(long lectureID) {
+		int position = -1;
+		UserDB user = mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+		String temp = user.getRecommentLectureOrder();
+		if (temp != null && temp.length()!=0) {
+			String[] recommentOrder = Utility.getStrings(temp);
+
+			for (int i = 0; i < recommentOrder.length; i++) {
+				if (String.valueOf(lectureID).equals(recommentOrder[i])) {
+					position = i;
+					break;
+				}
+			}
+		}
+		return position;
 	}
-*/
 }

@@ -173,6 +173,7 @@ public class HomeFragment extends BaseFragment {
 	void initWidget() {
 		titleLayout = (SearchTitleLayout) rootView.findViewById(R.id.home_title_layout);
 		titleNoticeImage=rootView.findViewById(R.id.search_title_notice_image);
+		titleNoticeImage.setVisibility(View.GONE);
 		titleSearchImage=rootView.findViewById(R.id.search_title_search_image);
 		titleSearchEdit=rootView.findViewById(R.id.title_search_edit);
 		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();

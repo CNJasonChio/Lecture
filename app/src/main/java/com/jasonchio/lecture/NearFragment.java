@@ -27,11 +27,13 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.google.gson.Gson;
 import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
 import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.NearLectureResult;
 import com.jasonchio.lecture.util.ConstantClass;
 import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
@@ -115,8 +117,9 @@ public class NearFragment extends BaseFragment {
 
 	LocationClient locationClient;          //定位
 
-	boolean isFirstLoad;
+	List<Long> nearLectureIDs;
 
+	boolean isFirstLoad=true;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -148,62 +151,6 @@ public class NearFragment extends BaseFragment {
 		});
 	}
 
-	//讲座请求
-	private void LectureRequest() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					//获得数据库中最后一条讲座
-					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
-					//获取服务器返回数据
-					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
-					//解析和处理服务器返回数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					handler.sendEmptyMessage(1);
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					Logger.d("解析失败，JSON error");
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
-
-	//将从数据库中查找到的讲座显示到界面中
-	private void showLectureInfoToTop() {
-
-		UserDB user=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
-		List <LectureDB> lectureDBList = null;
-		if(user.getUserLocation()!=null){
-			lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).where(LectureDBDao.Properties.LectureDistrict.like("%"+user.getUserLocation()+"%")).build().list();
-			if(lectureDBList.isEmpty()){
-				LectureRequest();
-				return;
-			}
-		}else{
-			Toasty.info(getContext(),"还没有您的位置信息，点击左上角开始定位").show();
-			/*lectureDBList = mLectureDao.queryBuilder().offset(mAdapter.getCount()).limit(7).orderDesc(LectureDBDao.Properties.LectureId).build().list();
-			//如果数据库中没有待显示的讲座，则向服务器请求
-			if (lectureDBList.size() < 1) {
-				LectureRequest();
-				return;
-			}*/
-			return;
-		}
-		DialogUtils.closeDialog(requestLoadDialog);
-		if(lectureDBList==null){
-			Toasty.error(getContext(),"暂无附近讲座推荐").show();
-		}else{
-			lecturelist.addAll(0, lectureDBList);
-			listView.setSelection(0);
-			mAdapter.notifyDataSetChanged();
-		}
-	}
-
 	@Override
 	void initView() {
 
@@ -218,7 +165,6 @@ public class NearFragment extends BaseFragment {
 		daoSession = ((MyApplication) getActivity().getApplication()).getDaoSession();
 		mLectureDao = daoSession.getLectureDBDao();
 		mUserDao=daoSession.getUserDBDao();
-		isFirstLoad=true;
 	}
 
 	@Override
@@ -238,16 +184,9 @@ public class NearFragment extends BaseFragment {
 			@Override
 			public void onRefresh() {
 				requestLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
-				showLectureInfoToTop();
+				sendPosOk=false;
+				getPosition();
 				swipeToLoadLayout.setRefreshing(false);
-			}
-		});
-
-		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
-			@Override
-			public void onLoadMore() {
-
-				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
 
@@ -256,35 +195,23 @@ public class NearFragment extends BaseFragment {
 			public boolean handleMessage(Message msg) {
 				switch (msg.what) {
 					case 1:
-						if (lectureRequestResult == 0) {
-							DialogUtils.closeDialog(requestLoadDialog);
-							showLectureInfoToTop();
-						} else if (lectureRequestResult == 1) {
-							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(), "没有更多附近讲座推荐了").show();
-						} else {
-							DialogUtils.closeDialog(requestLoadDialog);
-							Toasty.error(getContext(), "服务器出错，请稍候再试").show();
+						if(sendPositionResult==0){
+							saveUserPosition();
+							sendPosOk=true;
+							NearLectureRequest();
 						}
 						break;
 					case 2:
-						if (sendPositionResult == 0) {
-							if (sendPosOk == false) {
-								Toasty.success(getContext(), "定位成功").show();
-								saveUserPosition();
-								if(getUserVisibleHint()){
-									//自动刷新
-									if(isFirstLoad==true){
-										autoRefresh();
-										isFirstLoad=false;
-									}
-								}
-								sendPosOk = true;
-							}
-						} else {
-							Toasty.error(getContext(), "定位失败，请稍候再试或联系开发者").show();
+						if(msg.arg1==0){
+							showLectureInfoToTop();
 						}
+						DialogUtils.closeDialog(requestLoadDialog);
 						break;
+					case 3:
+						if(lectureRequestResult==0){
+							showLectureInfoToTop();
+						}
+						default:
 				}
 				return true;
 			}
@@ -303,7 +230,85 @@ public class NearFragment extends BaseFragment {
 		if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission_group.LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			askforPermisson();
 		} else {
-			getPosition();
+			if(isFirstLoad==true){
+				autoRefresh();
+			}
+		}
+	}
+
+	//讲座请求
+	private void LectureRequest(final int requestType, final long lectureID) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline,lectureID,requestType);
+					//解析和处理服务器返回数据
+					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
+					//处理结果
+					handler.sendEmptyMessage(3);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//讲座请求
+	private void NearLectureRequest() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回数据
+					String response = HttpUtil.NearLectureRequest(ConstantClass.ADDRESS, ConstantClass.NEAR_LECTURE_EQUEST_COM, ConstantClass.userOnline);
+					//解析和处理服务器返回数据
+					Gson gson=new Gson();
+					NearLectureResult result=gson.fromJson(response,NearLectureResult.class);
+					Message message=new Message();
+					message.what=2;
+
+					if(result!=null){
+						if(result.getState()==0){
+							nearLectureIDs=result.getLecture();
+							message.arg1=result.getState();
+						}
+					}else{
+						message.arg1=1;
+					}
+					//处理结果
+					handler.sendMessage(message);
+				} catch (IOException e) {
+					Logger.d("连接失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("解析失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+	//将从数据库中查找到的讲座显示到界面中
+	private void showLectureInfoToTop() {
+		if(nearLectureIDs==null){
+			Toasty.error(getContext(),"暂无附近讲座推荐").show();
+		}else{
+			for(int i=0;i<nearLectureIDs.size();i++){
+				LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(nearLectureIDs.get(i))).build().unique();
+				if(lectureDB==null){
+					LectureRequest(ConstantClass.REQUEST_NEW,nearLectureIDs.get(i)-1);
+				}else{
+					lecturelist.add(lectureDB);
+				}
+			}
+			listView.setSelection(0);
+			mAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -386,7 +391,6 @@ public class NearFragment extends BaseFragment {
 
 	//向服务器发送位置信息
 	private void SendPosition() {
-		sendPosOk = false;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -395,7 +399,7 @@ public class NearFragment extends BaseFragment {
 
 					sendPositionResult = Utility.handleCommonResponse(response);
 
-					handler.sendEmptyMessage(2);
+					handler.sendEmptyMessage(1);
 
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
@@ -415,7 +419,9 @@ public class NearFragment extends BaseFragment {
 			longtituide = bdLocation.getLongitude();
 			latituide = bdLocation.getLatitude();
 			location = bdLocation.getDistrict();
-			SendPosition();
+			if(sendPosOk==false){
+				SendPosition();
+			}
 		}
 	}
 

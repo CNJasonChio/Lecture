@@ -3,7 +3,6 @@ package com.jasonchio.lecture;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,13 +16,7 @@ import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
 import com.jasonchio.lecture.util.CircleImageView;
 import com.jasonchio.lecture.util.ConstantClass;
-import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
-
-import org.json.JSONException;
-
-import java.io.IOException;
 
 /**
  * /**
@@ -199,7 +192,7 @@ public class  MeFragment extends BaseFragment{
 		mycommentLayout.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent=new Intent(getActivity(),MycommentActivity.class);
+				Intent intent=new Intent(getActivity(),MyDynamicsActivity.class);
 				startActivity(intent);
 			}
 		});

@@ -74,14 +74,11 @@ public class LoginActivity extends BaseActivity {
 	String response = null;
 	String updateFileUrl;
 	Rationale mRationale;               //申请权限多次被拒绝后提示对象
+
+	boolean isNoticed;                  //是否提醒过用户有更新
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		/*//初始化Logger 适配器
-		FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
-				.showThreadInfo(false)  // 是否显示线程信息，默认为ture
-				.tag("LECTURE")   // 每个日志的全局标记。默认PRETTY_LOGGER
-				.build();*/
 
 		setContentView(R.layout.activity_login);
 
@@ -95,7 +92,9 @@ public class LoginActivity extends BaseActivity {
 		//初始化点击等事件
 		initEvent();
 		//检查更新
-		//checkUpdate();
+		if(isNoticed==false){
+			checkUpdate();
+		}
 	}
 
 	@Override
@@ -195,6 +194,7 @@ public class LoginActivity extends BaseActivity {
 								public void onClick(DialogInterface dialog, int which) {
 									if(Double.valueOf(result.getVersion())-Double.valueOf(localVersion)>=0.5){
 										dialog.dismiss();
+										isNoticed=true;
 										finish();
 									}else{
 										dialog.dismiss();
@@ -228,7 +228,6 @@ public class LoginActivity extends BaseActivity {
 			case R.id.login_signin_text: {
 				Intent intent = new Intent(LoginActivity.this, SigninWithPhoneActivity.class);
 				startActivity(intent);
-
 				break;
 			}
 			case R.id.login_fgtpwd_text: {

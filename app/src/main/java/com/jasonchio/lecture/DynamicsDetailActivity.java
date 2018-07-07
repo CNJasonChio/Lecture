@@ -1,46 +1,33 @@
 package com.jasonchio.lecture;
 
-import android.content.Context;
+import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.BottomSheetDialog;
-import android.text.Editable;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.TranslateAnimation;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.jasonchio.lecture.greendao.DaoSession;
 import com.jasonchio.lecture.greendao.DynamicsDB;
-import com.jasonchio.lecture.gson.CommentDetailBean;
-import com.jasonchio.lecture.gson.CommentRequestResult;
+import com.jasonchio.lecture.greendao.UserDB;
+import com.jasonchio.lecture.greendao.UserDBDao;
+import com.jasonchio.lecture.gson.AddCommentResult;
+import com.jasonchio.lecture.gson.CommonStateResult;
 import com.jasonchio.lecture.gson.DynamicsResult;
-import com.jasonchio.lecture.gson.ReplyDetailBean;
+import com.jasonchio.lecture.gson.ReplyCommentResult;
 import com.jasonchio.lecture.util.CircleImageView;
 import com.jasonchio.lecture.util.CommentExpandableListView;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.KeyboardUtils;
 import com.jasonchio.lecture.util.Utility;
@@ -49,11 +36,7 @@ import com.orhanobut.logger.Logger;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import es.dmoral.toasty.Toasty;
 
@@ -76,9 +59,16 @@ public class DynamicsDetailActivity extends BaseActivity {
 	CommentExpandableListView commentListView;  //
 	TextView commentDynamicsText;
 	CommentExpandAdapter adapter;
-	DynamicsResult dynamicsComment;
-	List<CommentDetailBean> commentsList;
-	BottomSheetDialog dialog;
+	List<DynamicsResult.DataBean> commentsList;
+
+	Dialog loadDialog;
+	Dialog commentDynamicsDialog;
+	Dialog replyCommentDialog;
+	Handler handler;
+
+	UserDBDao mUserDao;             //用户表操作对象
+	DaoSession daoSession;          //数据库操作对象
+
 	//测试用的json
 	private String testJson = "{\n" +
 			"\t\"code\": 1000,\n" +
@@ -146,6 +136,7 @@ public class DynamicsDetailActivity extends BaseActivity {
 
 		initEvent();
 
+		loadDialog= DialogUtils.createLoadingDialog(DynamicsDetailActivity.this,"正在加载");
 		CommentAndReplyRequest();
 	}
 
@@ -166,9 +157,8 @@ public class DynamicsDetailActivity extends BaseActivity {
 		commentListView =(CommentExpandableListView) findViewById(R.id.dynamics_detail_comment_list);
 		commentDynamicsText=(TextView)findViewById(R.id.dynamics_detail_docomment_text);
 
-		commentsList = generateTestData();
-
-		initExpandableListView(commentsList);
+		daoSession = ((MyApplication) getApplication()).getDaoSession();
+		mUserDao = daoSession.getUserDBDao();
 	}
 
 	@Override
@@ -199,7 +189,60 @@ public class DynamicsDetailActivity extends BaseActivity {
 
 	@Override
 	void initEvent() {
-
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						//加载评论内容
+						if(msg.arg1==0){
+							initExpandableListView(commentsList);
+						}
+						DialogUtils.closeDialog(loadDialog);
+						break;
+					case 2:
+						//点赞
+						break;
+					case 3:
+						//回复评论
+						int position=msg.arg1;
+						String replyContent= (String) msg.obj;
+						if(msg.arg2==0){
+							UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+							DynamicsResult.DataBean.ReplyListBean replyBean = new DynamicsResult.DataBean.ReplyListBean(userDB.getUserName(),replyContent);
+							adapter.addTheReplyData(replyBean, position);
+							commentListView.expandGroup(position);
+							Toasty.success(DynamicsDetailActivity.this,"回复成功").show();
+							commentDynamicsText.setVisibility(View.VISIBLE);
+							commentListView.setSelectedChild(position,adapter.getChildrenCount(position),true);
+						}else{
+							Toasty.error(DynamicsDetailActivity.this,"回复失败，请稍后再试").show();
+						}
+						DialogUtils.closeDialog(replyCommentDialog);
+						break;
+					case 4:
+						//评论动态
+						String commentContent= (String) msg.obj;
+						if(msg.arg1==0){
+							UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+							DynamicsResult.DataBean detailBean = new DynamicsResult.DataBean(userDB.getUserName(), commentContent,Utility.getNowTime());
+							detailBean.setUserLogo(userDB.getUserPhotoUrl());
+							adapter.addTheCommentData(detailBean);
+							Toasty.success(DynamicsDetailActivity.this,"评论成功").show();
+							commentDynamicsText.setVisibility(View.VISIBLE);
+							dynamicsDB.setCommentNum(dynamicsDB.getCommentNum()+1);
+							commentNum.setText(String.valueOf(dynamicsDB.getCommentNum()));
+							commentListView.setSelectedGroup(adapter.getGroupCount());
+						}else{
+							Toasty.error(DynamicsDetailActivity.this,"评论失败，请稍后再试").show();
+						}
+						DialogUtils.closeDialog(commentDynamicsDialog);
+						break;
+					default:
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -227,7 +270,6 @@ public class DynamicsDetailActivity extends BaseActivity {
 				addComment();
 				break;
 			case R.id.dynamics_detail_docomment_text:
-				//showCommentDialog();
 				addComment();
 				commentDynamicsText.setVisibility(View.INVISIBLE);
 			default:
@@ -249,21 +291,9 @@ public class DynamicsDetailActivity extends BaseActivity {
 	}
 
 	/**
-	 * by moos on 2018/04/20
-	 * func:生成测试数据
-	 * @return 评论数据
-	 */
-	private List<CommentDetailBean> generateTestData(){
-		Gson gson = new Gson();
-		dynamicsComment = gson.fromJson(testJson, DynamicsResult.class);
-		List<CommentDetailBean> commentList = dynamicsComment.getData().getCommentDetailBeanList();
-		return commentList;
-	}
-
-	/**
 	 * 初始化评论和回复列表
 	 */
-	private void initExpandableListView(final List<CommentDetailBean> commentList){
+	private void initExpandableListView(final List<DynamicsResult.DataBean> commentList){
 		commentListView.setGroupIndicator(null);
 		//默认展开所有回复
 		adapter = new CommentExpandAdapter(this, commentList);
@@ -274,9 +304,6 @@ public class DynamicsDetailActivity extends BaseActivity {
 		commentListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
 			@Override
 			public boolean onGroupClick(ExpandableListView expandableListView, View view, int groupPosition, long l) {
-				boolean isExpanded = expandableListView.isGroupExpanded(groupPosition);
-				Logger.d("onGroupClick: 当前的评论id>>>"+commentList.get(groupPosition).getId());
-				//showReplyDialog(groupPosition);
 				addReply(groupPosition);
 				return true;
 			}
@@ -409,14 +436,8 @@ public class DynamicsDetailActivity extends BaseActivity {
 			public void onResult(boolean confirmed, String commentContent) {
 				if (confirmed) {
 					if(!TextUtils.isEmpty(commentContent)){
-						CommentDetailBean detailBean = new CommentDetailBean("小明", commentContent,"刚刚");
-						adapter.addTheCommentData(detailBean);
-						Toasty.success(DynamicsDetailActivity.this,"评论成功").show();
-						commentDynamicsText.setVisibility(View.VISIBLE);
-						dynamicsDB.setCommentNum(dynamicsDB.getCommentNum()+1);
-						commentNum.setText(String.valueOf(dynamicsDB.getCommentNum()));
-						commentListView.setSelectedGroup(adapter.getGroupCount());
-						CommentDynamicsRequest(1,commentContent);
+						commentDynamicsDialog=DialogUtils.createLoadingDialog(DynamicsDetailActivity.this,"正在评论");
+						CommentDynamicsRequest(dynamicsDB.getId(),commentContent);
 					}else {
 						Toasty.success(DynamicsDetailActivity.this,"评论内容不能为空").show();
 					}
@@ -432,13 +453,8 @@ public class DynamicsDetailActivity extends BaseActivity {
 			public void onResult(boolean confirmed, String replyContent) {
 				if (confirmed) {
 					if(!TextUtils.isEmpty(replyContent)){
-						ReplyDetailBean replyBean = new ReplyDetailBean("小红",replyContent);
-						adapter.addTheReplyData(replyBean, position);
-						commentListView.expandGroup(position);
-						Toasty.success(DynamicsDetailActivity.this,"回复成功").show();
-						commentDynamicsText.setVisibility(View.VISIBLE);
-						commentListView.setSelectedChild(position,adapter.getChildrenCount(position),true);
-						ReplyCommentRequest(1,replyContent);
+						replyCommentDialog=DialogUtils.createLoadingDialog(DynamicsDetailActivity.this,"正在回复");
+						ReplyCommentRequest(commentsList.get(position).getId(),replyContent,position);
 					}else {
 						Toasty.success(DynamicsDetailActivity.this,"回复内容不能为空").show();
 					}
@@ -457,11 +473,13 @@ public class DynamicsDetailActivity extends BaseActivity {
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
 					//获取服务器返回的数据
 					String response = HttpUtil.CommentDynamicsRequest(ConstantClass.ADDRESS, ConstantClass.ADD_COMMENT_COM, dynamicsID, ConstantClass.userOnline,commentContent, Utility.getNowTime());
-					Log.d("lecture",response);
-					/*//解析和处理服务器返回的数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					handler.sendEmptyMessageDelayed(1, 1000);*/
+					Gson gson=new Gson();
+					AddCommentResult result=gson.fromJson(response,AddCommentResult.class);
+					Message message=new Message();
+					message.what=4;
+					message.arg1=result.getState();
+					message.obj=commentContent;
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -473,8 +491,8 @@ public class DynamicsDetailActivity extends BaseActivity {
 		}).start();
 	}
 
-	//评论动态
-	private void ReplyCommentRequest(final long commentID, final String replyContent) {
+	//回复评论
+	private void ReplyCommentRequest(final long commentID, final String replyContent, final int position) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -483,11 +501,17 @@ public class DynamicsDetailActivity extends BaseActivity {
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
 					//获取服务器返回的数据
 					String response = HttpUtil.ReplyCommentRequest(ConstantClass.ADDRESS, ConstantClass.ADD_REPLY_COM, dynamicsDB.getId(),commentID, ConstantClass.userOnline,replyContent,ConstantClass.TYPE_COMMENT,Utility.getNowTime());
-					Log.d("lecture",response);
-					/*//解析和处理服务器返回的数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					handler.sendEmptyMessageDelayed(1, 1000);*/
+
+					Gson gson=new Gson();
+					ReplyCommentResult result=gson.fromJson(response,ReplyCommentResult.class);
+
+					Message message=new Message();
+					message.what=3;
+					message.arg1=position;
+					message.arg2=result.getState();
+					message.obj=replyContent;
+					handler.sendMessage(message);
+
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -508,11 +532,12 @@ public class DynamicsDetailActivity extends BaseActivity {
 				try {
 					//获取服务器返回的结果
 					String response = HttpUtil.LikeOrNotChangeRequest(ConstantClass.ADDRESS, ConstantClass.LIKEORNOT_CHAGNE_COM,ConstantClass.userOnline,objectID,objectType,isLikeOrNot);
-					Log.d("lecture",response);
-					//解析和处理服务器返回的结果
-					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
-					//处理结果
-					handler.sendEmptyMessage(1);*/
+					Gson gson=new Gson();
+					CommonStateResult result=gson.fromJson(response,CommonStateResult.class);
+					Message message=new Message();
+					message.what=2;
+					message.arg1=result.getState();
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("通信失败，IO error");
 					e.printStackTrace();
@@ -534,11 +559,14 @@ public class DynamicsDetailActivity extends BaseActivity {
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
 					//获取服务器返回的数据
 					String response = HttpUtil.CommentAndReplyRequest(ConstantClass.ADDRESS, ConstantClass.COMMENT_REPLY_REQUEST_COM, ConstantClass.userOnline, dynamicsDB.getId());
-					Log.d("lecture",response);
-					/*//解析和处理服务器返回的数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					handler.sendEmptyMessageDelayed(1, 1000);*/
+					Log.d("test",response);
+					Gson gson=new Gson();
+					DynamicsResult result=gson.fromJson(response,DynamicsResult.class);
+					commentsList=result.getData();
+					Message message=new Message();
+					message.what=1;
+					message.arg1=result.getState();
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();

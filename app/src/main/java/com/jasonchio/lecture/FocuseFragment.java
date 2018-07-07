@@ -155,7 +155,7 @@ public class FocuseFragment extends BaseFragment {
 					//得到讲座表中最后一条讲座的 id
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
 					//获取服务器返回数据
-					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
+					String response = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID,ConstantClass.REQUEST_FIRST);
 					//解析和处理服务器返回的数据
 					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 					//处理结果
@@ -306,9 +306,8 @@ public class FocuseFragment extends BaseFragment {
 	@Override
 	public void fetchData() {
 		//自动刷新
-		if(isFirstLoad==true){
+		if(lecturelist.size()==0){
 			autoRefresh();
-			isFirstLoad=false;
 		}
 	}
 }

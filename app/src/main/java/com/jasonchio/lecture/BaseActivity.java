@@ -158,7 +158,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 		if (!isNetConnect()) {
 			showNetDialog();
 			isNetDisable=true;
-			Toasty.error(BaseActivity.this,"网络异常，请检查网络"+netMobile).show();
 		} else {
 			hideNetDialog();
 			if(isNetDisable==true){

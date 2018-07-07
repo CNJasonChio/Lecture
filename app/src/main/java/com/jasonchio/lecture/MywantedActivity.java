@@ -217,7 +217,7 @@ public class MywantedActivity extends BaseActivity {
 					//获取数据库中最后一条讲座的 id
 					long lastLecureID=Utility.lastLetureinDB(mLectureDao);
 					//获取服务器返回数据
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline ,lastLecureID);
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline ,lastLecureID,ConstantClass.REQUEST_FIRST);
 					//解析和处理服务器返回的数据
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 					//处理结果

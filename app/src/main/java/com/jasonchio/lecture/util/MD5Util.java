@@ -59,7 +59,6 @@ public class MD5Util {
 				str[k++] = hexDigits[byte0 >>> 4 & 0xf];
 				str[k++] = hexDigits[byte0 & 0xf];
 			}
-			Logger.d(new String(str));
 			return new String(str);
 		} catch (Exception e) {
 			return null;

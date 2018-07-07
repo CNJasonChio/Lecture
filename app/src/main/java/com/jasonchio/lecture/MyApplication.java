@@ -2,11 +2,13 @@ package com.jasonchio.lecture;
 
 import android.app.Application;
 import android.database.sqlite.SQLiteDatabase;
-
+import android.util.Log;
 import com.jasonchio.lecture.greendao.DaoMaster;
 import com.jasonchio.lecture.greendao.DaoSession;
-
-import org.greenrobot.greendao.database.Database;
+import com.orhanobut.logger.Logger;
+import com.umeng.commonsdk.UMConfigure;
+import com.umeng.message.IUmengRegisterCallback;
+import com.umeng.message.PushAgent;
 
 /**
  * /**
@@ -41,6 +43,22 @@ public class MyApplication extends Application{
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		UMConfigure.init(this,UMConfigure.DEVICE_TYPE_PHONE, "fe30afbbd370c090130ece67032d8801");
+		PushAgent mPushAgent = PushAgent.getInstance(this);
+		mPushAgent.setResourcePackageName("你应用的applicationId");
+		mPushAgent.register(new IUmengRegisterCallback() {
+			@Override
+			public void onSuccess(String s) {
+				Logger.e("获取token成功:"+s);
+			}
+
+			@Override
+			public void onFailure(String s, String s1) {
+				Logger.e("获取token失败:"+s+"且s1="+s1);
+			}
+		});
+
 
 		//创建数据库lecture.db"
 		DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "lecture", null);

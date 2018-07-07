@@ -64,7 +64,7 @@ public class SelfRefreshHeaderView extends AppCompatTextView implements SwipeRef
 				setText("再往下拉点儿");
 			}
 		} else {
-			setText("我走啦，北北");
+			setText("");
 		}
 	}
 

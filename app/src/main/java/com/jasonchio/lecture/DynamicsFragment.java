@@ -1,12 +1,12 @@
 package com.jasonchio.lecture;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +22,7 @@ import com.jasonchio.lecture.gson.AddCommentResult;
 import com.jasonchio.lecture.gson.CommonStateResult;
 import com.jasonchio.lecture.gson.DynamicsRequestResult;
 import com.jasonchio.lecture.util.ConstantClass;
+import com.jasonchio.lecture.util.DialogUtils;
 import com.jasonchio.lecture.util.HttpUtil;
 import com.jasonchio.lecture.util.KeyboardUtils;
 import com.jasonchio.lecture.util.Utility;
@@ -84,7 +85,7 @@ import es.dmoral.toasty.Toasty;
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
-			rootview = inflater.inflate(R.layout.fragment_discovery, null);
+			rootview = inflater.inflate(R.layout.fragment_dynamics, null);
 		}
 		ViewGroup parent = (ViewGroup) rootview.getParent();
 		if (parent != null) {
@@ -360,6 +361,8 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 	int isLikeOrNot=0;
 	Handler handler;                            //Handler 对象
 
+	Dialog loadDialog;
+	Dialog addCommentDialog;
 	//测试
 	String test="测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试" +
 			"测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试" +
@@ -372,14 +375,13 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 
 		//在fragment onCreateView 里缓存View，防止每次onCreateView 的时候重绘View
 		if (rootview == null) {
-			rootview = inflater.inflate(R.layout.fragment_discovery, null);
+			rootview = inflater.inflate(R.layout.fragment_dynamics, null);
 		}
 		ViewGroup parent = (ViewGroup) rootview.getParent();
 		if (parent != null) {
 			parent.removeView(rootview);
 		}
 
-		DynamicsRequest();
 		//initDynamicData();
 		//初始化控件
 		initWidget();
@@ -388,11 +390,10 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 		//初始化事件
 		initEvent();
 		//自动刷新
-		autoRefresh();
 
-
-		DynamicsRequest();
-
+		if(dynamicsDBList.size()==0){
+			autoRefresh();
+		}
 		return rootview;
 	}
 
@@ -435,7 +436,8 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			@Override
 			public void onRefresh() {
 				swipeToLoadLayout.setRefreshing(false);
-				DynamicsRequest();
+				loadDialog= DialogUtils.createLoadingDialog(getContext(),"正在加载");
+				showNewDynamicsToTop();
 			}
 		});
 
@@ -443,6 +445,8 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			@Override
 			public void onLoadMore() {
 				swipeToLoadLayout.setLoadingMore(false);
+				loadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
+				showMoreDynamicsToBottom();
 			}
 		});
 
@@ -451,30 +455,47 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			public boolean handleMessage(Message msg) {
 				switch (msg.what) {
 					case 1:
-						recyclerView.setAdapter(dynamicsAdapter);
+						if(msg.arg1==0){
+							recyclerView.setAdapter(dynamicsAdapter);
+							if((int)msg.obj==ConstantClass.REQUEST_OLD){
+								recyclerView.scrollToPosition(msg.arg2);
+							}
+						}else{
+							Toasty.error(getContext(),"暂无更多新动态").show();
+						}
+						DialogUtils.closeDialog(loadDialog);
 						break;
 					case 2:
 						int pos=msg.arg1;
-						DynamicsDB dynamics=dynamicsDBList.get(pos);
-						dynamics.setCommentNum(dynamics.getCommentNum()+1);
-						dynamicsDBList.set(pos,dynamics);
-						dynamicsAdapter.notifyItemChanged(pos);
-						Toasty.success(getContext(),"评论成功"+pos).show();
+						if(msg.arg2==0){
+							DynamicsDB dynamics=dynamicsDBList.get(pos);
+							dynamics.setCommentNum(dynamics.getCommentNum()+1);
+							dynamicsDBList.set(pos,dynamics);
+							dynamicsAdapter.notifyItemChanged(pos);
+							Toasty.success(getContext(),"评论成功").show();
+						}else{
+							Toasty.error(getContext(),"评论失败，请稍后再试").show();
+						}
+						DialogUtils.closeDialog(addCommentDialog);
 						break;
 					case 3:
 						int position=msg.arg1;
-						DynamicsDB dynamicsDB=dynamicsDBList.get(position);
-						if(dynamicsDB.getIsLikeorNot()==0){
-							isLikeOrNot=1;
-							dynamicsDB.setIsLikeorNot(1);
-							dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()+1);
+						if(msg.arg2==0){
+							DynamicsDB dynamicsDB=dynamicsDBList.get(position);
+							if(dynamicsDB.getIsLikeorNot()==0){
+								isLikeOrNot=1;
+								dynamicsDB.setIsLikeorNot(1);
+								dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()+1);
+							}else{
+								isLikeOrNot=0;
+								dynamicsDB.setIsLikeorNot(0);
+								dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()-1);
+							}
+							dynamicsDBList.set(position,dynamicsDB);
+							dynamicsAdapter.notifyItemChanged(position);
 						}else{
-							isLikeOrNot=0;
-							dynamicsDB.setIsLikeorNot(0);
-							dynamicsDB.setLikerNum(dynamicsDB.getLikerNum()-1);
+							Toasty.error(getContext(),"请稍后再试").show();
 						}
-						dynamicsDBList.set(position,dynamicsDB);
-						dynamicsAdapter.notifyItemChanged(position);
 						default:
 				}
 				return true;
@@ -497,13 +518,6 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 		});
 	}
 
-	public void initDynamicData(){
-		for(int i=0;i<5;i++){
-			DynamicsDB dynamicsDB=new DynamicsDB(i,null,"赵耀邦"+i,test,"2017年12月2日17:55",i,i+2,1);
-			dynamicsDBList.add(dynamicsDB);
-		}
-	}
-
 	@Override
 	public void onItemClick(int position,View view) {
 		DynamicsDB dynamicsDB=dynamicsDBList.get(position);
@@ -514,10 +528,11 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			case R.id.dynamics_comment_like_image:
 				isLikeOrNot=dynamicsDB.getIsLikeorNot();
 				if(isLikeOrNot==0){
-					LikeOrNotChange(dynamicsDBList.indexOf(dynamicsDB),ConstantClass.TYPE_COMMENT,1);
+					LikeOrNotChange(position,dynamicsDB.getId(),ConstantClass.TYPE_DYNAMICS,1);
 				}else{
-					LikeOrNotChange(dynamicsDBList.indexOf(dynamicsDB),ConstantClass.TYPE_COMMENT,0);
+					LikeOrNotChange(position,dynamicsDB.getId(),ConstantClass.TYPE_DYNAMICS,0);
 				}
+
 				break;
 			case R.id.dynamics_layout:
 				Intent intent=new Intent(getContext(),DynamicsDetailActivity.class);
@@ -534,16 +549,13 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 		}
 	}
 
-	private void likeOrNot(int positon){
-
-	}
-
-	//添加留言
+	//添加评论
 	private void addComment(final int position){
 		KeyboardUtils.showCommentEdit(getActivity(), recyclerView, new KeyboardUtils.liveCommentResult() {
 			@Override
 			public void onResult(boolean confirmed, String commentContent) {
 				if (confirmed) {
+					addCommentDialog=DialogUtils.createLoadingDialog(getContext(),"正在发表评论");
 					CommentDynamicsRequest(position,commentContent);
 				}
 			}
@@ -556,47 +568,61 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			case 100:
 				if(resultCode==-1){
 					Toasty.success(getContext(),"发表动态成功").show();
-					autoRefresh();
+					//autoRefresh();
 				}
 				break;
 				default:
 		}
 	}
 
-
 	//请求动态信息
-	private void DynamicsRequest() {
+	private void DynamicsRequest(final int requestType, final long dynamicsID) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					/*//获取数据库中最后一条讲座 id
-					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
 					//获取服务器返回的数据
-					String response = HttpUtil.DynamicsRequest(ConstantClass.ADDRESS, ConstantClass.DYNAMICS_REQUEST_COM, ConstantClass.userOnline, dynamicsDBList.size());
+					Logger.d("动态表长度"+dynamicsDBList.size());
+					String response = HttpUtil.DynamicsRequest(ConstantClass.ADDRESS, ConstantClass.DYNAMICS_REQUEST_COM, ConstantClass.userOnline, dynamicsID,requestType);
+
 					Gson gson=new Gson();
 					DynamicsRequestResult requestResult=gson.fromJson(response,DynamicsRequestResult.class);
-					if(requestResult.getState()==0){
-						for(DynamicsRequestResult.DynamicBean dynamicBean:requestResult.getDynamic()){
-							DynamicsDB dynamicsDB=new DynamicsDB();
-							dynamicsDB.setCommentNum(dynamicBean.getDynamic_comment_amount());
-							dynamicsDB.setLikerNum(dynamicBean.getDynamic_good_amount());
-							dynamicsDB.setIsLikeorNot(dynamicBean.getDynamic_user_like());
-							dynamicsDB.setTime(dynamicBean.getDynamic_time());
-							dynamicsDB.setDynamicsContent(dynamicBean.getDynamic_information());
-							if(dynamicBean.getDynamic_user()==null){
-								dynamicBean.setDynamic_user("无名氏");
-							}
-							dynamicsDB.setUserName(dynamicBean.getDynamic_user());
-							dynamicsDB.setUserHead(dynamicBean.getDynamic_user_face_url());
-							dynamicsDBList.add(dynamicsDB);
-						}
-						handler.sendEmptyMessage(1);
+					Message message=new Message();
+					message.what=1;
+					int lastDynamicPosition=0;
+					if(dynamicsDBList.size()!=0){
+						lastDynamicPosition=dynamicsDBList.indexOf(dynamicsDBList.get(dynamicsDBList.size()-1));
 					}
-					/*//解析和处理服务器返回的数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					*/
+					if(requestResult!=null){
+						if(requestResult.getState()==0){
+							for(DynamicsRequestResult.DynamicBean dynamicBean:requestResult.getDynamic()){
+								DynamicsDB dynamicsDB=new DynamicsDB();
+								dynamicsDB.setId(dynamicBean.getDynamic_id());
+								dynamicsDB.setCommentNum(dynamicBean.getDynamic_comment_amount());
+								dynamicsDB.setLikerNum(dynamicBean.getDynamic_good_amount());
+								dynamicsDB.setIsLikeorNot(dynamicBean.getDynamic_user_like());
+								dynamicsDB.setTime(dynamicBean.getDynamic_time());
+								dynamicsDB.setDynamicsContent(dynamicBean.getDynamic_information());
+								if(dynamicBean.getDynamic_user()==null){
+									dynamicBean.setDynamic_user("无名氏");
+								}
+								dynamicsDB.setUserName(dynamicBean.getDynamic_user());
+								dynamicsDB.setUserHead(dynamicBean.getDynamic_user_face_url());
+								if(requestType==ConstantClass.REQUEST_OLD){
+									dynamicsDBList.add(dynamicsDB);
+								}else{
+									dynamicsDBList.add(0,dynamicsDB);
+								}
+							}
+						}
+						message.arg1=requestResult.getState();
+					}else{
+						message.arg1=1;
+					}
+					message.arg2=lastDynamicPosition;
+					message.obj=requestType;
+					Logger.d("动态表长度"+dynamicsDBList.size());
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -621,16 +647,11 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 					String response = HttpUtil.CommentDynamicsRequest(ConstantClass.ADDRESS, ConstantClass.ADD_COMMENT_COM, dynamicsDBList.get(position).getId(), ConstantClass.userOnline,dynamicsContent, Utility.getNowTime());
 					Gson gson=new Gson();
 					AddCommentResult result=gson.fromJson(response,AddCommentResult.class);
-					if(result.getState()==0){
-						Message message=new Message();
-						message.arg1=position;
-						message.what=2;
-						handler.sendMessage(message);
-					}
-					/*//解析和处理服务器返回的数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					*/
+					Message message=new Message();
+					message.arg1=position;
+					message.arg2=result.getState();
+					message.what=2;
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -643,28 +664,21 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 	}
 
 	//点赞或者取消点赞
-	private void LikeOrNotChange(final int position,final int objectType, final int isLikeOrNot) {
+	private void LikeOrNotChange(final int position, final long objectID, final int objectType, final int isLikeOrNot) {
 		//开启新线程
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
 					//获取服务器返回的结果
-					String response = HttpUtil.LikeOrNotChangeRequest(ConstantClass.ADDRESS, ConstantClass.LIKEORNOT_CHAGNE_COM,ConstantClass.userOnline,dynamicsDBList.get(position).getId(),objectType,isLikeOrNot);
-					Log.d("lecture",response);
+					String response = HttpUtil.LikeOrNotChangeRequest(ConstantClass.ADDRESS, ConstantClass.LIKEORNOT_CHAGNE_COM,ConstantClass.userOnline,objectID,objectType,isLikeOrNot);
 					Gson gson=new Gson();
 					CommonStateResult result=gson.fromJson(response,CommonStateResult.class);
-					if(result.getState()==0) {
-						Message message=new Message();
-						message.what=3;
-						message.arg1=position;
-						handler.sendMessage(message);
-					}
-					//解析和处理服务器返回的结果
-					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
-					//处理结果
-					;*/
+					Message message=new Message();
+					message.what=3;
+					message.arg1=position;
+					message.arg2=result.getState();
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("通信失败，IO error");
 					e.printStackTrace();
@@ -674,6 +688,24 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 				}
 			}
 		}).start();
+	}
+
+	private void showMoreDynamicsToBottom(){
+		if(dynamicsDBList.size()==0){
+			showNewDynamicsToTop();
+			return;
+		}else{
+			DynamicsRequest(ConstantClass.REQUEST_OLD,dynamicsDBList.get(dynamicsDBList.size()-1).getId());
+		}
+	}
+
+	private void showNewDynamicsToTop(){
+		if(dynamicsDBList.size()==0){
+			DynamicsRequest(ConstantClass.REQUEST_FIRST,0);
+			return;
+		}else{
+			DynamicsRequest(ConstantClass.REQUEST_NEW,dynamicsDBList.get(0).getId());
+		}
 	}
 }
 

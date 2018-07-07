@@ -193,26 +193,31 @@ public class Utility {
 
 			int state = resultBean.getState();
 
+			long[] lectureIDs=getLecturesStoredInDB(mLectureDao);
 			if (state == 0) {
-				for (final LectureRequestResult.LectureBean lecture : lectureBeanList) {
-					final LectureDB lectureDB = new LectureDB();
-					lectureDB.setLectureId(lecture.getLecture_id());
-					lectureDB.setLectureTitle(lecture.getLecture_title());
-					lectureDB.setLectureLocation(lecture.getLecture_location());
-					lectureDB.setLectureTime(lecture.getLecture_time());
-					lectureDB.setLecutreSource(lecture.getLecture_source());
-					lectureDB.setLecutreLikers(lecture.getLecture_fans_amount());
-					lectureDB.setLectureUrl(lecture.getLecture_url());
-					lectureDB.setLectureDistrict(lecture.getRange());
-					lectureDB.setIsWanted(lecture.getUser_want_lecture());
-					lectureDB.setLectureImage(lecture.getLecture_picture());
-					if (lecture.getLecture_information() == null || lecture.getLecture_information().length() == 0) {
-						lectureDB.setLectureContent("暂无简介，可点击“阅读原文”查看");
-						mLectureDao.insertOrReplace(lectureDB);
-					} else {
-						lectureDB.setLectureContent(lecture.getLecture_information());
-						mLectureDao.insertOrReplace(lectureDB);
-						getLectureContent(lecture.getLecture_id(), lecture.getLecture_information(), mLectureDao);
+				if(lectureIDs!=null){
+					for (final LectureRequestResult.LectureBean lecture : lectureBeanList) {
+						if(!isLectureStored(lecture.getLecture_id(),lectureIDs)){
+							final LectureDB lectureDB = new LectureDB();
+							lectureDB.setLectureId(lecture.getLecture_id());
+							lectureDB.setLectureTitle(lecture.getLecture_title());
+							lectureDB.setLectureLocation(lecture.getLecture_location());
+							lectureDB.setLectureTime(lecture.getLecture_time());
+							lectureDB.setLecutreSource(lecture.getLecture_source());
+							lectureDB.setLecutreLikers(lecture.getLecture_fans_amount());
+							lectureDB.setLectureUrl(lecture.getLecture_url());
+							lectureDB.setLectureDistrict(lecture.getRange());
+							lectureDB.setIsWanted(lecture.getUser_want_lecture());
+							lectureDB.setLectureImage(lecture.getLecture_picture());
+							if (lecture.getLecture_information() == null || lecture.getLecture_information().length() == 0) {
+								lectureDB.setLectureContent("暂无简介，可点击“阅读原文”查看");
+								mLectureDao.insertOrReplace(lectureDB);
+							} else {
+								lectureDB.setLectureContent(lecture.getLecture_information());
+								mLectureDao.insertOrReplace(lectureDB);
+								getLectureContent(lecture.getLecture_id(), lecture.getLecture_information(), mLectureDao);
+							}
+						}
 					}
 				}
 			}
@@ -876,7 +881,7 @@ public class Utility {
 	public static String getNowTime() {
 
 		Date dNow = new Date();
-		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		ft.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));  // 设置北京时区
 		String nowTime = ft.format(dNow);
 
@@ -893,21 +898,33 @@ public class Utility {
 		return bitmap.getRowBytes() * bitmap.getHeight();                //earlier version
 	}
 
+	//获取已经存储在数据库中的讲座ID
+	public static long[] getLecturesStoredInDB(LectureDBDao mLectureDdao){
+		long[] lectureIDs = null;
 
-	//解析和处理服务器返回的讲座留言数据
-	public static int handleLectureMessageResponse(String response) {
-
-		int state = -1;
-		if (!TextUtils.isEmpty(response)) {
-			Gson gson = new Gson();
-			LectureMessageResult result = gson.fromJson(response, LectureMessageResult.class);
-			state = result.getState();
-
-			if (state == 0) {
-				List <LectureMessageResult.MessageListBean> commentBeanList = result.getMessageList();
+		List<LectureDB> lectureDBList=mLectureDdao.loadAll();
+		if(lectureDBList!=null){
+			lectureIDs=new long[lectureDBList.size()];
+			Logger.d("lectureDBList.size= "+lectureDBList.size());
+			for(int i=0;i<lectureDBList.size();i++){
+				lectureIDs[i]=lectureDBList.get(i).getLectureId();
 			}
-
 		}
-		return state;
+		return lectureIDs;
 	}
+
+	//判断讲座是否已经被存储在数据库中
+	public static boolean isLectureStored(long lectureID,long[] lectureIDs){
+		boolean result=false;
+		for(int i=0;i<lectureIDs.length;i++){
+			if (lectureID==lectureIDs[i]){
+				result=true;
+			}else{
+				result=false;
+			}
+		}
+		return result;
+	}
+
+	//判断讲座
 }

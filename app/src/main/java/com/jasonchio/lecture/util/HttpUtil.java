@@ -266,7 +266,7 @@ public class HttpUtil {
 	}
 
 	//请求讲座数据
-	public static String LectureRequest(String address, int com, long userID, long lectureID) throws IOException, JSONException {
+	public static String LectureRequest(String address, int com, long userID, long lectureID,int requestType) throws IOException, JSONException {
 
 		Logger.d("LectureRequset started");
 
@@ -278,6 +278,7 @@ public class HttpUtil {
 		sendJson.put("command", com);
 		sendJson.put("userID", userID);
 		sendJson.put("lectureID", lectureID);
+		sendJson.put("requestType",requestType);
 
 		String test = sendJson.toString();
 
@@ -336,7 +337,7 @@ public class HttpUtil {
 		return null;
 	}
 
-	//请求评论信息
+/*	//请求评论信息
 	public static String CommentRequest(String address, int com, long userID, long commentID) throws IOException, JSONException {
 
 		Logger.d("CommentRequset started");
@@ -406,7 +407,7 @@ public class HttpUtil {
 			}
 		}
 		return null;
-	}
+	}*/
 
 	//请求用户信息
 	public static String UserInfoRequest(String address, int com, long userID) throws IOException, JSONException {
@@ -1111,7 +1112,7 @@ public class HttpUtil {
 		return null;
 	}
 
-	//评论讲座
+/*	//评论讲座
 	public static String AddCommentRequest(String address, int com, String commentContent, long userId, long lectureId, String commentTime) throws IOException, JSONException {
 
 		Logger.d("AddCommentRequest");
@@ -1251,7 +1252,7 @@ public class HttpUtil {
 			}
 		}
 		return null;
-	}
+	}*/
 
 	//修改用户头像
 	public static String changeUserHead(String address, int com, long userID, Bitmap userHead, int size) throws IOException, JSONException {
@@ -1343,7 +1344,7 @@ public class HttpUtil {
 	//推荐讲座请求
 	public static String RecommentRequest(String address, int com, long userID) throws JSONException, IOException {
 
-		Logger.d("推荐讲座请求");
+		Logger.d("RecommentLectureRequest");
 
 		//向服务器发送的json数据
 		JSONObject sendJson = new JSONObject();
@@ -1780,7 +1781,6 @@ public class HttpUtil {
 
 		Logger.d("LikeOrNotChangeRequest");
 		JSONObject sendJson = new JSONObject();
-
 		String response;
 
 		sendJson.put("command", com);
@@ -1847,7 +1847,7 @@ public class HttpUtil {
 	}
 
 	//请求动态数据
-	public static String DynamicsRequest(String address, int com, long userID,long dynamicsID) throws IOException, JSONException {
+	public static String DynamicsRequest(String address, int com, long userID,long dynamicsID,int requestType) throws IOException, JSONException {
 
 		Logger.d("DynamicsRequest started");
 
@@ -1859,6 +1859,7 @@ public class HttpUtil {
 		sendJson.put("command", com);
 		sendJson.put("userID", userID);
 		sendJson.put("dynamicID", dynamicsID);
+		sendJson.put("requestType", requestType);
 
 		String test = sendJson.toString();
 
@@ -2144,6 +2145,148 @@ public class HttpUtil {
 		sendJson.put("command", com);
 		sendJson.put("userID", userID);
 		sendJson.put("dynamicID", dynamicsID);
+
+		String test = sendJson.toString();
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		//创建Socket对象 & 指定服务端的IP及端口号
+		socket = new Socket(address, 2001);
+
+		try {
+
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream, "utf-8");
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+
+			Logger.json(response);
+
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+
+			if(bufferedReader!=null){
+				bufferedReader.close();
+			}
+			if(reader!=null){
+				reader.close();
+			}
+			if(inputStream!=null){
+				inputStream.close();
+			}
+			if(socket!=null){
+				socket.close();
+			}
+		}
+		return null;
+	}
+
+	//请求附近的讲座
+	public static String NearLectureRequest(String address, int com, long userID) throws IOException, JSONException {
+
+		Logger.d("NearLectureRequest started");
+
+		String response;
+
+		Socket socket;
+
+		JSONObject sendJson = new JSONObject();
+
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
+
+		String test = sendJson.toString();
+
+		InputStream inputStream = null;
+
+		InputStreamReader reader = null;
+
+		BufferedReader bufferedReader = null;
+
+		OutputStream outputStream;
+
+		//创建Socket对象 & 指定服务端的IP及端口号
+		socket = new Socket(address, 2001);
+
+		try {
+
+			//创建输出流对象outputStream
+			outputStream = socket.getOutputStream();
+			//写入要发送给服务器的数据
+			outputStream.write(test.getBytes());
+			//发送数据到服务端
+			outputStream.flush();
+			//关闭输出流
+			socket.shutdownOutput();
+
+			//创建输入流对象InputStream
+			inputStream = socket.getInputStream();
+			//创建输入流读取器对象 并传入输入流对象
+			reader = new InputStreamReader(inputStream, "utf-8");
+			bufferedReader = new BufferedReader(reader);
+			//通过输入流读取器对象 接收服务器发送过来的数据
+			response = bufferedReader.readLine();
+
+			Logger.json(response);
+
+			return response;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+
+			if(bufferedReader!=null){
+				bufferedReader.close();
+			}
+			if(reader!=null){
+				reader.close();
+			}
+			if(inputStream!=null){
+				inputStream.close();
+			}
+			if(socket!=null){
+				socket.close();
+			}
+		}
+		return null;
+	}
+
+	//请求附近的讲座
+	public static String MyMessageRequest(String address, int com, long userID) throws IOException, JSONException {
+
+		Logger.d("MyMessageRequest started");
+
+		String response;
+
+		Socket socket;
+
+		JSONObject sendJson = new JSONObject();
+
+		sendJson.put("command", com);
+		sendJson.put("userID", userID);
 
 		String test = sendJson.toString();
 

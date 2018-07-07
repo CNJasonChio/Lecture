@@ -173,7 +173,7 @@ public class SelecteLectureCommentActivity extends BaseActivity {
 
 					long lastLecureID= Utility.lastLetureinDB(mLectureDao);
 
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID);
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM,  ConstantClass.userOnline,lastLecureID,ConstantClass.REQUEST_FIRST);
 
 					lectureRequestResult=Utility.handleLectureResponse(lectureresponse,mLectureDao);
 

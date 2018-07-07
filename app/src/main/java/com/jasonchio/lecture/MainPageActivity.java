@@ -25,15 +25,13 @@ public class MainPageActivity extends BaseActivity{
 
 	private String[] TabTags = {"首页", "动态", "我的"};
 
-	private Integer[] ImgTab = {R.layout.tab_main_home, R.layout.tab_main_discovery, R.layout.tab_main_me};
+	private Integer[] ImgTab = {R.layout.tab_main_home, R.layout.tab_main_dynamics, R.layout.tab_main_me};
 
 	private Class[] ClassTab = {HomeFragment.class, DynamicsFragment.class, MeFragment.class};
 
 	private Integer[] StyleTab = {R.color.white, R.color.white, R.color.white, R.color.white};
 
 	int myinfoRequestResult;        //用户信息请求结果
-
-	int recommentOrderResult;       //推荐讲座请求结果
 
 	DaoSession daoSession;          //数据库操作对象
 
@@ -53,8 +51,7 @@ public class MainPageActivity extends BaseActivity{
 		initWidget();
 		//初始化视图
 		initView();
-		//请求推荐的讲座
-		RecommentLectureRequest();
+
 		//请求用户信息
 		MyinfoRequest();
 		//初始化事件响应
@@ -97,45 +94,16 @@ public class MainPageActivity extends BaseActivity{
 	}
 
 	private void MyinfoRequest(){
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-
 					String response = HttpUtil.UserInfoRequest(ConstantClass.ADDRESS, ConstantClass.MYINFO_REQUEST_COM,ConstantClass.userOnline );
-
 					myinfoRequestResult= Utility.handleUserInfoResponse(response,mUserDao);
-
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
 				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
-
-	private void RecommentLectureRequest(){
-
-		Logger.d("开始获取推荐的讲座");
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-
-					Logger.d("RecommentLectureRequest()");
-
-					String recommentResponse = HttpUtil.RecommentRequest(ConstantClass.ADDRESS, ConstantClass.RECOMMENT_COM, ConstantClass.userOnline);
-
-					recommentOrderResult=Utility.handleRecommentLectureResponse(recommentResponse,mUserDao);
-
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					Logger.d("解析失败，JSON error");
 					e.printStackTrace();
 				}
 			}

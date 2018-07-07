@@ -321,7 +321,7 @@ public class ResultSiftActivity extends BaseActivity {
 					//获取数据库中最后一条讲座的 id
 					long lastLecureID = Utility.lastLetureinDB(mLectureDao);
 					//获取服务器返回的数据
-					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID);
+					String lectureresponse = HttpUtil.LectureRequest(ConstantClass.ADDRESS, ConstantClass.LECTURE_REQUEST_COM, ConstantClass.userOnline, lastLecureID,ConstantClass.REQUEST_FIRST);
 					//解析和处理服务器返回的数据
 					lectureRequestResult = Utility.handleLectureResponse(lectureresponse, mLectureDao);
 					//处理结果
@@ -433,7 +433,7 @@ public class ResultSiftActivity extends BaseActivity {
 			default:
 		}
 
-		Logger.d(locationPosition);
+		Logger.d("location "+area[locationPosition]);
 
 		if (!lectureDBList.isEmpty()) {
 			//判断地区筛选条件

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -63,7 +62,7 @@ public class AddDynamicsActivity extends BaseActivity {
 
 	String commentTime;             //评论的时间
 
-	Dialog addCommentLoadDialog;    //加载对话框
+	Dialog addDynamicsLoadDialog;    //加载对话框
 
 	Handler handler;                //Handler 对象
 
@@ -72,16 +71,10 @@ public class AddDynamicsActivity extends BaseActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_comment);
 
-		/*//获得上文传递的要评论的讲座 ID
-		Intent intent = getIntent();
-		lectureID = intent.getIntExtra("lecture_id", 1);*/
-
 		//初始化控件
 		initWidget();
 		//初始化视图
 		initView();
-		//显示要评论的讲座信息.
-		/*showLecture();*/
 		//初始化事件
 		initEvent();
 	}
@@ -100,9 +93,6 @@ public class AddDynamicsActivity extends BaseActivity {
 		titleFirstButton = titleLayout.getFirstButton();
 		titleSecondButton = titleLayout.getSecondButton();
 		comment_text = (TextView) findViewById(R.id.comment_edit);
-/*		listView = (ListView) findViewById(R.id.comment_lecture_selected_list);
-		lectureAdapter = new LectureAdapter(AddDynamicsActivity.this,lectureList);
-		listView.setAdapter(lectureAdapter);*/
 		daoSession = ((MyApplication) getApplication()).getDaoSession();
 		mLectureDao = daoSession.getLectureDBDao();
 		mUserDao = daoSession.getUserDBDao();
@@ -120,14 +110,14 @@ public class AddDynamicsActivity extends BaseActivity {
 				switch (msg.what){
 					case 1:
 						if (addCommentResult == 0) {
-							DialogUtils.closeDialog(addCommentLoadDialog);
+							DialogUtils.closeDialog(addDynamicsLoadDialog);
 							Toasty.success(AddDynamicsActivity.this, "发表成功").show();
 							finish();
 						} else if (addCommentResult == 1) {
-							DialogUtils.closeDialog(addCommentLoadDialog);
+							DialogUtils.closeDialog(addDynamicsLoadDialog);
 							Toasty.error(AddDynamicsActivity.this, "发表失败，请稍候再试").show();
 						} else {
-							DialogUtils.closeDialog(addCommentLoadDialog);
+							DialogUtils.closeDialog(addDynamicsLoadDialog);
 							Toasty.error(AddDynamicsActivity.this, "服务器出错，请稍候再试").show();
 						}
 						break;
@@ -149,6 +139,7 @@ public class AddDynamicsActivity extends BaseActivity {
 			/*	AddCommentRequest();*/
 				//获得评论的内容
 				contents = comment_text.getText().toString();
+				addDynamicsLoadDialog=DialogUtils.createLoadingDialog(AddDynamicsActivity.this,"正在发表动态");
 				ADDDynamicsRequest(contents);
 				Intent intent=new Intent();
 				intent.putExtra("addDynamicsResult","有新动态");
@@ -158,36 +149,6 @@ public class AddDynamicsActivity extends BaseActivity {
 			}
 			default:
 		}
-	}
-
-	//添加评论请求
-	private void AddCommentRequest() {
-
-		//显示加载对话框
-		addCommentLoadDialog= DialogUtils.createLoadingDialog(AddDynamicsActivity.this,"正在发表评论");
-		//获得评论的内容
-		contents = comment_text.getText().toString();
-
-		//创建新线程向服务器发送添加讲座请求
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					//获取服务器返回数据
-					response = HttpUtil.AddCommentRequest(ConstantClass.ADDRESS, ConstantClass.ADD_COMMENT_COM, contents, ConstantClass.userOnline, lectureID, commentTime);
-					//解析和处理服务器返回的数据
-					addCommentResult = Utility.handleAddCommentResponse(response, mUserDao);
-					//处理结果
-					handler.sendEmptyMessage(1);
-				} catch (IOException e) {
-					Logger.d("连接失败，IO error");
-					e.printStackTrace();
-				} catch (JSONException e) {
-					Logger.d("连接失败，JSON error");
-					e.printStackTrace();
-				}
-			}
-		}).start();
 	}
 
 	//发表动态请求
@@ -202,13 +163,10 @@ public class AddDynamicsActivity extends BaseActivity {
 					String response = HttpUtil.AddDynamicsRequest(ConstantClass.ADDRESS, ConstantClass.ADD_DYNAMICS_COM,dynamicsContent, ConstantClass.userOnline, Utility.getNowTime());
 					Gson gson=new Gson();
 					AddDynamicsResult result=gson.fromJson(response,AddDynamicsResult.class);
-					if(result.getState()==0){
-						handler.sendEmptyMessage(1);
-					}
-					/*//解析和处理服务器返回的数据
-					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
-					//处理结果
-					handler.sendEmptyMessageDelayed(1, 1000);*/
+					Message message=new Message();
+					message.what=1;
+					message.arg1=result.getState();
+					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
