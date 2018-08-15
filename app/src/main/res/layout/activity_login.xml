@@ -51,6 +51,7 @@
             andorid:layout_height="30dp"
             andorid:paddingLeft="11dp"
             andorid:maxLines="1"
+            andorid:inputType="text"
             andorid:background="@null"
             andorid:layout_marginEnd="22dp"
             andorid:id="@+id/login_account_edit"/>
@@ -90,6 +91,7 @@
             andorid:maxLines="1"
             andorid:layout_height="wrap_content"
             andorid:background="@null"
+            andorid:inputType="text"
             andorid:paddingLeft="11dp"
             andorid:id="@+id/login_password_edit"/>
 

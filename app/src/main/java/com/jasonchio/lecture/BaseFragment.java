@@ -89,13 +89,4 @@ public abstract class BaseFragment extends android.support.v4.app.Fragment imple
 		return false;
 	}
 
-	public boolean isVisibleToUser() {
-		return isVisibleToUser;
-	}
-
-	public void setVisibleToUser(boolean visibleToUser) {
-		isVisibleToUser = visibleToUser;
-	}
-
-
 }

@@ -1,16 +1,33 @@
 package com.jasonchio.lecture;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.jasonchio.lecture.util.ConstantClass;
+import com.orhanobut.logger.Logger;
+
+import java.io.IOException;
+
+import me.codeboy.android.aligntextview.AlignTextView;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+
+import static com.jasonchio.lecture.util.HttpUtil.ContentRequest;
+
 public class UpdateLogActivity extends BaseActivity {
 	
-	TextView updateLogText;
+	AlignTextView updateLogText;
 	TitleLayout titleLayout;
 	Button titleFirstButton;
-	
+
+	Handler handler;
+
+	String updateLogContent;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -22,6 +39,7 @@ public class UpdateLogActivity extends BaseActivity {
 
 		initEvent();
 
+		getUpdateLogContent(ConstantClass.UPDATELOG_ADDRESS,handler);
 	}
 
 	@Override
@@ -29,12 +47,11 @@ public class UpdateLogActivity extends BaseActivity {
 		HideSysTitle();
 		titleLayout.setSecondButtonVisible(View.GONE);
 		titleLayout.setTitle("更新日志");
-		updateLogText.setText("v1.0\n" + "改善了推荐算法；\n" + "优化了发表对讲座评论的功能，在评论之前可以选择讲座；\n" + "支持对搜索结果的分地区和分是否关注筛选。");
 	}
 
 	@Override
 	void initWidget() {
-		updateLogText =(TextView)findViewById(R.id.update_log_content_text);
+		updateLogText =(AlignTextView) findViewById(R.id.update_log_content_text);
 		titleLayout=(TitleLayout)findViewById(R.id.update_log_title_layout);
 		titleFirstButton=(Button)findViewById(R.id.title_first_button);
 	}
@@ -42,6 +59,20 @@ public class UpdateLogActivity extends BaseActivity {
 	@Override
 	void initEvent() {
 		titleFirstButton.setOnClickListener(this);
+
+		handler = new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message msg) {
+				switch (msg.what) {
+					case 1:
+						updateLogContent =msg.obj.toString();
+						updateLogText.setText(updateLogContent);
+						break;
+					default:
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -52,5 +83,22 @@ public class UpdateLogActivity extends BaseActivity {
 				break;
 			default:
 		}
+	}
+
+	public static void getUpdateLogContent(String address, final Handler handler) {
+		ContentRequest(address, new Callback() {
+			@Override
+			public void onFailure(Call call, IOException e) {
+				Logger.d("content获取失败");
+			}
+
+			@Override
+			public void onResponse(Call call, Response response) throws IOException {
+				Message message=new Message();
+				message.what=1;
+				message.obj=response.body().string();
+				handler.sendMessage(message);
+			}
+		});
 	}
 }

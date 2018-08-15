@@ -268,7 +268,7 @@ public class HttpUtil {
 	//请求讲座数据
 	public static String LectureRequest(String address, int com, long userID, long lectureID,int requestType) throws IOException, JSONException {
 
-		Logger.d("LectureRequset started");
+ 		Logger.d("LectureRequset started");
 
 		String response;
 
@@ -1777,7 +1777,7 @@ public class HttpUtil {
 	}
 
 	//点赞或者取消点赞 1-留言、2-动态、3-评论
-	public static String LikeOrNotChangeRequest(String address, int com, long userId, long objectId, int object,int like) throws IOException, JSONException {
+	public static String LikeOrNotChangeRequest(String address, int com, long userId, long objectId, int objectType,int like) throws IOException, JSONException {
 
 		Logger.d("LikeOrNotChangeRequest");
 		JSONObject sendJson = new JSONObject();
@@ -1787,7 +1787,7 @@ public class HttpUtil {
 		sendJson.put("userID", userId);
 		sendJson.put("objectId", objectId);
 		sendJson.put("like", like);
-		sendJson.put("object", object);
+		sendJson.put("object", objectType);
 
 		String test = sendJson.toString();
 

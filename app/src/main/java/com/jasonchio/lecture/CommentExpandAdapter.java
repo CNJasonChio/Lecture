@@ -14,10 +14,14 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.gson.DynamicsResult;
 import com.jasonchio.lecture.util.CircleImageView;
+import com.jasonchio.lecture.util.TimeUtil;
 import com.orhanobut.logger.Logger;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+
+import me.codeboy.android.aligntextview.AlignTextView;
 
 /**
  * /**
@@ -111,7 +115,7 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 		}
 		groupHolder.commentUserName.setText(commentBeanList.get(groupPosition).getNickName());
 		if (commentBeanList.get(groupPosition).getCreateDate() != null) {
-			groupHolder.commentTime.setText(commentBeanList.get(groupPosition).getCreateDate());
+			groupHolder.commentTime.setText(TimeUtil.getTimeFormatText(commentBeanList.get(groupPosition).getCreateDate()));
 		}
 		groupHolder.commentContent.setText(commentBeanList.get(groupPosition).getContent());
 
@@ -159,19 +163,16 @@ public class CommentExpandAdapter extends BaseExpandableListAdapter {
 
 	private class GroupHolder {
 		private CircleImageView commentUserHead;
-		private TextView commentUserName, commentContent, commentTime;
+		private TextView commentUserName,  commentTime;
+		private AlignTextView commentContent;
 		private ImageView commentLike;
-		private TextView commentLikeNum;
-		private TextView commentReplyNum;
 
 		public GroupHolder(View view) {
 			commentUserHead = (CircleImageView) view.findViewById(R.id.comment_userhead_image);
-			commentContent = (TextView) view.findViewById(R.id.comment_content);
+			commentContent = (AlignTextView) view.findViewById(R.id.comment_content);
 			commentUserName = (TextView) view.findViewById(R.id.comment_userName_text);
 			commentTime = (TextView) view.findViewById(R.id.comment_time_text);
 			commentLike = (ImageView) view.findViewById(R.id.comment_like_image);
-/*			commentLikeNum =(TextView)view.findViewById(R.id.comment_like_num_text);
-			commentReplyNum =(TextView)view.findViewById(R.id.comment_reply_num_text);*/
 		}
 	}
 

@@ -53,7 +53,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <com.jasonchio.lecture.util.CommentExpandableListView
+                <com.jasonchio.lecture.CommentExpandableListView
                     android:id="@+id/dynamics_detail_comment_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"

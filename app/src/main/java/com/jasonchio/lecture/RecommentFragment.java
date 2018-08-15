@@ -93,6 +93,7 @@ public class RecommentFragment extends BaseFragment {
 
 	boolean haveRequestedLecture;               //第一次使用软件时，是否已经做过讲座请求
 
+	boolean loadMoreLectureToBottom;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -159,9 +160,12 @@ public class RecommentFragment extends BaseFragment {
 				switch (msg.what) {
 					case 1:
 						if (lectureRequestResult == 0) {
-							//showLectureInfoToTop();
 							DialogUtils.closeDialog(requestLoadDialog);
-							showNewLectureToTop();
+							if(loadMoreLectureToBottom==false){
+								showNewLectureToTop();
+							}else if(loadMoreLectureToBottom==true){
+								showMoreLectureToBottom();
+							}
 						} else if (lectureRequestResult == 1) {
 							DialogUtils.closeDialog(requestLoadDialog);
 							Toasty.info(getContext(), "讲座信息暂无更新").show();
@@ -262,7 +266,10 @@ public class RecommentFragment extends BaseFragment {
 					//解析和处理服务器返回的数据
 					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 					//处理结果
-					handler.sendEmptyMessageDelayed(1, 1200);
+					Message message=new Message();
+					message.what=1;
+					message.arg1=requestType;
+					handler.sendMessageDelayed(message, 1500);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -393,6 +400,7 @@ public class RecommentFragment extends BaseFragment {
 		if (lastViewedLectureID == 0 && haveRequestedLecture==false) {
 			haveRequestedLecture=true;
 			Logger.d("没有浏览记录并且没有本次使用请求过讲座");
+			loadMoreLectureToBottom=false;
 			LectureRequest(ConstantClass.REQUEST_FIRST,0);
 			return;
 
@@ -414,10 +422,11 @@ public class RecommentFragment extends BaseFragment {
 					handler.sendEmptyMessage(3);
 					return;
 				}
-				for (int i = position-1, consts = 0; i >= 0 && consts <= 6; i--, consts++) {
+				for (int i = position-1, consts = 1; i >= 0 && consts <= 7; i--, consts++) {
 					LectureDB lectureDB = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i])).build().unique();
 					//如果数据库中没有该条讲座，请求返回最新讲座
 					if (lectureDB == null) {
+						loadMoreLectureToBottom=false;
 						LectureRequest(ConstantClass.REQUEST_OLD,Long.parseLong(recommentOrder[i+1]));
 						return;
 					} else {
@@ -429,9 +438,10 @@ public class RecommentFragment extends BaseFragment {
 				lastViewedLectureID = lecturelist.get(0).getLectureId();
 			}else{
 				//如果没有讲座被展示，就从上次浏览到的讲座在推荐顺序中的位置开始，添加七个上次浏览过的讲座
-				for(int i=position,consts=0;i<recommentOrder.length&&consts<=7;i++,consts++){
+				for(int i=position,consts=1;i<recommentOrder.length&&consts<=7;i++,consts++){
 					LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i])).build().unique();
 					if (lectureDB == null) {
+						loadMoreLectureToBottom=false;
 						LectureRequest(ConstantClass.REQUEST_NEW,Long.parseLong(recommentOrder[i]));
 						return;
 					} else {
@@ -461,15 +471,19 @@ public class RecommentFragment extends BaseFragment {
 			}
 
 			long lastLectureInList=lecturelist.get(lecturelist.size()-1).getLectureId();
+			int viewedPosition=lecturelist.size()-1;
 			int position=getLecturePosInRecommentList(lastLectureInList);
 			if(position==recommentOrder.length-1){
 				handler.sendEmptyMessage(4);
 				return;
 			}
-			for(int i=position+1,consts=0;i<recommentOrder.length&&consts<=7;i++,consts++){
-				LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i-1])).build().unique();
+			Logger.d("最后一个讲座在推荐列表中的位置为："+position);
+			for(int i=position+1,consts=1;i<recommentOrder.length&&consts<=7;i++,consts++){
+				LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(recommentOrder[i])).build().unique();
 				if (lectureDB == null) {
-					LectureRequest(ConstantClass.REQUEST_NEW,Long.parseLong(recommentOrder[i]));
+					Logger.d("向服务器请求ID为："+recommentOrder[i]+"的讲座");
+					loadMoreLectureToBottom=true;
+					LectureRequest(ConstantClass.REQUEST_NEW,Long.parseLong(recommentOrder[i-1]));
 					return;
 				} else {
 					Logger.d("加载第"+consts+"个更多的讲座，ID为 "+lectureDB.getLectureId());
@@ -479,8 +493,7 @@ public class RecommentFragment extends BaseFragment {
 			}
 			handler.sendEmptyMessage(5);
 			mAdapter.notifyDataSetChanged();
-			listView.setSelection(position
-			);
+			listView.setSelection(viewedPosition);
 		}
 	}
 

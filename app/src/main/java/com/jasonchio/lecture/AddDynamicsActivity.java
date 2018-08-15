@@ -40,17 +40,12 @@ public class AddDynamicsActivity extends BaseActivity {
 
 	TextView comment_text;          //评论内容
 
-	List <LectureDB> lectureList = new ArrayList <>();  //评论的讲座
-
-	LectureAdapter lectureAdapter;  //讲座适配器
-
 	String contents;                //评论内容字符串
 
 	String response;                //添加评论请求的服务器返回数据
 
 	ListView listView;              //listView
 
-	long lectureID = 0;             //初始化评论对应的讲座 ID
 
 	DaoSession daoSession;          //数据库操作对象
 
@@ -144,7 +139,6 @@ public class AddDynamicsActivity extends BaseActivity {
 				Intent intent=new Intent();
 				intent.putExtra("addDynamicsResult","有新动态");
 				setResult(RESULT_OK,intent);
-				finish();
 				break;
 			}
 			default:
@@ -177,9 +171,5 @@ public class AddDynamicsActivity extends BaseActivity {
 			}
 		}).start();
 	}
-/*	//显示要评论的讲座
-	private void showLecture() {
-		LectureDB lecture = mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(lectureID)).build().unique();
-		lectureList.add(lecture);
-	}*/
+
 }

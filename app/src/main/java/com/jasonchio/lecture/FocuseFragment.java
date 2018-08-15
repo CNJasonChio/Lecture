@@ -204,6 +204,7 @@ public class FocuseFragment extends BaseFragment {
 				LectureRequest();
 				return;
 			}
+			DialogUtils.closeDialog(requestLoadDialog);
 			//否则添加到要显示的讲座列表中
 			lecturelist.addAll(0, lectureDBList);
 			listView.setSelection(0);
@@ -252,7 +253,6 @@ public class FocuseFragment extends BaseFragment {
 						break;
 					case 2:
 						if (lectureRequestResult == 0) {
-							DialogUtils.closeDialog(requestLoadDialog);
 							showLectureInfoToTop();
 						}else if (lectureRequestResult == 1) {
 							DialogUtils.closeDialog(requestLoadDialog);
@@ -283,17 +283,10 @@ public class FocuseFragment extends BaseFragment {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+				requestLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
 				showLectureInfoToTop();
 				swipeToLoadLayout.setRefreshing(false);
 
-			}
-		});
-
-		//下拉刷新监听器
-		swipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
-			@Override
-			public void onLoadMore() {
-				swipeToLoadLayout.setLoadingMore(false);
 			}
 		});
 	}

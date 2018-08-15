@@ -22,7 +22,7 @@
             android:text="沐风:"
             android:textSize="14sp"
             android:textColor="#626262"/>
-        <TextView
+        <me.codeboy.android.aligntextview.AlignTextView
             android:id="@+id/reply_item_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

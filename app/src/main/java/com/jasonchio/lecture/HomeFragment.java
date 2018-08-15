@@ -1,12 +1,9 @@
 package com.jasonchio.lecture;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -18,28 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+
 import com.astuetz.PagerSlidingTabStrip;
-import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
 import com.jasonchio.lecture.greendao.DaoSession;
-import com.jasonchio.lecture.greendao.UserDB;
 import com.jasonchio.lecture.greendao.UserDBDao;
-import com.jasonchio.lecture.util.ConstantClass;
-import com.jasonchio.lecture.util.HttpUtil;
-import com.jasonchio.lecture.util.Utility;
-import com.orhanobut.logger.Logger;
-import com.yanzhenjie.permission.Action;
-import com.yanzhenjie.permission.AndPermission;
-import com.yanzhenjie.permission.Permission;
 import com.yanzhenjie.permission.Rationale;
-import com.yanzhenjie.permission.RequestExecutor;
-import com.yanzhenjie.permission.SettingService;
-import org.json.JSONException;
-import java.io.IOException;
-import java.util.List;
-import es.dmoral.toasty.Toasty;
+
 import q.rorbin.badgeview.QBadgeView;
 
 /**
@@ -83,7 +65,7 @@ public class HomeFragment extends BaseFragment {
 
 	ImageView titleNoticeImage;
 
-	PagerSlidingTabStrip tabStrip;          //导航栏
+	PagerSlidingTabStrip tabStrip;          //导航栏滑动
 
 	DisplayMetrics displayMetrics;          //显示单位
 
@@ -91,7 +73,7 @@ public class HomeFragment extends BaseFragment {
 
 	Handler handler;                        //handler
 
-	boolean sendPosOk = false;                //发送位置信息完成
+	boolean sendPosOk = false;              //发送位置信息完成
 
 	double longtituide;                     //用户经度
 	double latituide;                       //用户纬度
@@ -111,6 +93,7 @@ public class HomeFragment extends BaseFragment {
 	int sendPositionResult = 0;              //向服务器发送用户位置的结果
 
 	QBadgeView badgeView;                   //消息数量对象
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	}
@@ -183,7 +166,7 @@ public class HomeFragment extends BaseFragment {
 
 	@Override
 	void initEvent() {
-		handler = new Handler(new Handler.Callback() {
+		/*handler = new Handler(new Handler.Callback() {
 			@Override
 			public boolean handleMessage(Message msg) {
 				switch (msg.what) {
@@ -201,7 +184,7 @@ public class HomeFragment extends BaseFragment {
 				}
 				return true;
 			}
-		});
+		});*/
 
 		titleSearchImage.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -284,7 +267,7 @@ public class HomeFragment extends BaseFragment {
 
 	}
 
-	//获取用户位置
+/*	//获取用户位置
 	private void getPosition() {
 		locationClient = new LocationClient(getContext());
 		locationClient.registerLocationListener(new HomeFragment.MyLocationListener());
@@ -404,7 +387,7 @@ public class HomeFragment extends BaseFragment {
 		userDB.setUserLongitude(longtituide);
 		userDB.setUserLatitude(latituide);
 		mUserDao.update(userDB);
-	}
+	}*/
 
 	@Override
 	public void onDestroy() {

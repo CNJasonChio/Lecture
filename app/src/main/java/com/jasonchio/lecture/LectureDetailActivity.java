@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.dmoral.toasty.Toasty;
+import me.codeboy.android.aligntextview.AlignTextView;
 
 public class LectureDetailActivity extends BaseActivity implements LectureMessageAdapter.OnItemClickListener, LectureMessageAdapter.OnItemLongClickListener {
 
@@ -57,7 +58,7 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 	TextView lectureSource;         //讲座来源
 	TextView lectureTime;           //讲座时间
 	TextView lecturePlace;          //讲座地点
-	TextView lectureContent;        //讲座正文
+	AlignTextView lectureContent;        //讲座正文
 	TextView lectureOriginal;       //讲座原文链接
 
 	int isWanted = 0;                //是否已经被收藏
@@ -126,7 +127,7 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 		lectureSource = (TextView) findViewById(R.id.lecture_detail_source_text);
 		lectureTime = (TextView) findViewById(R.id.lecture_detail_time_text);
 		lecturePlace = (TextView) findViewById(R.id.lecture_detail_place_text);
-		lectureContent = (TextView) findViewById(R.id.lecture_detail_content_text);
+		lectureContent = (AlignTextView) findViewById(R.id.lecture_detail_content_text);
 		lectureOriginal = (TextView) findViewById(R.id.lecture_detail_original_text);
 
 		daoSession = ((MyApplication) getApplication()).getDaoSession();
@@ -180,8 +181,8 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 						break;
 					case 3:
 						if(msg.arg1==0){
-							messageDBList.remove(msg.arg1);
-							lectureMessageAdapter.notifyItemRemoved(msg.arg1);
+							messageDBList.remove(msg.arg2);
+							lectureMessageAdapter.notifyItemRemoved(msg.arg2);
 						}else{
 							Toasty.error(LectureDetailActivity.this,"删除失败，请稍后再试").show();
 						}
@@ -283,7 +284,7 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 			} else {
 				lectureSource.setText(lecture.getLecutreSource());
 			}
-			lectureTime.setText(lecture.getLectureTime());
+			lectureTime.setText(Utility.isLectureOverDue(lecture.getLectureTime()));
 			lecturePlace.setText(lecture.getLectureLocation());
 			lectureContent.setText(lecture.getLectureContent());
 			source = lecture.getLecutreSource();
@@ -384,22 +385,26 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 	public void onItemLongClick(View view, final int position) {
 		switch (view.getId()) {
 			case R.id.lecture_message_layout:
-				AlertDialog.Builder mDialog = new AlertDialog.Builder(LectureDetailActivity.this);
-				mDialog.setTitle("删除留言");
-				mDialog.setMessage("确认要删除这条留言吗？");
-				mDialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				}).setPositiveButton("确定", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-						deteleRequest(messageDBList.get(position).getMessageId(), position);
-					}
-				}).create().show();
-
+				UserDB userDB=mUserDao.queryBuilder().where(UserDBDao.Properties.UserId.eq(ConstantClass.userOnline)).build().unique();
+				if(messageDBList.get(position).getUserName().equals(userDB.getUserName())){
+					AlertDialog.Builder mDialog = new AlertDialog.Builder(LectureDetailActivity.this);
+					mDialog.setTitle("删除留言");
+					mDialog.setMessage("确认要删除这条留言吗？");
+					mDialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+						}
+					}).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							deteleRequest(messageDBList.get(position).getMessageId(), position);
+						}
+					}).create().show();
+				}else{
+					Toasty.info(LectureDetailActivity.this,"不能删除别人的留言哟").show();
+				}
 				break;
 		}
 	}
@@ -414,12 +419,12 @@ public class LectureDetailActivity extends BaseActivity implements LectureMessag
 					String response = HttpUtil.DeleteRequest(ConstantClass.ADDRESS, ConstantClass.DELETE_COM, objectID, ConstantClass.TYPE_MESSAGE, ConstantClass.userOnline);
 					Gson gson = new Gson();
 					CommonStateResult result = gson.fromJson(response, CommonStateResult.class);
-					//解析和处理服务器返回的结果
-					/*loginResult = Utility.handleLoginRespose(response,userPhone,mUserDao);
+
 					//处理结果*/
 					Message message=new Message();
 					message.what=3;
 					message.arg1=result.getState();
+					message.arg2=position;
 					handler.sendMessage(message);
 				} catch (IOException e) {
 					Logger.d("通信失败，IO error");

@@ -13,9 +13,12 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.DynamicsDB;
 import com.jasonchio.lecture.util.CircleImageView;
+import com.jasonchio.lecture.util.TimeUtil;
 import com.orhanobut.logger.Logger;
 
 import java.util.List;
+
+import me.codeboy.android.aligntextview.AlignTextView;
 
 /**
  * /**
@@ -42,11 +45,12 @@ import java.util.List;
  * <p>
  * Created by zhaoyaobang on 2018/6/30.
  */
-public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHolder>implements View.OnClickListener{
+public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHolder>implements View.OnClickListener, View.OnLongClickListener {
 
 	List<DynamicsDB> dynamicsDBList;
 	Context context;
 	OnItemClickListener mItemClickListener;
+	OnItemLongClickListener mItemLongClickListener;
 
 	public DynamicsAdapter(List <DynamicsDB> dynamicsDBList, Context context) {
 		this.dynamicsDBList = dynamicsDBList;
@@ -57,6 +61,7 @@ public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHo
 	public DynamicsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.dynamics_listitem, parent, false);
 		view.setOnClickListener(this);
+		view.setOnLongClickListener(this);
 		return new ViewHolder(view);
 	}
 
@@ -75,7 +80,7 @@ public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHo
 		}
 		holder.userName.setText(dynamicsDB.getUserName());
 		holder.dynamicsContent.setText(dynamicsDB.getDynamicsContent());
-		holder.dynamicsTime.setText(dynamicsDB.getTime());
+		holder.dynamicsTime.setText(TimeUtil.getTimeFormatText(dynamicsDB.getTime()));
 		holder.likesNum.setText(String.valueOf(dynamicsDB.getLikerNum()));
 		holder.commentNum.setText(String.valueOf(dynamicsDB.getCommentNum()));
 		holder.dynamicsLayout.setTag(position);
@@ -97,11 +102,19 @@ public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHo
 		}
 	}
 
+	@Override
+	public boolean onLongClick(View v) {
+		if (mItemLongClickListener!=null){
+			mItemLongClickListener.onItemLongClick((Integer) v.getTag(),v);
+		}
+		return true;
+	}
+
 	public class ViewHolder extends RecyclerView.ViewHolder {
 
 		CircleImageView userHead;
 		TextView userName;
-		TextView dynamicsContent;
+		AlignTextView dynamicsContent;
 		TextView dynamicsTime;
 		TextView likesNum;
 		TextView commentNum;
@@ -112,7 +125,7 @@ public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHo
 			super(itemView);
 			userHead=(CircleImageView) itemView.findViewById(R.id.dynamics_userhead_image);
 			userName=(TextView)itemView.findViewById(R.id.dynamics_username_text);
-			dynamicsContent=(TextView)itemView.findViewById(R.id.dynamics_content_text);
+			dynamicsContent=(AlignTextView) itemView.findViewById(R.id.dynamics_content_text);
 			dynamicsTime=(TextView)itemView.findViewById(R.id.dynamics_time_text);
 			likesNum=(TextView)itemView.findViewById(R.id.dynamics_like_num_text);
 			commentNum=(TextView)itemView.findViewById(R.id.dynamics_comment_num_text);
@@ -127,6 +140,13 @@ public class DynamicsAdapter extends RecyclerView.Adapter<DynamicsAdapter.ViewHo
 		void onItemClick(int position,View view);
 	}
 
+	public interface OnItemLongClickListener{
+		void onItemLongClick(int position,View view);
+	}
+
+	public void setItemLongClickListener(OnItemLongClickListener itemLongClickListener) {
+		mItemLongClickListener = itemLongClickListener;
+	}
 	public void setItemClickListener(OnItemClickListener itemClickListener) {
 		mItemClickListener = itemClickListener;
 	}

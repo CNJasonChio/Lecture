@@ -382,7 +382,6 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			parent.removeView(rootview);
 		}
 
-		//initDynamicData();
 		//初始化控件
 		initWidget();
 		//初始化视图
@@ -390,7 +389,6 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 		//初始化事件
 		initEvent();
 		//自动刷新
-
 		if(dynamicsDBList.size()==0){
 			autoRefresh();
 		}
@@ -536,6 +534,7 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 				break;
 			case R.id.dynamics_layout:
 				Intent intent=new Intent(getContext(),DynamicsDetailActivity.class);
+				intent.putExtra("position",position);
 				intent.putExtra("id",dynamicsDB.getId());
 				intent.putExtra("userHead",dynamicsDB.getUserHead());
 				intent.putExtra("userName",dynamicsDB.getUserName());
@@ -544,7 +543,7 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 				intent.putExtra("likeNum",dynamicsDB.getLikerNum());
 				intent.putExtra("commentNum",dynamicsDB.getCommentNum());
 				intent.putExtra("isLikeorNot",dynamicsDB.getIsLikeorNot());
-				startActivity(intent);
+				startActivityForResult(intent,200);
 				break;
 		}
 	}
@@ -567,10 +566,29 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 		switch (requestCode) {
 			case 100:
 				if(resultCode==-1){
-					Toasty.success(getContext(),"发表动态成功").show();
+					//Toasty.success(getContext(),"发表动态成功").show();
 					//autoRefresh();
 				}
 				break;
+			case 200:
+				Logger.d("收到返回的消息");
+				Logger.d(resultCode);
+				if(resultCode==getActivity().RESULT_OK){
+					Intent intent=getActivity().getIntent();
+					boolean isDataChanged=intent.getBooleanExtra("data_changed",true);
+					if(isDataChanged==true){
+						Logger.d("已经改变");
+						Bundle bundle=data.getExtras();
+						int position=bundle.getInt("position");
+						DynamicsDB dynamicsDB=dynamicsDBList.get(position);
+						dynamicsDB.setIsLikeorNot(bundle.getInt("like_or_not"));
+						dynamicsDB.setCommentNum(bundle.getInt("comment_num"));
+						dynamicsDB.setLikerNum(bundle.getInt("like_num"));
+
+						dynamicsDBList.set(position,dynamicsDB);
+						dynamicsAdapter.notifyItemChanged(position);
+					}
+				}
 				default:
 		}
 	}
@@ -641,8 +659,6 @@ public class DynamicsFragment extends BaseFragment implements View.OnClickListen
 			public void run() {
 				try {
 
-					/*//获取数据库中最后一条讲座 id
-					long lastLecureID = Utility.lastLetureinDB(mLectureDao);*/
 					//获取服务器返回的数据
 					String response = HttpUtil.CommentDynamicsRequest(ConstantClass.ADDRESS, ConstantClass.ADD_COMMENT_COM, dynamicsDBList.get(position).getId(), ConstantClass.userOnline,dynamicsContent, Utility.getNowTime());
 					Gson gson=new Gson();

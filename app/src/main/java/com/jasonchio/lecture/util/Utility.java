@@ -38,6 +38,7 @@ import com.jasonchio.lecture.gson.VercodeResult;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -926,5 +927,39 @@ public class Utility {
 		return result;
 	}
 
-	//判断讲座
+	//判断讲座是否已经过期
+	public static String isLectureOverDue(String lectureTime){
+		String time=lectureTime;
+
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = null;
+		try {
+			date = formatter.parse(lectureTime);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		if (date == null) {
+			return null;
+		}
+
+		if (date.getTime() - new Date().getTime() < 0)
+			time=time+"（！！！已过期！！！）";
+		return time;
+	}
+
+	//全角转半角
+	public static String ToDBC(String input) {
+		char[] c = input.toCharArray();
+		for (int i = 0; i < c.length; i++) {
+			if (c[i] == 12288) {
+				//全角空格为12288，半角空格为32
+				c[i] = (char) 32;
+				continue;
+			}
+			if (c[i] > 65280 && c[i] < 65375)
+				//其他字符半角(33-126)与全角(65281-65374)的对应关系是：均相差65248
+				c[i] = (char) (c[i] - 65248);
+		}
+		return new String(c);
+	}
 }

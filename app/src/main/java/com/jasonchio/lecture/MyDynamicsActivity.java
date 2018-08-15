@@ -1,10 +1,12 @@
 package com.jasonchio.lecture;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -34,7 +36,7 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 
-public class MyDynamicsActivity extends BaseActivity implements DynamicsAdapter.OnItemClickListener {
+public class MyDynamicsActivity extends BaseActivity implements DynamicsAdapter.OnItemClickListener, DynamicsAdapter.OnItemLongClickListener {
 
 	SwipeToLoadLayout swipeToLoadLayout;        //刷新布局
 
@@ -110,6 +112,8 @@ public class MyDynamicsActivity extends BaseActivity implements DynamicsAdapter.
 		listView.setAdapter(mAdapter);
 		commentImage=(ImageView)findViewById(R.id.dynamics_comment_image) ;
 		likeImage=(ImageView)findViewById(R.id.dynamics_comment_like_image) ;
+		mAdapter.setItemClickListener(this);
+		mAdapter.setItemLongClickListener(this);
 	}
 
 	@Override
@@ -164,6 +168,13 @@ public class MyDynamicsActivity extends BaseActivity implements DynamicsAdapter.
 						}
 						DialogUtils.closeDialog(addCommentDialog);
 						break;
+					case 5:
+						if(msg.arg1==0){
+							dynamicsList.remove(msg.arg2);
+							mAdapter.notifyItemRemoved(msg.arg2);
+						}else{
+							Toasty.error(MyDynamicsActivity.this,"删除失败，请稍后再试").show();
+						}
 					default:
 				}
 				return true;
@@ -196,7 +207,6 @@ public class MyDynamicsActivity extends BaseActivity implements DynamicsAdapter.
 		DynamicsDB dynamicsDB=dynamicsList.get(position);
 		switch (view.getId()){
 			case R.id.dynamics_comment_image:
-				addCommentDialog=DialogUtils.createLoadingDialog(MyDynamicsActivity.this,"正在评论");
 				addComment(position);
 				break;
 			case R.id.dynamics_comment_like_image:
@@ -377,4 +387,54 @@ public class MyDynamicsActivity extends BaseActivity implements DynamicsAdapter.
 		}).start();
 	}
 
+	@Override
+	public void onItemLongClick(final int position, View view) {
+		switch (view.getId()) {
+			case R.id.dynamics_layout:
+				AlertDialog.Builder mDialog = new AlertDialog.Builder(MyDynamicsActivity.this);
+				mDialog.setTitle("删除留言");
+				mDialog.setMessage("确认要删除这条动态吗？");
+				mDialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						deteleRequest(dynamicsList.get(position).getId(), position);
+					}
+				}).create().show();
+
+				break;
+		}
+	}
+
+	private void deteleRequest(final long objectID, final int position) {
+		//开启新线程
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					//获取服务器返回的结果
+					String response = HttpUtil.DeleteRequest(ConstantClass.ADDRESS, ConstantClass.DELETE_COM, objectID, ConstantClass.TYPE_DYNAMICS, ConstantClass.userOnline);
+					Gson gson = new Gson();
+					CommonStateResult result = gson.fromJson(response, CommonStateResult.class);
+
+					Message message=new Message();
+					message.what=5;
+					message.arg1=result.getState();
+					message.arg2=position;
+					handler.sendMessage(message);
+				} catch (IOException e) {
+					Logger.d("通信失败，IO error");
+					e.printStackTrace();
+				} catch (JSONException e) {
+					Logger.d("通信失败，JSON error");
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
 }

@@ -75,7 +75,7 @@
             android:id="@+id/library_photo_image"
             android:scaleType="centerCrop"/>
 
-        <TextView
+        <me.codeboy.android.aligntextview.AlignTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/library_content_text"

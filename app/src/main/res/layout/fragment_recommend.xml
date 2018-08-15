@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <com.jasonchio.lecture.util.SelfRefreshHeaderView
+    <com.jasonchio.lecture.SelfRefreshHeaderView
         android:id="@id/swipe_refresh_header"
         android:layout_width="match_parent"
         android:layout_height="100dp"
@@ -16,7 +16,7 @@
         android:layout_height="match_parent"
         android:background="#ffffff" />
 
-    <com.jasonchio.lecture.util.SelfLoadMoreFooterView
+    <com.jasonchio.lecture.SelfLoadMoreFooterView
         android:id="@id/swipe_load_more_footer"
         android:layout_width="match_parent"
         android:layout_height="100dp"

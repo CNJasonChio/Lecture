@@ -23,7 +23,7 @@ public class MainPageActivity extends BaseActivity{
 
 	public FragmentTabHost fragmentTabHost;     //FragmentTabHost对象
 
-	private String[] TabTags = {"首页", "动态", "我的"};
+	private String[] TabTags = {"首页", "社区", "我的"};
 
 	private Integer[] ImgTab = {R.layout.tab_main_home, R.layout.tab_main_dynamics, R.layout.tab_main_me};
 

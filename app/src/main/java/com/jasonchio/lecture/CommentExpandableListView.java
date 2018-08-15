@@ -1,4 +1,4 @@
-package com.jasonchio.lecture.util;
+package com.jasonchio.lecture;
 
 import android.content.Context;
 import android.os.Build;

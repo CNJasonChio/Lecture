@@ -17,9 +17,13 @@ import com.bumptech.glide.Glide;
 import com.jasonchio.lecture.greendao.CommentDB;
 import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.greendao.LectureDBDao;
+import com.jasonchio.lecture.util.TimeUtil;
+import com.jasonchio.lecture.util.Utility;
 import com.orhanobut.logger.Logger;
 
 import java.util.List;
+
+import me.codeboy.android.aligntextview.AlignTextView;
 
 /**
  * /**
@@ -85,7 +89,7 @@ public class LectureAdapter extends BaseAdapter {
 			Glide.with(context).load(lecture.getLectureImage()).into(viewHolder.lectureImage);
 		}
 		viewHolder.lectureContent.setText(lecture.getLectureContent());
-		viewHolder.lectureTime.setText(lecture.getLectureTime());
+		viewHolder.lectureTime.setText(TimeUtil.getTimeFormatText(lecture.getLectureTime()));
 		if(lecture.getLecutreSource()==null || lecture.getLecutreSource().length()==0) {
 			viewHolder.lectureSource.setText("暂无来源名称");
 		}else{

@@ -13,6 +13,8 @@ import com.jasonchio.lecture.util.CircleImageView;
 
 import java.util.List;
 
+import me.codeboy.android.aligntextview.AlignTextView;
+
 /**
  * /**
  * <p>
@@ -80,14 +82,14 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.ViewHolder
 
 	static class ViewHolder extends RecyclerView.ViewHolder{
 		TextView userName;
-		TextView noticeContent;
+		AlignTextView noticeContent;
 		TextView noticeTime;
 		CircleImageView userHead;
 		public ViewHolder(View view){
 			super(view);
 			userHead=(CircleImageView)view.findViewById(R.id.notice_userhead_image);
 			userName=(TextView)view.findViewById(R.id.notice_user_name);
-			noticeContent =(TextView)view.findViewById(R.id.notice_content);
+			noticeContent =(AlignTextView) view.findViewById(R.id.notice_content);
 			noticeTime=(TextView)view.findViewById(R.id.notice_time);
 		}
 	}

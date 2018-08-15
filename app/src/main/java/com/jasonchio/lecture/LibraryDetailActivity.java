@@ -25,6 +25,7 @@ import com.orhanobut.logger.Logger;
 import org.json.JSONException;
 import java.io.IOException;
 import es.dmoral.toasty.Toasty;
+import me.codeboy.android.aligntextview.AlignTextView;
 
 public class LibraryDetailActivity extends BaseActivity {
 
@@ -34,7 +35,7 @@ public class LibraryDetailActivity extends BaseActivity {
 
 	TextView libraryName;               //讲座信息来源名称
 
-	TextView libraryContent;            //讲座信息来源简介
+	AlignTextView libraryContent;            //讲座信息来源简介
 
 	TextView libraryOriginal;           //讲座信息来源原文
 
@@ -122,7 +123,7 @@ public class LibraryDetailActivity extends BaseActivity {
 	void initWidget(){
 		libraryImage=(ImageView)findViewById(R.id.library_photo_image);
 		libraryName=(TextView)findViewById(R.id.library_name_text);
-		libraryContent=(TextView)findViewById(R.id.library_content_text);
+		libraryContent=(AlignTextView) findViewById(R.id.library_content_text);
 		libraryOriginal=(TextView)findViewById(R.id.library_original_text);
 		titleFirstButton=(Button)findViewById(R.id.library_title_first_button);
 		titleSecondButton=(Button)findViewById(R.id.library_title_second_button);

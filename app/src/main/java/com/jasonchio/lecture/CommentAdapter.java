@@ -18,6 +18,8 @@ import com.jasonchio.lecture.greendao.LectureDB;
 import com.jasonchio.lecture.util.CircleImageView;
 import java.util.List;
 
+import me.codeboy.android.aligntextview.AlignTextView;
+
 /**
  * /**
  * <p>
@@ -89,17 +91,16 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener 
 			viewHolder.userLayout = (RelativeLayout) view.findViewById(R.id.comment_user_layout);
 			viewHolder.commentLecutreLayout = (RelativeLayout) view.findViewById(R.id.comment_lecture_layout);
 			viewHolder.commentLikeLayout = (RelativeLayout) view.findViewById(R.id.comment_like_layout);
-			viewHolder.commentText = (TextView) view.findViewById(R.id.comment_text);
+			viewHolder.commentText = (AlignTextView) view.findViewById(R.id.comment_text);
 
 			viewHolder.userPhoto = (CircleImageView) view.findViewById(R.id.comment_photo_image);
-			viewHolder.commentText = (TextView) view.findViewById(R.id.comment_text);
 			viewHolder.userName = (TextView) view.findViewById(R.id.comment_user_name_text);
 			viewHolder.commentTime = (TextView) view.findViewById(R.id.comment_time_text);
 			viewHolder.commentLikers = (TextView) view.findViewById(R.id.comment_likers_text);
 
 			viewHolder.lectureTitle = (TextView) view.findViewById(R.id.lecture_title_text);
 			viewHolder.lectureImage = (ImageView) view.findViewById(R.id.lecture_source_image);
-			viewHolder.lectureContent = (TextView) view.findViewById(R.id.lecture_content_text);
+			viewHolder.lectureContent = (AlignTextView) view.findViewById(R.id.lecture_content_text);
 			viewHolder.lectureTime = (TextView) view.findViewById(R.id.lecture_time_text);
 			viewHolder.lectureSource = (TextView) view.findViewById(R.id.lecture_source_text);
 			viewHolder.lectureLikers = (TextView) view.findViewById(R.id.lecture_likers_text);
@@ -167,7 +168,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener 
 		RelativeLayout commentLikeLayout;
 
 		CircleImageView userPhoto;
-		TextView commentText;
+		AlignTextView commentText;
 		TextView userName;
 		TextView commentTime;
 		TextView commentLikers;
@@ -175,7 +176,7 @@ public class CommentAdapter extends BaseAdapter implements View.OnClickListener 
 
 		TextView lectureTitle;
 		ImageView lectureImage;
-		TextView lectureContent;
+		AlignTextView lectureContent;
 		TextView lectureTime;
 		TextView lectureSource;
 		TextView lectureLikers;

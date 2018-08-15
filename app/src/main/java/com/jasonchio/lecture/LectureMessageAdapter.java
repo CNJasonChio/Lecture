@@ -14,6 +14,8 @@ import com.jasonchio.lecture.util.CircleImageView;
 import com.orhanobut.logger.Logger;
 import java.util.List;
 
+import me.codeboy.android.aligntextview.AlignTextView;
+
 /**
  * /**
  * <p>
@@ -50,7 +52,7 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 		CircleImageView userheadImage;
 		TextView userNameText;
 		TextView msgLikersNumText;
-		TextView messageContentText;
+		AlignTextView messageContentText;
 		ImageView messageLikeImage;
 		RelativeLayout relativeLayout;
 
@@ -59,7 +61,7 @@ public class LectureMessageAdapter extends RecyclerView.Adapter<LectureMessageAd
 			userheadImage=(CircleImageView)itemView.findViewById(R.id.lecture_message_userhead);
 			userNameText=(TextView)itemView.findViewById(R.id.lecture_message_username);
 			msgLikersNumText=(TextView)itemView.findViewById(R.id.lecture_message_liker_num);
-			messageContentText=(TextView)itemView.findViewById(R.id.lecture_message_content);
+			messageContentText=(AlignTextView) itemView.findViewById(R.id.lecture_message_content);
 			messageLikeImage=(ImageView)itemView.findViewById(R.id.lecture_message_like_image);
 			relativeLayout=(RelativeLayout)itemView.findViewById(R.id.lecture_message_layout);
 		}

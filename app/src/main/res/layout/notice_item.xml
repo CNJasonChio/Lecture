@@ -47,7 +47,7 @@
                 android:text="3分钟前"/>
         </RelativeLayout>
 
-        <TextView
+        <me.codeboy.android.aligntextview.AlignTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="ceshi ceshi ceshi"

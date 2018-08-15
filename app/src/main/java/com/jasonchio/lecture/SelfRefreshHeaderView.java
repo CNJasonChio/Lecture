@@ -1,10 +1,12 @@
-package com.jasonchio.lecture.util;
+package com.jasonchio.lecture;
 
 import android.content.Context;
+import android.support.v4.widget.TextViewCompat;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
-import com.aspsine.swipetoloadlayout.SwipeLoadMoreTrigger;
+import com.aspsine.swipetoloadlayout.SwipeRefreshTrigger;
 import com.aspsine.swipetoloadlayout.SwipeTrigger;
 
 /**
@@ -33,18 +35,19 @@ import com.aspsine.swipetoloadlayout.SwipeTrigger;
  * Created by zhaoyaobang on 2018/3/10.
  */
 
-public class SelfLoadMoreFooterView extends AppCompatTextView implements SwipeTrigger, SwipeLoadMoreTrigger {
-	public SelfLoadMoreFooterView(Context context) {
+public class SelfRefreshHeaderView extends AppCompatTextView implements SwipeRefreshTrigger, SwipeTrigger {
+
+	public SelfRefreshHeaderView(Context context) {
 		super(context);
 	}
 
-	public SelfLoadMoreFooterView(Context context, AttributeSet attrs) {
+	public SelfRefreshHeaderView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
 	@Override
-	public void onLoadMore() {
-		setText("已经到底了");
+	public void onRefresh() {
+		setText("再稍微等一小会儿");
 	}
 
 	@Override
@@ -55,10 +58,10 @@ public class SelfLoadMoreFooterView extends AppCompatTextView implements SwipeTr
 	@Override
 	public void onMove(int yScrolled, boolean isComplete, boolean automatic) {
 		if (!isComplete) {
-			if (yScrolled <= -getHeight()) {
+			if (yScrolled >= getHeight()) {
 				setText("放开我就给你新东西");
 			} else {
-				setText("再往上拉点儿");
+				setText("再往下拉点儿");
 			}
 		} else {
 			setText("");
@@ -67,7 +70,6 @@ public class SelfLoadMoreFooterView extends AppCompatTextView implements SwipeTr
 
 	@Override
 	public void onRelease() {
-		setText("");
 	}
 
 	@Override

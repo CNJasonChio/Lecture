@@ -27,7 +27,8 @@ import com.jasonchio.lecture.R;
  * Created by Carson_Ho on 17/8/10.
  */
 
-public class SearchView extends LinearLayout {
+public class
+SearchView extends LinearLayout {
 
     /**
      * 初始化成员变量

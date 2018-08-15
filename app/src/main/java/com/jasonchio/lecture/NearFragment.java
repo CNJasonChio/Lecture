@@ -120,6 +120,7 @@ public class NearFragment extends BaseFragment {
 	List<Long> nearLectureIDs;
 
 	boolean isFirstLoad=true;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -183,7 +184,7 @@ public class NearFragment extends BaseFragment {
 		swipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
-				requestLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
+
 				sendPosOk=false;
 				getPosition();
 				swipeToLoadLayout.setRefreshing(false);
@@ -196,6 +197,7 @@ public class NearFragment extends BaseFragment {
 				switch (msg.what) {
 					case 1:
 						if(sendPositionResult==0){
+							requestLoadDialog=DialogUtils.createLoadingDialog(getContext(),"正在加载");
 							saveUserPosition();
 							sendPosOk=true;
 							NearLectureRequest();
@@ -205,12 +207,12 @@ public class NearFragment extends BaseFragment {
 						if(msg.arg1==0){
 							showLectureInfoToTop();
 						}
-						DialogUtils.closeDialog(requestLoadDialog);
 						break;
 					case 3:
 						if(lectureRequestResult==0){
 							showLectureInfoToTop();
 						}
+
 						default:
 				}
 				return true;
@@ -247,7 +249,7 @@ public class NearFragment extends BaseFragment {
 					//解析和处理服务器返回数据
 					lectureRequestResult = Utility.handleLectureResponse(response, mLectureDao);
 					//处理结果
-					handler.sendEmptyMessage(3);
+					handler.sendEmptyMessageDelayed(3, 1000);
 				} catch (IOException e) {
 					Logger.d("连接失败，IO error");
 					e.printStackTrace();
@@ -299,16 +301,22 @@ public class NearFragment extends BaseFragment {
 		if(nearLectureIDs==null){
 			Toasty.error(getContext(),"暂无附近讲座推荐").show();
 		}else{
+			lecturelist.clear();
 			for(int i=0;i<nearLectureIDs.size();i++){
 				LectureDB lectureDB=mLectureDao.queryBuilder().where(LectureDBDao.Properties.LectureId.eq(nearLectureIDs.get(i))).build().unique();
 				if(lectureDB==null){
 					LectureRequest(ConstantClass.REQUEST_NEW,nearLectureIDs.get(i)-1);
+					return;
 				}else{
 					lecturelist.add(lectureDB);
 				}
 			}
+			if (requestLoadDialog != null && requestLoadDialog.isShowing()) {
+				requestLoadDialog.dismiss();
+			}
 			listView.setSelection(0);
 			mAdapter.notifyDataSetChanged();
+
 		}
 	}
 
@@ -396,6 +404,8 @@ public class NearFragment extends BaseFragment {
 			public void run() {
 				try {
 					String response = HttpUtil.SendPosition(ConstantClass.ADDRESS, ConstantClass.SEND_POSITION_COM, ConstantClass.userOnline, longtituide, latituide);
+
+					Logger.d(response);
 
 					sendPositionResult = Utility.handleCommonResponse(response);
 

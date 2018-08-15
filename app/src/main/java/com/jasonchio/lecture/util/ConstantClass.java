@@ -32,6 +32,12 @@ public class ConstantClass {
 
 	//服务器地址
 	public static final String ADDRESS="119.29.93.31";
+	//"关于"文件地址
+	public static final String ABOUT_ADDRESS="http://119.29.93.31:2000/version/about.txt";
+	//"帮助"文件地址
+	public static final String HELP_ADDRESS="http://119.29.93.31:2000/version/help.txt";
+	//"更新日志"文件地址
+	public static final String UPDATELOG_ADDRESS="http://119.29.93.31:2000/version/updatinglog.txt";
 
 	//动态
 	public static int TYPE_DYNAMICS=2;

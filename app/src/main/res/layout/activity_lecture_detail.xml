@@ -89,7 +89,7 @@
                     android:textSize="13sp"/>
             </LinearLayout>
 
-            <TextView
+            <me.codeboy.android.aligntextview.AlignTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/lecture_detail_content_text"
